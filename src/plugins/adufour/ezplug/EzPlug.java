@@ -303,8 +303,7 @@ public abstract class EzPlug extends Plugin implements PluginLibrary, PluginImag
 	}
 	
 	/**
-	 * Returns the number of active (not-destroyed) instances of this plugin
-	 * @return
+	 * @return the number of active (not-destroyed) instances of this plugin
 	 */
 	public static int getNbInstances()
 	{

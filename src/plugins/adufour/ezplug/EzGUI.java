@@ -31,13 +31,13 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.border.Border;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
@@ -107,7 +107,26 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			{
 				getContentPane().setLayout(new BorderLayout(0, 5));
 				
-				EzGUI.this.setBorder(BorderFactory.createEmptyBorder());
+				EzGUI.this.setBorder(new Border()
+				{
+					@Override
+					public void paintBorder(Component c, Graphics g, int x, int y, int width, int height)
+					{
+						
+					}
+					
+					@Override
+					public Insets getBorderInsets(Component c)
+					{
+						return new Insets(2, 2, 2, 2);
+					}
+					
+					@Override
+					public boolean isBorderOpaque()
+					{
+						return false;
+					}
+				});
 				
 				EzGUI.this.ezPlug = ezPlug;
 				EzGUI.this.executionThread = new Thread(ezPlug);
@@ -115,7 +134,6 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 				jPanelParameters = new JPanel();
 				
 				jPanelParameters.setLayout(new GridBagLayout());
-				//jPanelParameters.setBorder(BorderFactory.createLineBorder(Color.black));
 				
 				jPanelBottom = new JPanel(new GridLayout(2, 1));
 				
@@ -331,12 +349,22 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 	 */
 	public void setActionPanelVisible(final boolean visible)
 	{
-		
 		ThreadUtil.invokeLater(new Runnable()
 		{
 			public void run()
 			{
 				jPanelBottom.setVisible(visible);
+			}
+		});
+	}
+	
+	public void setProgressBarVisible(final boolean visible)
+	{
+		ThreadUtil.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				jProgressBar.setVisible(visible);
 			}
 		});
 	}
@@ -581,10 +609,10 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			// Fill a black rectangle to mask the bottom corners of the rounded rectangle
 			g2.fillRect(0, height / 2, width, height / 2);
 			
-			// add a bright oval portion to simulate a glass reflection 
-			g2.setPaint(new GradientPaint(0, 0, colors.getUltraLightColor().brighter(), 0, height*3, colors.getDarkColor()));
+			// add a bright oval portion to simulate a glass reflection
+			g2.setPaint(new GradientPaint(0, 0, colors.getUltraLightColor().brighter(), 0, height * 3, colors.getDarkColor()));
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
-			g2.fillOval(-width + (width / 2), height / 3 , width * 2, height * 3);
+			g2.fillOval(-width + (width / 2), height / 3, width * 2, height * 3);
 			
 			g2.dispose();
 		}
@@ -722,27 +750,27 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		setUI(new EzInternalFrameUI(EzGUI.this));
 		repack(false);
 	}
-
+	
 	@Override
 	public void componentResized(ComponentEvent e)
 	{
-		//jPanelParameters.setSize(getContentPane().getWidth(), jPanelParameters.getHeight());
+		// jPanelParameters.setSize(getContentPane().getWidth(), jPanelParameters.getHeight());
 	}
-
+	
 	@Override
 	public void componentMoved(ComponentEvent e)
 	{
 		// TODO Auto-generated method stub
 		
 	}
-
+	
 	@Override
 	public void componentShown(ComponentEvent e)
 	{
 		// TODO Auto-generated method stub
 		
 	}
-
+	
 	@Override
 	public void componentHidden(ComponentEvent e)
 	{
