@@ -231,17 +231,17 @@ public abstract class EzVar<T> extends EzComponent
 	{
 		varChangeListeners.add(listener);
 		
-		// The listener is fired right away to allow the user to use the same code for
-		// initialization and event listening code
-		try
-		{
-			fireVariableChanged(getValue());
-		}
-		catch (EzException eze)
-		{
-			// thrown in case the value is null for some variables
-			fireVariableChanged(null);
-		}
+//		// The listener is fired right away to allow the user to use the same code for
+//		// initialization and event listening code
+//		try
+//		{
+//			fireVariableChanged(getValue());
+//		}
+//		catch (EzException eze)
+//		{
+//			// thrown in case the value is null for some variables
+//			fireVariableChanged(null);
+//		}
 	}
 	
 	/**
