@@ -1,0 +1,23 @@
+EzPlug is a toolbox for ICY allowing developers write nice-looking plug-ins very fast without knowledge in GUI programming.
+
+Here is a (non-exhaustive) list of features:
+
+ - On the Graphical User Interface (GUI) side:
+ 
+   - Automatic generation: declare your parameters, EzPlug takes care of the rest !
+   - Dedicated GUI components (check-boxes, spinners, etc.) for each parameter-type
+   - Sleek and elegant interface, adapted to the selected Look'n'Feel
+   - Components may show/hide each other according to user-defined "triggers"
+   - Parameters can be grouped in boxes with fold/unfold support
+   - Built-in parameter load/save support via XML files
+   - Custom AWT/Swing components can be added as well if needed
+ 
+ - On the plug-in side:
+ 
+   - Main user code automatically runs in a separate thread, no more GUI hangs !
+   - Plug-in interruption support: implement an interface and win a "stop" button !
+   
+ - Other features in development:
+ 
+   - Singleton support: because two is not always better than one.
+   - GUI window externalization, to free space on your ICY desktop.
