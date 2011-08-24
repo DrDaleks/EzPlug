@@ -23,14 +23,13 @@ import java.awt.LayoutManager;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -57,11 +56,13 @@ import org.pushingpixels.substance.internal.utils.SubstanceInternalFrameTitlePan
  * 
  * @author Alexandre Dufour
  */
-public final class EzGUI extends IcyInternalFrame implements ActionListener, SkinChangeListener, ComponentListener
+public final class EzGUI extends IcyInternalFrame implements ActionListener, SkinChangeListener
 {
 	private static final long		serialVersionUID			= 1L;
 	
 	private static final int		LOGO_HEIGHT					= 40;
+	
+	private static final boolean	USE_SKIN_COLOR_SCHEME		= true;
 	
 	private EzPlug					ezPlug;
 	
@@ -95,8 +96,6 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		setUI(new EzInternalFrameUI(this));
 		setOpaque(false);
 		
-		addComponentListener(this);
-		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
 		ThreadUtil.invokeNow(new Runnable()
@@ -105,14 +104,15 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			@Override
 			public void run()
 			{
-				getContentPane().setLayout(new BorderLayout(0, 5));
+				getContentPane().setLayout(new BorderLayout(0, 0));
 				
 				EzGUI.this.setBorder(new Border()
 				{
 					@Override
 					public void paintBorder(Component c, Graphics g, int x, int y, int width, int height)
 					{
-						
+						// leave the border transparent
+						// we're just creating a "hot-zone" to capture mouse resize events
 					}
 					
 					@Override
@@ -132,6 +132,8 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 				EzGUI.this.executionThread = new Thread(ezPlug);
 				
 				jPanelParameters = new JPanel();
+				
+				jPanelParameters.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
 				
 				jPanelParameters.setLayout(new GridBagLayout());
 				
@@ -277,16 +279,6 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			}
 			logoTitle.repaint();
 		}
-	}
-	
-	/**
-	 * Sets the state of the "Run" button on the interface
-	 * 
-	 * @deprecated use {@link #setRunButtonEnabled(boolean)} instead.
-	 */
-	public void setRunEnabled(final boolean runnable)
-	{
-		setRunButtonEnabled(runnable);
 	}
 	
 	/**
@@ -467,6 +459,7 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		for (Component component : components)
 			if (component instanceof EzComponent)
 				((EzComponent) component).dispose(); // FIXME
+				
 		components.clear();
 		
 		jPanelParameters.removeAll();
@@ -480,12 +473,9 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		jButtonLoadParameters.removeActionListener(this);
 		jButtonSaveParameters.removeActionListener(this);
 		
-		// UIManager.removePropertyChangeListener(this);
 		icy.gui.util.LookAndFeelUtil.removeSkinChangeListener(this);
 		
 		ezPlug = null;
-		
-		System.gc();
 	}
 	
 	// ActionListener //
@@ -526,22 +516,24 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		}
 	}
 	
-	// New logo component to replace the title bar
-	
+	/**
+	 * Custom title pane with elegant logo and title
+	 * 
+	 * @author Alexandre Dufour
+	 * 
+	 */
 	private static class EzTitlePane extends SubstanceInternalFrameTitlePane
 	{
-		private static final long	serialVersionUID	= 1L;
+		private static final long		serialVersionUID	= 1L;
 		
-		// private static final Font icyFont = new Font("Arial", Font.PLAIN, 40);
+		private static final Font		titleFont			= new Font("Arial", Font.BOLD + Font.ITALIC, 20);
 		
-		private static final Font	titleFont			= new Font("Arial", Font.BOLD + Font.ITALIC, 20);
-		
-		final JInternalFrame		f;
+		private final JInternalFrame	internalFrame;
 		
 		public EzTitlePane(JInternalFrame f)
 		{
 			super(f);
-			this.f = f;
+			this.internalFrame = f;
 			setPreferredSize(new Dimension(getPreferredSize().width, LOGO_HEIGHT));
 		}
 		
@@ -559,19 +551,21 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			int width = this.getWidth();
 			int height = this.getHeight() + 2;
 			
-			// GuiUtil.paintBackGround(this, g);
 			paintbg(getWidth(), getHeight(), g);
 			
-			SubstanceColorScheme colors = SubstanceLookAndFeel.getCurrentSkin().getColorScheme(f, ComponentState.DEFAULT);
-			
-			// graphics.setColor(Color.white);
-			graphics.setColor(colors.isDark() ? Color.white : colors.getUltraDarkColor().darker().darker());
+			if (USE_SKIN_COLOR_SCHEME)
+			{
+				SubstanceColorScheme colors = SubstanceLookAndFeel.getCurrentSkin().getColorScheme(new JButton(), ComponentState.PRESSED_SELECTED);
+				graphics.setColor(colors.isDark() ? Color.white : colors.getUltraDarkColor().darker().darker());
+			}
+			else
+			{
+				graphics.setColor(Color.white);
+			}
 			graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			
-			// graphics.setFont(icyFont);
-			// GuiUtil.drawHCenteredText(graphics, "ICY", width, (height / 2) + 3);
 			graphics.setFont(titleFont);
-			GuiUtil.drawHCenteredText(graphics, frame.getTitle(), width, (height / 2) + 5 /* + 25 */);
+			GuiUtil.drawHCenteredText(graphics, internalFrame.getTitle(), width, (height / 2) + 5);
 			
 			graphics.dispose();
 		}
@@ -599,19 +593,31 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
-			SubstanceColorScheme colors = SubstanceLookAndFeel.getCurrentSkin().getColorScheme(f, ComponentState.DEFAULT);
+			Color brightColor, darkColor;
+			
+			if (USE_SKIN_COLOR_SCHEME)
+			{
+				SubstanceColorScheme colors = SubstanceLookAndFeel.getCurrentSkin().getColorScheme(new JButton(), ComponentState.PRESSED_SELECTED);
+				brightColor = colors.getUltraLightColor().brighter();
+				darkColor = colors.getDarkColor();
+			}
+			else
+			{
+				brightColor = new Color(72, 72, 72);
+				darkColor = new Color(4, 4, 4);
+			}
 			
 			// Fill a rounded rectangle with gradient paint (main title bar)
 			final RoundRectangle2D roundRect = new RoundRectangle2D.Double(0, 0, width, height, finalRay, finalRay);
-			g2.setPaint(new GradientPaint(0, 0, colors.getUltraLightColor().brighter(), 0, height, colors.getDarkColor()));
+			g2.setPaint(new GradientPaint(0, 0, brightColor, 0, height, darkColor));
 			g2.fill(roundRect);
 			
 			// Fill a black rectangle to mask the bottom corners of the rounded rectangle
 			g2.fillRect(0, height / 2, width, height / 2);
 			
 			// add a bright oval portion to simulate a glass reflection
-			g2.setPaint(new GradientPaint(0, 0, colors.getUltraLightColor().brighter(), 0, height * 3, colors.getDarkColor()));
-			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
+			g2.setPaint(new GradientPaint(0, 0, brightColor, 0, height * 2, darkColor));
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
 			g2.fillOval(-width + (width / 2), height / 3, width * 2, height * 3);
 			
 			g2.dispose();
@@ -619,7 +625,7 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		
 		/**
 		 * Layout manager for this title pane. Patched version of SubstanceTitlePaneLayout to adjust
-		 * the buttons position
+		 * the buttons position (they stick tighter in the upper right-hand corner)
 		 * 
 		 * @author Kirill Grouchnikov
 		 * @author Alexandre Dufour
@@ -629,7 +635,7 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			@Override
 			public void layoutContainer(Container c)
 			{
-				boolean leftToRight = frame.getComponentOrientation().isLeftToRight();
+				boolean leftToRight = internalFrame.getComponentOrientation().isLeftToRight();
 				
 				int w = getWidth();
 				int x = leftToRight ? w : 0;
@@ -643,30 +649,29 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 				
 				// old version (patched by Alexandre Dufour)
 				// y = (getHeight() - buttonHeight) / 2;
-				y = 5;
+				y = 4;
 				
-				if (frame.isClosable())
+				if (internalFrame.isClosable())
 				{
 					spacing = 4;
 					x += leftToRight ? -spacing - buttonWidth : spacing;
 					closeButton.setBounds(x, y, buttonWidth, buttonHeight);
 					if (!leftToRight)
 						x += buttonWidth;
-					// }
 				}
 				
-				if (frame.isMaximizable())
-				{// && !isPalette) {
-					spacing = frame.isClosable() ? 2 : 4;
+				if (internalFrame.isMaximizable())
+				{
+					spacing = internalFrame.isClosable() ? 2 : 4;
 					x += leftToRight ? -spacing - buttonWidth : spacing;
 					maxButton.setBounds(x, y, buttonWidth, buttonHeight);
 					if (!leftToRight)
 						x += buttonWidth;
 				}
 				
-				if (frame.isIconifiable())
-				{// && !isPalette) {
-					spacing = frame.isMaximizable() ? 2 : (frame.isClosable() ? 2 : 4);
+				if (internalFrame.isIconifiable())
+				{
+					spacing = internalFrame.isMaximizable() ? 2 : (internalFrame.isClosable() ? 2 : 4);
 					x += leftToRight ? -spacing - buttonWidth : spacing;
 					iconButton.setBounds(x, y, buttonWidth, buttonHeight);
 					if (!leftToRight)
@@ -688,27 +693,15 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 	 */
 	private static class EzInternalFrameUI extends BasicInternalFrameUI
 	{
-		private EzTitlePane					titlePane;
+		private EzTitlePane						titlePane;
 		
-		protected PropertyChangeListener	substancePropertyListener;
+		private final PropertyChangeListener	substancePropertyListener;
 		
 		public EzInternalFrameUI(JInternalFrame b)
 		{
 			super(b);
-		}
-		
-		@Override
-		protected JComponent createNorthPane(JInternalFrame w)
-		{
-			this.titlePane = new EzTitlePane(w);
-			this.titlePane.setToolTipText(null);
-			return titlePane;
-		}
-		
-		protected void installListeners()
-		{
-			super.installListeners();
-			this.substancePropertyListener = new PropertyChangeListener()
+			
+			substancePropertyListener = new PropertyChangeListener()
 			{
 				public void propertyChange(PropertyChangeEvent evt)
 				{
@@ -734,7 +727,20 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 					}
 				}
 			};
-			this.frame.addPropertyChangeListener(this.substancePropertyListener);
+		}
+		
+		@Override
+		protected JComponent createNorthPane(JInternalFrame internalFrame)
+		{
+			this.titlePane = new EzTitlePane(internalFrame);
+			this.titlePane.setToolTipText(null);
+			return titlePane;
+		}
+		
+		protected void installListeners()
+		{
+			super.installListeners();
+			this.frame.addPropertyChangeListener(substancePropertyListener);
 		}
 		
 		protected void uninstallComponents()
@@ -742,40 +748,18 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			this.titlePane.uninstall();
 			super.uninstallComponents();
 		}
+		
+		@Override
+		protected void uninstallListeners()
+		{
+			super.uninstallListeners();
+			this.frame.removePropertyChangeListener(substancePropertyListener);
+		}
 	}
 	
 	@Override
 	public void skinChanged()
 	{
 		setUI(new EzInternalFrameUI(EzGUI.this));
-		repack(false);
 	}
-	
-	@Override
-	public void componentResized(ComponentEvent e)
-	{
-		// jPanelParameters.setSize(getContentPane().getWidth(), jPanelParameters.getHeight());
-	}
-	
-	@Override
-	public void componentMoved(ComponentEvent e)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-	
-	@Override
-	public void componentShown(ComponentEvent e)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-	
-	@Override
-	public void componentHidden(ComponentEvent e)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-	
 }
