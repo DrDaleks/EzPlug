@@ -12,6 +12,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -60,7 +61,9 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 {
 	private static final long		serialVersionUID			= 1L;
 	
-	private static final int		LOGO_HEIGHT					= 40;
+	private static final int		LOGO_HEIGHT					= 32;
+	
+	private static final int		FONT_SIZE					= 16;
 	
 	private static final boolean	USE_SKIN_COLOR_SCHEME		= true;
 	
@@ -526,15 +529,23 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 	{
 		private static final long		serialVersionUID	= 1L;
 		
-		private static final Font		titleFont			= new Font("Arial", Font.BOLD + Font.ITALIC, 20);
-		
 		private final JInternalFrame	internalFrame;
+		
+		private final int				titleWidth;
+		private final int				titleHeight;
 		
 		public EzTitlePane(JInternalFrame f)
 		{
 			super(f);
 			this.internalFrame = f;
-			setPreferredSize(new Dimension(getPreferredSize().width, LOGO_HEIGHT));
+			setFont(getFont().deriveFont(Font.BOLD + Font.ITALIC, FONT_SIZE));
+			
+			FontMetrics m = getFontMetrics(getFont());
+			
+			titleWidth = m.stringWidth(f.getTitle());
+			titleHeight = m.getHeight() - 6;
+			
+			setPreferredSize(new Dimension(titleWidth + 100, LOGO_HEIGHT));
 		}
 		
 		@Override
@@ -549,7 +560,7 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			Graphics2D graphics = (Graphics2D) g.create();
 			
 			int width = this.getWidth();
-			int height = this.getHeight() + 2;
+			int height = this.getHeight() + 0;
 			
 			paintbg(getWidth(), getHeight(), g);
 			
@@ -562,11 +573,9 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 			{
 				graphics.setColor(Color.white);
 			}
+			
 			graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			
-			graphics.setFont(titleFont);
-			GuiUtil.drawHCenteredText(graphics, internalFrame.getTitle(), width, (height / 2) + 5);
-			
+			graphics.drawString(internalFrame.getTitle(), (width - titleWidth) / 2, (height + titleHeight) / 2);
 			graphics.dispose();
 		}
 		
