@@ -1,6 +1,8 @@
 package plugins.adufour.ezplug;
 
 import icy.gui.component.IcyLogo;
+import icy.gui.frame.IcyExternalFrame;
+import icy.gui.frame.IcyFrame;
 import icy.gui.frame.IcyInternalFrame;
 import icy.gui.util.GuiUtil;
 import icy.system.thread.ThreadUtil;
@@ -9,9 +11,6 @@ import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -20,58 +19,37 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.border.Border;
 import javax.swing.filechooser.FileSystemView;
-import javax.swing.plaf.UIResource;
-import javax.swing.plaf.basic.BasicInternalFrameUI;
 
 import org.pushingpixels.substance.api.ComponentState;
 import org.pushingpixels.substance.api.SubstanceColorScheme;
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
-import org.pushingpixels.substance.api.skin.SkinChangeListener;
-import org.pushingpixels.substance.internal.ui.SubstanceDesktopIconUI;
-import org.pushingpixels.substance.internal.utils.SubstanceInternalFrameTitlePane;
 
-/**
- * Graphical interface generator for the EzPlug framework.<br>
- * When instantiated, each EzPlug creates an EzGUI to allow developers to add graphical components
- * in a fast and intuitive manner, allowing to build rich interfaces with advanced user interaction
- * without any knowledge in graphical interface programming.
- * 
- * @author Alexandre Dufour
- */
-public final class EzGUI extends IcyInternalFrame implements ActionListener, SkinChangeListener
+public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 {
-	private static final long		serialVersionUID			= 1L;
+	public static final int			LOGO_HEIGHT					= 32;
 	
-	private static final int		LOGO_HEIGHT					= 32;
-	
-	private static final int		FONT_SIZE					= 16;
+	public static final int			FONT_SIZE					= 16;
 	
 	private static final boolean	USE_SKIN_COLOR_SCHEME		= true;
+	
+	private Color					logoTitleColor;
 	
 	private EzPlug					ezPlug;
 	
 	private Thread					executionThread;
-	
-	private Color					logoTitleColor;
 	
 	private JPanel					jPanelParameters;
 	
@@ -93,101 +71,83 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 	
 	private JProgressBar			jProgressBar;
 	
-	EzGUI(final EzPlug ezPlug)
+	public EzGUI(final EzPlug ezPlug)
 	{
 		super(ezPlug.getName(), true, true, false, true);
-		setUI(new EzInternalFrameUI(this));
-		setOpaque(false);
 		
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		this.ezPlug = ezPlug;
+		this.executionThread = new Thread(ezPlug);
 		
-		ThreadUtil.invokeNow(new Runnable()
+		jPanelParameters = new JPanel();
+		
+		jPanelParameters.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
+		
+		jPanelParameters.setLayout(new GridBagLayout());
+		
+		jPanelParameters = new JPanel();
+		
+		jPanelParameters.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
+		
+		jPanelParameters.setLayout(new GridBagLayout());
+		
+		jPanelBottom = new JPanel(new GridLayout(2, 1));
+		
+		jPanelButtons = new JPanel(new GridLayout(1, 4));
+		jPanelBottom.add(jPanelButtons);
+		
+		jButtonRun = new JButton("Run");
+		jButtonRun.addActionListener(this);
+		jPanelButtons.add(jButtonRun);
+		
+		if (ezPlug instanceof EzStoppable)
 		{
-			
-			@Override
-			public void run()
-			{
-				getContentPane().setLayout(new BorderLayout(0, 0));
-				
-				EzGUI.this.setBorder(new Border()
-				{
-					@Override
-					public void paintBorder(Component c, Graphics g, int x, int y, int width, int height)
-					{
-						// leave the border transparent
-						// we're just creating a "hot-zone" to capture mouse resize events
-					}
-					
-					@Override
-					public Insets getBorderInsets(Component c)
-					{
-						return new Insets(2, 2, 2, 2);
-					}
-					
-					@Override
-					public boolean isBorderOpaque()
-					{
-						return false;
-					}
-				});
-				
-				EzGUI.this.ezPlug = ezPlug;
-				EzGUI.this.executionThread = new Thread(ezPlug);
-				
-				jPanelParameters = new JPanel();
-				
-				jPanelParameters.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
-				
-				jPanelParameters.setLayout(new GridBagLayout());
-				
-				jPanelBottom = new JPanel(new GridLayout(2, 1));
-				
-				jPanelButtons = new JPanel(new GridLayout(1, 4));
-				jPanelBottom.add(jPanelButtons);
-				
-				jButtonRun = new JButton("Run");
-				jButtonRun.addActionListener(EzGUI.this);
-				jPanelButtons.add(jButtonRun);
-				
-				if (ezPlug instanceof EzStoppable)
-				{
-					jButtonStop = new JButton("Stop");
-					jButtonStop.setEnabled(false);
-					jButtonStop.addActionListener(EzGUI.this);
-					jPanelButtons.add(jButtonStop);
-				}
-				
-				jButtonSaveParameters = new JButton("Save");
-				jButtonSaveParameters.addActionListener(EzGUI.this);
-				jPanelButtons.add(jButtonSaveParameters);
-				
-				jButtonLoadParameters = new JButton("Load");
-				jButtonLoadParameters.addActionListener(EzGUI.this);
-				jPanelButtons.add(jButtonLoadParameters);
-				
-				jProgressBar = new JProgressBar();
-				jProgressBar.setString("Running...");
-				jPanelBottom.add(jProgressBar);
-				
-				getContentPane().add(jPanelParameters, BorderLayout.CENTER);
-				getContentPane().add(jPanelBottom, BorderLayout.SOUTH);
-				
-				pack();
-				
-				// look and feel change listener
-				icy.gui.util.LookAndFeelUtil.addSkinChangeListener(EzGUI.this);
-			}
-			
-		});
+			jButtonStop = new JButton("Stop");
+			jButtonStop.setEnabled(false);
+			jButtonStop.addActionListener(this);
+			jPanelButtons.add(jButtonStop);
+		}
+		
+		jButtonSaveParameters = new JButton("Save");
+		jButtonSaveParameters.addActionListener(this);
+		jPanelButtons.add(jButtonSaveParameters);
+		
+		jButtonLoadParameters = new JButton("Load");
+		jButtonLoadParameters.addActionListener(this);
+		jPanelButtons.add(jButtonLoadParameters);
+		
+		jProgressBar = new JProgressBar();
+		jProgressBar.setString("Running...");
+		jPanelBottom.add(jProgressBar);
+		
+		getContentPane().add(jPanelParameters, BorderLayout.CENTER);
+		getContentPane().add(jPanelBottom, BorderLayout.SOUTH);
+		
+		pack();
+		
+		// TODO plug-in home-made internal and external frames
 		
 	}
 	
-	void addComponent(Component component)
+	@Override
+	protected IcyInternalFrame creatInternalFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable)
+	{
+		// TODO Auto-generated method stub
+		//return super.creatInternalFrame(title, resizable, closable, maximizable, iconifiable);
+		return new EzInternalFrame(title, resizable, closable, maximizable, iconifiable);
+	}
+	
+	@Override
+	protected IcyExternalFrame createExternalFrame(String title)
+	{
+		return new EzExternalFrame(title);
+	}
+	
+	public void addComponent(Component component)
 	{
 		components.add(component);
 	}
 	
-	void addEzComponent(EzComponent component, boolean isSingle)
+	public void addEzComponent(EzComponent component, boolean isSingle)
 	{
 		// Special case #1: if the component is a variable, register it
 		if (component instanceof EzVar<?>)
@@ -207,7 +167,7 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		if (isSingle)
 			components.add(component);
 	}
-	
+
 	/**
 	 * Re-packs the user interface. This method should be called if one of the components was
 	 * changed either in size or visibility state
@@ -389,98 +349,6 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		jButtonsParametersVisible = visible;
 	}
 	
-	/**
-	 * Specifies the value of the progress bar.
-	 * 
-	 * @param value
-	 *            a value between 0 and 1, or -1 for indeterminate state (permanent animation)
-	 */
-	public void setProgressBarValue(final double value)
-	{
-		ThreadUtil.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				if (value == -1.0)
-				{
-					jProgressBar.setIndeterminate(true);
-				}
-				else
-				{
-					jProgressBar.setIndeterminate(false);
-					jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, value)) * 100));
-				}
-			}
-		});
-	}
-	
-	/**
-	 * Displays a text message on the run button (useful to indicate the state of the plug). Due to
-	 * limitations of Mac OS look'n'feel, the message is printed on the main button instead of the
-	 * progress bar
-	 * 
-	 * @param message
-	 */
-	public void setProgressBarMessage(final String message)
-	{
-		ThreadUtil.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				// jButtonRun.setText(message);
-				// NOTE the line below works on all look'n'feels except Mac OS
-				jProgressBar.setString(message);
-			}
-		});
-	}
-	
-	public void dispose()
-	{
-		setVisible(false);
-		
-		super.dispose();
-		
-		if (ezPlug == null)
-			return;
-		
-		ezPlug.cleanFromUI();
-		
-		if (executionThread != null && executionThread.isAlive())
-		{
-			// stop the execution if it was still running
-			if (ezPlug instanceof EzStoppable)
-				((EzStoppable) ezPlug).stopExecution();
-			else
-			{
-				executionThread.interrupt();
-				System.err.println("Plug " + ezPlug.getName() + " was still running and has been interrupted");
-			}
-		}
-		
-		// dispose all components
-		
-		for (Component component : components)
-			if (component instanceof EzComponent)
-				((EzComponent) component).dispose(); // FIXME
-				
-		components.clear();
-		
-		jPanelParameters.removeAll();
-		repack(false);
-		
-		// remove all listeners
-		
-		jButtonRun.removeActionListener(this);
-		if (jButtonStop != null)
-			jButtonStop.removeActionListener(this);
-		jButtonLoadParameters.removeActionListener(this);
-		jButtonSaveParameters.removeActionListener(this);
-		
-		icy.gui.util.LookAndFeelUtil.removeSkinChangeListener(this);
-		
-		ezPlug = null;
-	}
-	
 	// ActionListener //
 	
 	public void actionPerformed(ActionEvent e)
@@ -519,256 +387,80 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		}
 	}
 	
-	/**
-	 * Custom title pane with elegant logo and title
-	 * 
-	 * @author Alexandre Dufour
-	 * 
-	 */
-	private static class EzTitlePane extends SubstanceInternalFrameTitlePane
+	// Title pane creation
+	
+	public static void paintTitlePane(Graphics2D graphics, int width, int height, String title)
 	{
-		private static final long		serialVersionUID	= 1L;
+		paintBackground(width, height, graphics);
 		
-		private final JInternalFrame	internalFrame;
-		
-		private final int				titleWidth;
-		private final int				titleHeight;
-		
-		public EzTitlePane(JInternalFrame f)
+		if (USE_SKIN_COLOR_SCHEME)
 		{
-			super(f);
-			this.internalFrame = f;
-			setFont(getFont().deriveFont(Font.BOLD + Font.ITALIC, FONT_SIZE));
-			
-			FontMetrics m = getFontMetrics(getFont());
-			
-			titleWidth = m.stringWidth(f.getTitle());
-			titleHeight = m.getHeight() - 6;
-			
-			setPreferredSize(new Dimension(titleWidth + 100, LOGO_HEIGHT));
+			SubstanceColorScheme colors = SubstanceLookAndFeel.getCurrentSkin().getColorScheme(new JButton(), ComponentState.PRESSED_SELECTED);
+			graphics.setColor(colors.isDark() ? Color.white : colors.getUltraDarkColor().darker().darker());
+		}
+		else
+		{
+			graphics.setColor(Color.white);
 		}
 		
-		@Override
-		protected LayoutManager createLayout()
-		{
-			return new EzTitlePaneLayout();
-		}
+		graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		
-		@Override
-		public void paintComponent(Graphics g)
-		{
-			Graphics2D graphics = (Graphics2D) g.create();
-			
-			int width = this.getWidth();
-			int height = this.getHeight() + 0;
-			
-			paintbg(getWidth(), getHeight(), g);
-			
-			if (USE_SKIN_COLOR_SCHEME)
-			{
-				SubstanceColorScheme colors = SubstanceLookAndFeel.getCurrentSkin().getColorScheme(new JButton(), ComponentState.PRESSED_SELECTED);
-				graphics.setColor(colors.isDark() ? Color.white : colors.getUltraDarkColor().darker().darker());
-			}
-			else
-			{
-				graphics.setColor(Color.white);
-			}
-			
-			graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			graphics.drawString(internalFrame.getTitle(), (width - titleWidth) / 2, (height + titleHeight) / 2);
-			graphics.dispose();
-		}
+		FontMetrics m = graphics.getFontMetrics();
+		int titleWidth = m.stringWidth(title);
+		int titleHeight = m.getHeight() - 6;
 		
-		/**
-		 * Modified version of the {@link GuiUtil#paintBackGround(int, int, Graphics)} method for
-		 * the purpose of EzGUI. Changes include:<br>
-		 * <ul>
-		 * <li>Shade and lighting effects adjusted</li>
-		 * <li>Border outline removed</li>
-		 * <li>Bottom corners of the rounded rectangle masked to better stick to the rest of the
-		 * frame</li>
-		 * </ul>
-		 * 
-		 * @param width
-		 * @param height
-		 * @param g
-		 */
-		private void paintbg(int width, int height, Graphics g)
-		{
-			final Graphics2D g2 = (Graphics2D) g.create();
-			
-			float ray = Math.max(width, height) * 0.05f;
-			float finalRay = Math.min(ray * 2, 20);
-			
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			
-			Color brightColor, darkColor;
-			
-			if (USE_SKIN_COLOR_SCHEME)
-			{
-				SubstanceColorScheme colors = SubstanceLookAndFeel.getCurrentSkin().getColorScheme(new JButton(), ComponentState.PRESSED_SELECTED);
-				brightColor = colors.getUltraLightColor().brighter();
-				darkColor = colors.getDarkColor();
-			}
-			else
-			{
-				brightColor = new Color(72, 72, 72);
-				darkColor = new Color(4, 4, 4);
-			}
-			
-			// Fill a rounded rectangle with gradient paint (main title bar)
-			final RoundRectangle2D roundRect = new RoundRectangle2D.Double(0, 0, width, height, finalRay, finalRay);
-			g2.setPaint(new GradientPaint(0, 0, brightColor, 0, height, darkColor));
-			g2.fill(roundRect);
-			
-			// Fill a black rectangle to mask the bottom corners of the rounded rectangle
-			g2.fillRect(0, height / 2, width, height / 2);
-			
-			// add a bright oval portion to simulate a glass reflection
-			g2.setPaint(new GradientPaint(0, 0, brightColor, 0, height * 2, darkColor));
-			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
-			g2.fillOval(-width + (width / 2), height / 3, width * 2, height * 3);
-			
-			g2.dispose();
-		}
-		
-		/**
-		 * Layout manager for this title pane. Patched version of SubstanceTitlePaneLayout to adjust
-		 * the buttons position (they stick tighter in the upper right-hand corner)
-		 * 
-		 * @author Kirill Grouchnikov
-		 * @author Alexandre Dufour
-		 */
-		protected class EzTitlePaneLayout extends SubstanceInternalFrameTitlePane.SubstanceTitlePaneLayout
-		{
-			@Override
-			public void layoutContainer(Container c)
-			{
-				boolean leftToRight = internalFrame.getComponentOrientation().isLeftToRight();
-				
-				int w = getWidth();
-				int x = leftToRight ? w : 0;
-				int y = 2;
-				int spacing;
-				
-				// assumes all buttons have the same dimensions
-				// these dimensions include the borders
-				int buttonHeight = closeButton.getIcon().getIconHeight();
-				int buttonWidth = closeButton.getIcon().getIconWidth();
-				
-				// old version (patched by Alexandre Dufour)
-				// y = (getHeight() - buttonHeight) / 2;
-				y = 4;
-				
-				if (internalFrame.isClosable())
-				{
-					spacing = 4;
-					x += leftToRight ? -spacing - buttonWidth : spacing;
-					closeButton.setBounds(x, y, buttonWidth, buttonHeight);
-					if (!leftToRight)
-						x += buttonWidth;
-				}
-				
-				if (internalFrame.isMaximizable())
-				{
-					spacing = internalFrame.isClosable() ? 2 : 4;
-					x += leftToRight ? -spacing - buttonWidth : spacing;
-					maxButton.setBounds(x, y, buttonWidth, buttonHeight);
-					if (!leftToRight)
-						x += buttonWidth;
-				}
-				
-				if (internalFrame.isIconifiable())
-				{
-					spacing = internalFrame.isMaximizable() ? 2 : (internalFrame.isClosable() ? 2 : 4);
-					x += leftToRight ? -spacing - buttonWidth : spacing;
-					iconButton.setBounds(x, y, buttonWidth, buttonHeight);
-					if (!leftToRight)
-						x += buttonWidth;
-				}
-			}
-		}
-		
+		graphics.drawString(title, (width - titleWidth) / 2, (height + titleHeight) / 2);
+		graphics.dispose();
 	}
 	
 	/**
-	 * This class is a fork of SubstanceInternalFrameUI because the "titlePane" field of the
-	 * original class has no set method and is declared private, yielding a NullPointerException
-	 * when closing the window (due to a confusion between SubstanceInternalFrameUI.titlePane and
-	 * BasicInternalFrameUI.northPane)
+	 * Modified version of the {@link GuiUtil#paintBackGround(int, int, Graphics)} method for the
+	 * purpose of EzGUI. Changes include:<br>
+	 * <ul>
+	 * <li>Shade and lighting effects adjusted</li>
+	 * <li>Border outline removed</li>
+	 * <li>Bottom corners of the rounded rectangle masked to better stick to the rest of the frame</li>
+	 * </ul>
 	 * 
-	 * @author Alexandre Dufour
-	 * 
+	 * @param width
+	 * @param height
+	 * @param g
 	 */
-	private static class EzInternalFrameUI extends BasicInternalFrameUI
+	private static void paintBackground(int width, int height, Graphics2D graphics)
 	{
-		private EzTitlePane						titlePane;
+		float ray = Math.max(width, height) * 0.05f;
+		float finalRay = Math.min(ray * 2, 20);
 		
-		private final PropertyChangeListener	substancePropertyListener;
+		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		public EzInternalFrameUI(JInternalFrame b)
+		Color brightColor, darkColor;
+		
+		if (USE_SKIN_COLOR_SCHEME)
 		{
-			super(b);
-			
-			substancePropertyListener = new PropertyChangeListener()
-			{
-				public void propertyChange(PropertyChangeEvent evt)
-				{
-					if (JInternalFrame.IS_CLOSED_PROPERTY.equals(evt.getPropertyName()))
-					{
-						titlePane.uninstall();
-						if (frame != null)
-						{
-							JDesktopIcon jdi = frame.getDesktopIcon();
-							SubstanceDesktopIconUI ui = (SubstanceDesktopIconUI) jdi.getUI();
-							ui.uninstallUI(jdi);
-						}
-					}
-					
-					if ("background".equals(evt.getPropertyName()))
-					{
-						Color newBackgr = (Color) evt.getNewValue();
-						if (!(newBackgr instanceof UIResource))
-						{
-							titlePane.setBackground(newBackgr);
-							frame.getDesktopIcon().setBackground(newBackgr);
-						}
-					}
-				}
-			};
+			SubstanceColorScheme colors = SubstanceLookAndFeel.getCurrentSkin().getColorScheme(new JButton(), ComponentState.PRESSED_SELECTED);
+			brightColor = colors.getUltraLightColor().brighter();
+			darkColor = colors.getDarkColor();
+		}
+		else
+		{
+			brightColor = new Color(72, 72, 72);
+			darkColor = new Color(4, 4, 4);
 		}
 		
-		@Override
-		protected JComponent createNorthPane(JInternalFrame internalFrame)
-		{
-			this.titlePane = new EzTitlePane(internalFrame);
-			this.titlePane.setToolTipText(null);
-			return titlePane;
-		}
+		// Fill a rounded rectangle with gradient paint (main title bar)
+		final RoundRectangle2D roundRect = new RoundRectangle2D.Double(0, 0, width, height, finalRay, finalRay);
+		graphics.setPaint(new GradientPaint(0, 0, brightColor, 0, height, darkColor));
+		graphics.fill(roundRect);
 		
-		protected void installListeners()
-		{
-			super.installListeners();
-			this.frame.addPropertyChangeListener(substancePropertyListener);
-		}
+		// Fill a black rectangle to mask the bottom corners of the rounded rectangle
+		graphics.fillRect(0, height / 2, width, height / 2);
 		
-		protected void uninstallComponents()
-		{
-			this.titlePane.uninstall();
-			super.uninstallComponents();
-		}
+		// add a bright oval portion to simulate a glass reflection
+		graphics.setPaint(new GradientPaint(0, 0, brightColor, 0, height * 2, darkColor));
+		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+		graphics.fillOval(-width + (width / 2), height / 3, width * 2, height * 3);
 		
-		@Override
-		protected void uninstallListeners()
-		{
-			super.uninstallListeners();
-			this.frame.removePropertyChangeListener(substancePropertyListener);
-		}
+		graphics.dispose();
 	}
 	
-	@Override
-	public void skinChanged()
-	{
-		setUI(new EzInternalFrameUI(EzGUI.this));
-	}
 }
