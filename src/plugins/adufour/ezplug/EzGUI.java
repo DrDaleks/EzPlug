@@ -124,9 +124,7 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
         getContentPane().add(jPanelBottom, BorderLayout.SOUTH);
 
         pack();
-
-        // TODO plug-in home-made internal and external frames
-
+        center();
     }
 
     @Override
@@ -206,7 +204,6 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
         }
 
         pack();
-
         setVisible(true);
     }
 
@@ -380,10 +377,8 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 
     public void onClosed()
     {
-        setVisible(false);
-        
-        getInternalFrame().dispose();
-        
+        //if (isExternalized()) ((IcyInternalFrame) getInternalFrame()).close(true);
+
         if (ezPlug == null) return;
 
         ezPlug.cleanFromUI();
@@ -408,7 +403,6 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
         components.clear();
 
         jPanelParameters.removeAll();
-        repack(false);
 
         // remove all listeners
 
@@ -418,6 +412,7 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
         jButtonSaveParameters.removeActionListener(this);
 
         ezPlug = null;
+
         super.onClosed();
     }
 

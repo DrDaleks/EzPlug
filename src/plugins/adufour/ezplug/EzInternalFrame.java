@@ -2,79 +2,64 @@ package plugins.adufour.ezplug;
 
 import icy.gui.frame.IcyInternalFrame;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
-import javax.swing.border.Border;
-import javax.swing.plaf.UIResource;
-import javax.swing.plaf.basic.BasicInternalFrameUI;
 
-import org.pushingpixels.substance.api.skin.SkinChangeListener;
-import org.pushingpixels.substance.internal.ui.SubstanceDesktopIconUI;
 import org.pushingpixels.substance.internal.ui.SubstanceInternalFrameUI;
 import org.pushingpixels.substance.internal.utils.SubstanceInternalFrameTitlePane;
 
-public class EzInternalFrame extends IcyInternalFrame implements SkinChangeListener
+public class EzInternalFrame extends IcyInternalFrame// implements SkinChangeListener
 {
     private static final long serialVersionUID = 1L;
 
     EzInternalFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable)
     {
         super(title, resizable, closable, maximizable, iconifiable);
-        SubstanceInternalFrameUI ui = new EzInternalFrameUI();
-        setUI(ui);
-        updateTitlePane(ui.getTitlePane());
+        // SubstanceInternalFrameUI ui = new EzInternalFrameUI();
+        // setUI(ui);
+        // updateTitlePane(ui.getTitlePane());
 
         setOpaque(false);
-        setBorder(new Border()
-        {
-            @Override
-            public void paintBorder(Component c, Graphics g, int x, int y, int width, int height)
-            {
-                // leave the border transparent
-                // we're just creating a "hot-zone" to capture mouse resize events
-            }
-
-            @Override
-            public Insets getBorderInsets(Component c)
-            {
-                return new Insets(2, 2, 2, 2);
-            }
-
-            @Override
-            public boolean isBorderOpaque()
-            {
-                return false;
-            }
-        });
+        setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 
         // look and feel change listener
-        icy.gui.util.LookAndFeelUtil.addSkinChangeListener(EzInternalFrame.this);
+        // icy.gui.util.LookAndFeelUtil.addSkinChangeListener(EzInternalFrame.this);
+        updateUI();
+    }
+
+    @Override
+    public void doLayout()
+    {
+        if (isVisible()) super.doLayout();
     }
 
     @Override
     public void dispose()
     {
+        // FIXME Memory leak: "this" is not destroyed properly.
+        // the if test is needed to avoid the following bug:
+        // 1) externalize the frame
+        // 2) close the external frame => this dispose is called once
+        // 3) close ICY => this dispose is called again => not normal !
+        // => the UI doens't know about the frame anymore
+        if (isVisible())
+        {
+            getUI().uninstallUI(this);
+        }
         super.dispose();
-
-        icy.gui.util.LookAndFeelUtil.removeSkinChangeListener(EzInternalFrame.this);
-        setUI(null);
     }
 
     @Override
@@ -83,7 +68,7 @@ public class EzInternalFrame extends IcyInternalFrame implements SkinChangeListe
         return ((EzInternalFrameTitlePane) titlePane).isOnSystemIcon(p);
     }
 
-    public class EzInternalFrameUI extends SubstanceInternalFrameUI
+    private final class EzInternalFrameUI extends SubstanceInternalFrameUI
     {
         public EzInternalFrameUI()
         {
@@ -122,7 +107,6 @@ public class EzInternalFrame extends IcyInternalFrame implements SkinChangeListe
 
             return null;
         }
-
     }
 
     /**
@@ -131,7 +115,7 @@ public class EzInternalFrame extends IcyInternalFrame implements SkinChangeListe
      * @author Alexandre Dufour
      * 
      */
-    public class EzInternalFrameTitlePane extends SubstanceInternalFrameTitlePane
+    private final class EzInternalFrameTitlePane extends SubstanceInternalFrameTitlePane
     {
         private static final long serialVersionUID = 1L;
 
@@ -231,82 +215,8 @@ public class EzInternalFrame extends IcyInternalFrame implements SkinChangeListe
 
     }
 
-    /**
-     * This class is a fork of SubstanceInternalFrameUI because the "titlePane" field of the original class has no set
-     * method and is declared private, yielding a NullPointerException when closing the window (due to a confusion
-     * between SubstanceInternalFrameUI.titlePane and BasicInternalFrameUI.northPane)
-     * 
-     * @author Alexandre Dufour
-     * @deprecated replaced with new implementation which uses reflection to access the private field
-     */
-    public class EzInternalFrameUI_OLD extends BasicInternalFrameUI
-    {
-        EzInternalFrameTitlePane             titlePane;
-
-        private final PropertyChangeListener substancePropertyListener;
-
-        public EzInternalFrameUI_OLD()
-        {
-            super(EzInternalFrame.this);
-
-            substancePropertyListener = new PropertyChangeListener()
-            {
-                public void propertyChange(PropertyChangeEvent evt)
-                {
-                    if (JInternalFrame.IS_CLOSED_PROPERTY.equals(evt.getPropertyName()))
-                    {
-                        titlePane.uninstall();
-                        if (frame != null)
-                        {
-                            JDesktopIcon jdi = frame.getDesktopIcon();
-                            SubstanceDesktopIconUI ui = (SubstanceDesktopIconUI) jdi.getUI();
-                            ui.uninstallUI(jdi);
-                        }
-                    }
-
-                    if ("background".equals(evt.getPropertyName()))
-                    {
-                        Color newBackgr = (Color) evt.getNewValue();
-                        if (!(newBackgr instanceof UIResource))
-                        {
-                            titlePane.setBackground(newBackgr);
-                            frame.getDesktopIcon().setBackground(newBackgr);
-                        }
-                    }
-                }
-            };
-        }
-
-        @Override
-        protected JComponent createNorthPane(JInternalFrame internalFrame)
-        {
-            this.titlePane = new EzInternalFrameTitlePane();
-            this.titlePane.setToolTipText(null);
-            return titlePane;
-        }
-
-        protected void installListeners()
-        {
-            super.installListeners();
-            this.frame.addPropertyChangeListener(substancePropertyListener);
-        }
-
-        protected void uninstallComponents()
-        {
-            this.titlePane.uninstall();
-            super.uninstallComponents();
-        }
-
-        @Override
-        protected void uninstallListeners()
-        {
-            super.uninstallListeners();
-            this.frame.removePropertyChangeListener(substancePropertyListener);
-        }
-    }
-
     @Override
-    public void skinChanged()
+    public void updateUI()
     {
         SubstanceInternalFrameUI ui = new EzInternalFrameUI();
         setUI(ui);
