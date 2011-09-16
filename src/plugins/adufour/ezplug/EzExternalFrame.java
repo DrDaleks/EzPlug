@@ -24,9 +24,9 @@ public class EzExternalFrame extends IcyExternalFrame implements SkinChangeListe
     EzExternalFrame(String title)
     {
         super(title);
-        //EzRootPaneUI ui = new EzRootPaneUI();
-        //getRootPane().setUI(ui);
-        //updateTitlePane((EzTitlePane) ui.getTitlePane());
+        
+        // simulate a skin changed event to setup the title pane correctly
+        skinChanged();
 
         getRootPane().setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         getContentPane().setLayout(new BorderLayout(0, 0));
@@ -41,9 +41,6 @@ public class EzExternalFrame extends IcyExternalFrame implements SkinChangeListe
     @Override
     public void dispose()
     {
-        //rootPane.getUI().uninstallUI(rootPane);
-        //getRootPane().setUI(null);
-        //getRootPane().removeAll();
         super.dispose();
     }
 
