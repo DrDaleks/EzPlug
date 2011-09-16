@@ -123,6 +123,10 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
         getContentPane().add(jPanelParameters, BorderLayout.CENTER);
         getContentPane().add(jPanelBottom, BorderLayout.SOUTH);
 
+        // set custom plugin icon
+        getInternalFrame().setFrameIcon(ezPlug.getDescriptor().getIcon());
+        getExternalFrame().setIconImage(ezPlug.getDescriptor().getIconAsImage());
+        
         pack();
         center();
     }
