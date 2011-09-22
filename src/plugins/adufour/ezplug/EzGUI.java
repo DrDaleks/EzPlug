@@ -443,19 +443,28 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 		if (ezPlug == null)
 			return;
 		
-		ezPlug.cleanFromUI();
-		
 		if (executionThread != null && executionThread.isAlive())
 		{
 			// stop the execution if it was still running
 			if (ezPlug instanceof EzStoppable)
+			{
 				((EzStoppable) ezPlug).stopExecution();
+				try
+				{
+					Thread.sleep(100);
+				}
+				catch (InterruptedException e)
+				{
+				}
+			}
 			else
 			{
 				executionThread.interrupt();
 				System.err.println("Plug " + ezPlug.getName() + " was still running and has been interrupted");
 			}
 		}
+		
+		ezPlug.cleanFromUI();
 		
 		// dispose all components
 		
@@ -487,7 +496,7 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 	{
 		if (e.getSource().equals(jButtonRun))
 		{
-			ThreadUtil.bgRun(executionThread);
+			executionThread.start();
 		}
 		else if (e.getSource().equals(jButtonStop))
 		{
