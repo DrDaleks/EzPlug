@@ -132,7 +132,6 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 				});
 				
 				EzGUI.this.ezPlug = ezPlug;
-				EzGUI.this.executionThread = new Thread(ezPlug);
 				
 				jPanelParameters = new JPanel();
 				
@@ -496,6 +495,7 @@ public final class EzGUI extends IcyInternalFrame implements ActionListener, Ski
 	{
 		if (e.getSource().equals(jButtonRun))
 		{
+			executionThread = new Thread(ezPlug);
 			executionThread.start();
 		}
 		else if (e.getSource().equals(jButtonStop))
