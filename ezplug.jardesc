@@ -24,16 +24,16 @@
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzLabel.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzPlug.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzTextParser.java"/>
-        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarFileArray.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzButton.java"/>
-        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVar.java"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarFileArray.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarNumericArray.java"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVar.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarSequence.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzGroup.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarNumeric.java"/>
-        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarInteger.java"/>
-        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarFloatArray.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzGUI.java"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarFloatArray.java"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarInteger.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzMessage.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarText.java"/>
         <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug{EzVarDouble.java"/>

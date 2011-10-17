@@ -74,7 +74,7 @@ public class EzVarFile extends EzVar<File> implements EzVar.Storable<String>
 	
 	public File getValue(boolean throwExceptionIfNull)
 	{
-		if (selectedFile == null)
+		if (selectedFile == null && throwExceptionIfNull)
 			throw new EzException(name + ": no file selected", true);
 		
 		return selectedFile;
