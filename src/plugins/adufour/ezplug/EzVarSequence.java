@@ -291,15 +291,11 @@ public class EzVarSequence extends EzVar<Sequence> implements MainListener
 	@Override
 	public void pluginClosed(MainEvent arg0)
 	{
-		// TODO Auto-generated method stub
-		
 	}
 	
 	@Override
 	public void pluginOpened(MainEvent arg0)
 	{
-		// TODO Auto-generated method stub
-		
 	}
 	
 }
