@@ -2,7 +2,7 @@ package plugins.adufour.connectedcomponents;
 
 import icy.image.IcyBufferedImage;
 import icy.sequence.Sequence;
-import icy.type.TypeUtil;
+import icy.type.DataType;
 import icy.type.collection.array.Array1DUtil;
 
 import java.util.ArrayList;
@@ -174,7 +174,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 			Object dataCXY = sequence.getImage(t, point.z).getDataXYC();
 			
 			for (int c = 0; c < intensitySum.length; c++)
-				intensitySum[c] += Array1DUtil.getValue(((Object[]) dataCXY)[c], offsetXY, sequence.isSignedDataType());
+				intensitySum[c] += Array1DUtil.getValue(((Object[]) dataCXY)[c], offsetXY, sequence.getDataType_().isSigned());
 		}
 		
 		for (int i = 0; i < intensitySum.length; i++)
@@ -213,7 +213,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 			
 			for (int c = 0; c < maxIntensity.length; c++)
 			{
-				double val = Array1DUtil.getValue(((Object[]) dataCXY)[c], offsetXY, sequence.isSignedDataType());
+				double val = Array1DUtil.getValue(((Object[]) dataCXY)[c], offsetXY, sequence.getDataType_().isSigned());
 				if (val > maxIntensity[c])
 					maxIntensity[c] = val;
 			}
@@ -399,7 +399,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		
 		for (int z = 0; z < depth; z++)
 		{
-			seq.setImage(0, z, new IcyBufferedImage(width, height, 1, TypeUtil.TYPE_BYTE));
+			seq.setImage(0, z, new IcyBufferedImage(width, height, 1, DataType.UBYTE));
 		}
 		
 		// fill up the created sequence
