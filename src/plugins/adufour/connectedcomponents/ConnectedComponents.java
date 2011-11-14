@@ -2,9 +2,11 @@ package plugins.adufour.connectedcomponents;
 
 import icy.image.IcyBufferedImage;
 import icy.image.colormap.FireColorMap;
+import icy.main.Icy;
 import icy.sequence.Sequence;
 import icy.sequence.VolumetricImage;
-import icy.type.TypeUtil;
+import icy.swimmingPool.SwimmingObject;
+import icy.type.DataType;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -24,6 +26,8 @@ import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.nchenouard.spot.DetectionResult;
+import plugins.nchenouard.spot.Spot;
 
 public class ConnectedComponents extends EzPlug
 {
@@ -51,31 +55,31 @@ public class ConnectedComponents extends EzPlug
 		 */
 		VALUE
 	}
-	
-	EzVarSequence				input					= new EzVarSequence("Input");
-	
-	EzVarEnum<ExtractionType>	extractionMethod		= new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
-	
-	EzLabel						extractionMethodDetail	= new EzLabel("Description");
-	
-	EzVarInteger				background				= new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
-	
-	EzVarBoolean				discardEdgesX			= new EzVarBoolean("X", true);
-	EzVarBoolean				discardEdgesY			= new EzVarBoolean("Y", true);
-	EzVarBoolean				discardEdgesZ			= new EzVarBoolean("Z", true);
-	
-	EzVarBoolean				boundSize				= new EzVarBoolean("Filter objects by size", false);
-	
-	EzVarInteger				minSize					= new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
-	EzVarInteger				maxSize					= new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
-	
-	EzVarBoolean				labeledExtraction;
-	
-	EzLabel						objectCount;
-	
-	Sequence					outputSequence;
-	ConnectedComponentsPainter	painter;
-	
+
+	EzVarSequence input = new EzVarSequence("Input");
+
+	EzVarEnum<ExtractionType> extractionMethod = new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
+
+	EzLabel extractionMethodDetail = new EzLabel("Description");
+
+	EzVarInteger background = new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+
+	EzVarBoolean discardEdgesX = new EzVarBoolean("  along X", true);
+	EzVarBoolean discardEdgesY = new EzVarBoolean("  along Y", true);
+	EzVarBoolean discardEdgesZ = new EzVarBoolean("  along Z", true);
+
+	EzVarBoolean boundSize = new EzVarBoolean("Filter objects by size", false);
+
+	EzVarInteger minSize = new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
+	EzVarInteger maxSize = new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
+
+	EzVarBoolean labeledExtraction;
+
+	EzLabel objectCount;
+
+	EzVarBoolean exportSequence = new EzVarBoolean("Labeled sequence", true);
+	EzVarBoolean exportSwPool = new EzVarBoolean("Swimming pool", false);
+
 	@Override
 	protected void initialize()
 	{
@@ -93,7 +97,7 @@ public class ConnectedComponents extends EzPlug
 				}
 			}
 		});
-		
+
 		addEzComponent(extractionMethod);
 		extractionMethod.addVarChangeListener(new EzVarListener<ExtractionType>()
 		{
@@ -102,64 +106,133 @@ public class ConnectedComponents extends EzPlug
 			{
 				switch (newValue)
 				{
-					case BACKGROUND:
-						extractionMethodDetail.setText("Standard mode: extracts all pixels different than the given background value, regardless of their intensity");
+				case BACKGROUND:
+					extractionMethodDetail
+							.setText("Standard mode: extracts all pixels different than the given background value, regardless of their intensity");
 					break;
-					case BACKGROUND_LABELED:
-						extractionMethodDetail.setText("Standard labeled mode: extracts all pixels different than the background, however different intensities are seen as different objects");
+				case BACKGROUND_LABELED:
+					extractionMethodDetail
+							.setText("Standard labeled mode: extracts all pixels different than the background, however different intensities are seen as different objects");
 					break;
-					case VALUE:
-						extractionMethodDetail.setText("Value-extraction mode: extracts all pixels with the specified value");
+				case VALUE:
+					extractionMethodDetail.setText("Value-extraction mode: extracts all pixels with the specified value");
 				}
 			}
 		});
+		
 		addEzComponent(extractionMethodDetail);
 		addEzComponent(background);
-		
+
 		addEzComponent(new EzGroup("Discard edges", discardEdgesX, discardEdgesY, discardEdgesZ));
-		
+
 		addEzComponent(boundSize);
 		addEzComponent(minSize);
 		addEzComponent(maxSize);
 		boundSize.addVisibilityTriggerTo(minSize, true);
 		boundSize.addVisibilityTriggerTo(maxSize, true);
+
+		addEzComponent(new EzGroup("Export", exportSequence, exportSwPool));
+
 		addEzComponent(objectCount = new EzLabel(""));
 	}
-	
+
 	@Override
 	protected void execute()
 	{
 		Map<Integer, List<ConnectedComponent>> components = new TreeMap<Integer, List<ConnectedComponent>>();
-		
+
 		int min = boundSize.getValue() ? minSize.getValue() : 0;
 		int max = boundSize.getValue() ? maxSize.getValue() : Integer.MAX_VALUE;
+
+		Sequence outputSequence = new Sequence();
 		
-		if (getUI() != null)
-			outputSequence = new Sequence();
-		
-		components = extractConnectedComponents(input.getValue(), background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(),
-				min, max, outputSequence);
-		
-		objectCount.setText("Total: " + components.size() + " components");
-		
+		components = extractConnectedComponents(input.getValue(), background.getValue(), extractionMethod.getValue(),
+				discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(), min, max, outputSequence);
+
+		int nbObjects = 0;
+		for (List<ConnectedComponent> ccs : components.values())
+			nbObjects += ccs.size();
+
+		objectCount.setText("Total: " + nbObjects + " components");
+
 		if (getUI() != null)
 		{
-			painter = new ConnectedComponentsPainter(components);
-			outputSequence.addPainter(painter);
-			addSequence(outputSequence);
+			if (exportSequence.getValue())
+			{
+				ConnectedComponentsPainter painter = new ConnectedComponentsPainter(components);
+				outputSequence.addPainter(painter);
+				addSequence(outputSequence);
+			}
+
+			if (exportSwPool.getValue())
+			{
+				DetectionResult result = convertToDetectionResult(components, input.getValue());
+				SwimmingObject object = new SwimmingObject(result, "Set of " + nbObjects + " connected components");
+				Icy.getMainInterface().getSwimmingPool().add(object);
+			}
 		}
-		
+
 	}
-	
+
 	@Override
 	public void clean()
 	{
-		if (getUI() != null && painter != null)
+	}
+
+	private static class Label
+	{
+		final double imageValue;
+
+		/**
+		 * final label that should replace the current label if fusion is needed
+		 */
+		int targetLabelValue;
+
+		/**
+		 * if non-null, indicates the parent object with which the current object should be fused
+		 */
+		Label targetLabel;
+
+		int size;
+
+		private boolean onEdgeX;
+
+		private boolean onEdgeY;
+
+		private boolean onEdgeZ;
+
+		/**
+		 * Creates a new label with the given value. If no parent is set to this label, the given
+		 * value will be the final one
+		 * 
+		 * @param value
+		 *            the pixel value
+		 * @param label
+		 *            the label value
+		 * @param onEdgeX
+		 *            true if the pixel is on the image edge along X
+		 * @param onEdgeY
+		 *            true if the pixel is on the image edge along Y
+		 * @param onEdgeZ
+		 *            true if the pixel is on the image edge along Z
+		 */
+		Label(double value, int label)
 		{
-			outputSequence.removePainter(painter);
+			this.imageValue = value;
+			this.targetLabelValue = label;
+		}
+
+		/**
+		 * Retrieves the final object label (recursively)
+		 * 
+		 * @return
+		 */
+		int getFinalLabelValue()
+		{
+			return targetLabel == null ? targetLabelValue : targetLabel.getFinalLabelValue();
 		}
 	}
-	
+
 	/**
 	 * Extracts the connected components in the given sequence with specified size bounds. Note that
 	 * the method works on both binary gray-scale images. If the input is not binary, any value
@@ -174,11 +247,12 @@ public class ConnectedComponents extends EzPlug
 	 * @see ExtractionType
 	 * @see ConnectedComponent
 	 */
-	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, Sequence labeledSequence)
+	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence,
+			Sequence labeledSequence)
 	{
 		return extractConnectedComponents(inputSequence, false, 0, Integer.MAX_VALUE, labeledSequence);
 	}
-	
+
 	/**
 	 * Extracts the connected components in the given sequence with specified size bounds. Note that
 	 * the method works on both binary gray-scale images. If the input is not binary, any value
@@ -197,11 +271,12 @@ public class ConnectedComponents extends EzPlug
 	 * @see ExtractionType
 	 * @see ConnectedComponent
 	 */
-	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, int minSize, int maxSize, Sequence labeledSequence)
+	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, int minSize,
+			int maxSize, Sequence labeledSequence)
 	{
 		return extractConnectedComponents(inputSequence, false, minSize, maxSize, labeledSequence);
 	}
-	
+
 	/**
 	 * Extracts the connected components in the given sequence with specified size bounds. Note that
 	 * the method works on both binary gray-scale images. If the input is not binary, an option can
@@ -222,11 +297,13 @@ public class ConnectedComponents extends EzPlug
 	 * @see ExtractionType
 	 * @see ConnectedComponent
 	 */
-	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, boolean isInputLabeled, int minSize, int maxSize, Sequence labeledSequence)
+	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence,
+			boolean isInputLabeled, int minSize, int maxSize, Sequence labeledSequence)
 	{
-		return extractConnectedComponents(inputSequence, 0, isInputLabeled ? ExtractionType.BACKGROUND_LABELED : ExtractionType.BACKGROUND, minSize, maxSize, labeledSequence);
+		return extractConnectedComponents(inputSequence, 0, isInputLabeled ? ExtractionType.BACKGROUND_LABELED
+				: ExtractionType.BACKGROUND, minSize, maxSize, labeledSequence);
 	}
-	
+
 	/**
 	 * Extracts the connected components in the given sequence with specified size bounds. Note that
 	 * the method works on both binary gray-scale images. If the input is not binary, an option can
@@ -249,11 +326,12 @@ public class ConnectedComponents extends EzPlug
 	 * @see ExtractionType
 	 * @see ConnectedComponent
 	 */
-	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, int minSize, int maxSize, Sequence labeledSequence)
+	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value,
+			ExtractionType type, int minSize, int maxSize, Sequence labeledSequence)
 	{
 		return extractConnectedComponents(inputSequence, value, type, false, false, false, minSize, maxSize, labeledSequence);
 	}
-	
+
 	/**
 	 * Extracts the connected components in the given sequence with specified size bounds. Note that
 	 * the method works on both binary gray-scale images. If the input is not binary, an option can
@@ -285,39 +363,45 @@ public class ConnectedComponents extends EzPlug
 	 * @see ExtractionType
 	 * @see ConnectedComponent
 	 */
-	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ,
-			int minSize, int maxSize, Sequence labeledSequence)
+	public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value,
+			ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize, int maxSize,
+			Sequence labeledSequence)
 	{
 		int width = inputSequence.getSizeX();
 		int height = inputSequence.getSizeY();
-		
-		if (labeledSequence == null)
-			labeledSequence = new Sequence();
-		
+
+		if (labeledSequence == null) labeledSequence = new Sequence();
+
 		Map<Integer, List<ConnectedComponent>> componentsMap = new TreeMap<Integer, List<ConnectedComponent>>();
-		
+
 		for (int t = 0; t < inputSequence.getSizeT(); t++)
 		{
 			for (int z = 0; z < inputSequence.getSizeZ(); z++)
-				labeledSequence.setImage(t, z, new IcyBufferedImage(width, height, 1, TypeUtil.TYPE_INT));
-			
+				labeledSequence.setImage(t, z, new IcyBufferedImage(width, height, 1, DataType.UINT));
+
 			VolumetricImage volIN = inputSequence.getVolumetricImage(t);
 			VolumetricImage volOUT = labeledSequence.getVolumetricImage(t);
-			
-			List<ConnectedComponent> components = extractConnectedComponents(volIN, value, type, noEdgeX, noEdgeY, noEdgeZ, minSize, maxSize, volOUT);
-			
+
+			List<ConnectedComponent> components = extractConnectedComponents(volIN, value, type, noEdgeX, noEdgeY, noEdgeZ,
+					minSize, maxSize, volOUT);
+
+			// int cpt=1;
 			for (ConnectedComponent cc : components)
+			{
 				cc.setT(t);
-			
+				// System.out.println(t + "\t" + cpt++ + "\t" + (int)cc.getMassCenter().x + "\t" +
+				// (int)cc.getMassCenter().y);
+			}
+
 			componentsMap.put(t, components);
 		}
-		
+
 		labeledSequence.updateComponentsBounds(true, true);
 		labeledSequence.getColorModel().setColormap(0, new FireColorMap());
-		
+
 		return componentsMap;
 	}
-	
+
 	/**
 	 * Extracts the connected components in the given volumetric image with specified size bounds.
 	 * The the method works on both binary gray-scale images. If the input is not binary, an option
@@ -347,12 +431,13 @@ public class ConnectedComponents extends EzPlug
 	 * @see ExtractionType
 	 * @see ConnectedComponent
 	 */
-	public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize,
-			int maxSize)
+	public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type,
+			boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize, int maxSize)
 	{
-		return extractConnectedComponents(stack, value, type, noEdgeX, noEdgeY, noEdgeZ, minSize, maxSize, new VolumetricImage());
+		return extractConnectedComponents(stack, value, type, noEdgeX, noEdgeY, noEdgeZ, minSize, maxSize,
+				new VolumetricImage());
 	}
-	
+
 	/**
 	 * Extracts the connected components in the given volumetric image with specified size bounds.
 	 * The the method works on both binary gray-scale images. If the input is not binary, an option
@@ -388,91 +473,91 @@ public class ConnectedComponents extends EzPlug
 	 * @see ExtractionType
 	 * @see ConnectedComponent
 	 */
-	public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize,
-			int maxSize, final VolumetricImage labeledStack) throws NullPointerException
+	public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type,
+			boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize, int maxSize, final VolumetricImage labeledStack)
+			throws NullPointerException
 	{
 		int width = stack.getFirstImage().getSizeX();
 		int height = stack.getFirstImage().getSizeY();
 		int depth = stack.getSize();
-		
+
 		int[] neighborLabelValues = new int[13];
 		int neighborhoodSize = 0;
-		
+
 		boolean extractUserValue = (type == ExtractionType.VALUE);
-		
+
 		Label[] labels = new Label[width * height * depth];
-		
+
 		// first image pass: naive labeling with simple backward neighborhood
-		
+
 		int highestKnownLabel = 0;
-		
+
 		boolean onEdgeX = false;
 		boolean onEdgeY = false;
 		boolean onEdgeZ = false;
-		
+
 		for (int z = 0; z < depth; z++)
 		{
 			onEdgeZ = (z == 0 || z == depth - 1);
-			
+
 			// retrieve the direct pointer to the current slice
 			int[] _labelsInCurrentSlice = labeledStack.getImage(z).getDataXYAsInt(0);
 			// retrieve a direct pointer to the previous slice
 			int[] _labelsInUpperSlice = (z == 0) ? null : labeledStack.getImage(z - 1).getDataXYAsInt(0);
-			
+
 			int voxelOffset = 0;
-			
+
 			Object inputData = stack.getImage(z).getDataXY(0);
-			
+
 			for (int y = 0; y < height; y++)
 			{
 				onEdgeY = (y == 0 || y == height - 1);
-				
+
 				for (int x = 0; x < width; x++, voxelOffset++)
 				{
 					onEdgeX = (x == 0 || x == width - 1);
-					
+
 					double pixelValue = Array.getDouble(inputData, voxelOffset);
-					
+
 					boolean pixelEqualsUserValue = (pixelValue == value);
-					
+
 					// do not process the current pixel if:
 					// - extractUserValue is true and pixelEqualsUserValue is false
 					// - extractUserValue is false and pixelEqualsUserValue is true
-					
-					if (extractUserValue != pixelEqualsUserValue)
-						continue;
-					
+
+					if (extractUserValue != pixelEqualsUserValue) continue;
+
 					// the current pixel should be labeled
-					
+
 					// -> look for existing labels in its neighborhood
-					
+
 					// 1) define the neighborhood of interest here
 					// NB: this is a single pass method, so backward neighborhood is sufficient
-					
+
 					// legend:
 					// e = edge
 					// x = current pixel
 					// n = valid neighbor
 					// . = other neighbor
-					
+
 					if (z == 0)
 					{
 						if (y == 0)
 						{
 							if (x == 0)
 							{
-								// e e e | e e e
-								// e e e | e x .
-								// e e e | e . .
-								
+								// e e e
+								// e x .
+								// e . .
+
 								// do nothing
 							}
 							else
 							{
-								// e e e | e e e
-								// e e e | n x .
-								// e e e | . . .
-								
+								// e e e
+								// n x .
+								// . . .
+
 								neighborLabelValues[0] = _labelsInCurrentSlice[voxelOffset - 1];
 								neighborhoodSize = 1;
 							}
@@ -480,23 +565,34 @@ public class ConnectedComponents extends EzPlug
 						else
 						{
 							int north = voxelOffset - width;
-							
+
 							if (x == 0)
 							{
-								// e e e | e n n
-								// e e e | e x .
-								// e e e | e . .
-								
+								// e n n
+								// e x .
+								// e . .
+
 								neighborLabelValues[0] = _labelsInCurrentSlice[north];
 								neighborLabelValues[1] = _labelsInCurrentSlice[north + 1];
 								neighborhoodSize = 2;
 							}
+							else if (x == width - 1)
+							{
+								// n n e
+								// n x e
+								// . . e
+
+								neighborLabelValues[0] = _labelsInCurrentSlice[north - 1];
+								neighborLabelValues[1] = _labelsInCurrentSlice[north];
+								neighborLabelValues[2] = _labelsInCurrentSlice[voxelOffset - 1];
+								neighborhoodSize = 3;
+							}
 							else
 							{
-								// e e e | n n n
-								// e e e | n x .
-								// e e e | . . .
-								
+								// n n n
+								// n x .
+								// . . .
+
 								neighborLabelValues[0] = _labelsInCurrentSlice[north - 1];
 								neighborLabelValues[1] = _labelsInCurrentSlice[north];
 								neighborLabelValues[2] = _labelsInCurrentSlice[north + 1];
@@ -510,13 +606,13 @@ public class ConnectedComponents extends EzPlug
 						if (y == 0)
 						{
 							int south = voxelOffset + width;
-							
+
 							if (x == 0)
 							{
 								// e e e | e e e
 								// e n n | e x .
 								// e n n | e . .
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[voxelOffset];
 								neighborLabelValues[1] = _labelsInUpperSlice[voxelOffset + 1];
 								neighborLabelValues[2] = _labelsInUpperSlice[south];
@@ -528,7 +624,7 @@ public class ConnectedComponents extends EzPlug
 								// e e e | e e e
 								// n n e | n x e
 								// n n e | . . e
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[voxelOffset - 1];
 								neighborLabelValues[1] = _labelsInUpperSlice[voxelOffset];
 								neighborLabelValues[2] = _labelsInUpperSlice[south - 1];
@@ -541,7 +637,7 @@ public class ConnectedComponents extends EzPlug
 								// e e e | e e e
 								// n n n | n x .
 								// n n n | . . .
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[voxelOffset - 1];
 								neighborLabelValues[1] = _labelsInUpperSlice[voxelOffset];
 								neighborLabelValues[2] = _labelsInUpperSlice[voxelOffset + 1];
@@ -555,13 +651,13 @@ public class ConnectedComponents extends EzPlug
 						else if (y == height - 1)
 						{
 							int north = voxelOffset - width;
-							
+
 							if (x == 0)
 							{
 								// e n n | e n n
 								// e n n | e x .
 								// e e e | e e e
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[north];
 								neighborLabelValues[1] = _labelsInUpperSlice[north + 1];
 								neighborLabelValues[2] = _labelsInUpperSlice[voxelOffset];
@@ -575,7 +671,7 @@ public class ConnectedComponents extends EzPlug
 								// n n e | n n e
 								// n n e | n x e
 								// e e e | e e e
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[north - 1];
 								neighborLabelValues[1] = _labelsInUpperSlice[north];
 								neighborLabelValues[2] = _labelsInUpperSlice[voxelOffset - 1];
@@ -590,7 +686,7 @@ public class ConnectedComponents extends EzPlug
 								// n n n | n n n
 								// n n n | n x .
 								// e e e | e e e
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[north - 1];
 								neighborLabelValues[1] = _labelsInUpperSlice[north];
 								neighborLabelValues[2] = _labelsInUpperSlice[north + 1];
@@ -608,13 +704,13 @@ public class ConnectedComponents extends EzPlug
 						{
 							int north = voxelOffset - width;
 							int south = voxelOffset + width;
-							
+
 							if (x == 0)
 							{
 								// e n n | e n n
 								// e n n | e x .
 								// e n n | e . .
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[north];
 								neighborLabelValues[1] = _labelsInUpperSlice[north + 1];
 								neighborLabelValues[2] = _labelsInUpperSlice[voxelOffset];
@@ -629,11 +725,11 @@ public class ConnectedComponents extends EzPlug
 							{
 								int northwest = north - 1;
 								int west = voxelOffset - 1;
-								
+
 								// n n e | n n e
 								// n n e | n x e
 								// n n e | . . e
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[northwest];
 								neighborLabelValues[1] = _labelsInUpperSlice[north];
 								neighborLabelValues[2] = _labelsInUpperSlice[west];
@@ -652,11 +748,11 @@ public class ConnectedComponents extends EzPlug
 								int northeast = north + 1;
 								int southwest = south - 1;
 								int southeast = south + 1;
-								
+
 								// n n n | n n n
 								// n n n | n x .
 								// n n n | . . .
-								
+
 								neighborLabelValues[0] = _labelsInUpperSlice[northwest];
 								neighborLabelValues[1] = _labelsInUpperSlice[north];
 								neighborLabelValues[2] = _labelsInUpperSlice[northeast];
@@ -674,27 +770,26 @@ public class ConnectedComponents extends EzPlug
 							}
 						}
 					}
-					
+
 					// 2) the neighborhood is ready, move to the labeling step
-					
+
 					int currentVoxelLabelValue = Integer.MAX_VALUE;
-					
+
 					// to avoid creating too many labels and fuse them later on,
 					// find the minimum non-zero label in the neighborhood
 					// and assign that minimum label right now
-					
+
 					for (int i = 0; i < neighborhoodSize; i++)
 					{
 						int neighborLabelValue = neighborLabelValues[i];
-						
+
 						// zero labels are not interesting...
-						if (neighborLabelValue == 0)
-							continue;
-						
+						if (neighborLabelValue == 0) continue;
+
 						// neighbor labels should have the same/different ? image value
 						if (type == ExtractionType.BACKGROUND_LABELED && labels[neighborLabelValue].imageValue != pixelValue)
 							continue;
-						
+
 						// here, the neighbor label is valid
 						// => check if it is lower
 						if (neighborLabelValue < currentVoxelLabelValue)
@@ -702,7 +797,7 @@ public class ConnectedComponents extends EzPlug
 							currentVoxelLabelValue = neighborLabelValue;
 						}
 					}
-					
+
 					if (currentVoxelLabelValue == Integer.MAX_VALUE)
 					{
 						// currentVoxelLabel didn't change
@@ -719,26 +814,24 @@ public class ConnectedComponents extends EzPlug
 						// -> find all neighbors with a higher label value
 						// -> change their value to currentVoxelLabelValue
 						// -> change their target to currentVoxelLabel
-						
+
 						Label currentVoxelLabel = labels[currentVoxelLabelValue];
-						
+
 						for (int i = 0; i < neighborhoodSize; i++)
 						{
 							int neighborLabelValue = neighborLabelValues[i];
-							
+
 							if (neighborLabelValue > currentVoxelLabelValue)
 							{
 								Label label = labels[neighborLabelValue];
-								
-								if (type == ExtractionType.BACKGROUND_LABELED && label.imageValue != pixelValue)
-									continue;
-								
+
+								if (type == ExtractionType.BACKGROUND_LABELED && label.imageValue != pixelValue) continue;
+
 								int finalLabelValue = label.getFinalLabelValue();
 								Label finalLabel = labels[finalLabelValue];
-								
-								if (currentVoxelLabel.targetLabelValue == finalLabelValue)
-									continue;
-								
+
+								if (currentVoxelLabel.targetLabelValue == finalLabelValue) continue;
+
 								if (currentVoxelLabelValue < finalLabelValue)
 								{
 									finalLabel.targetLabel = currentVoxelLabel;
@@ -752,7 +845,7 @@ public class ConnectedComponents extends EzPlug
 							}
 						}
 					}
-					
+
 					// -> store this label in the labeled image
 					_labelsInCurrentSlice[voxelOffset] = currentVoxelLabelValue;
 					labels[currentVoxelLabelValue].size++;
@@ -762,38 +855,38 @@ public class ConnectedComponents extends EzPlug
 				}
 			}
 		}
-		
+
 		// end of the first pass, all pixels have a label
 		// (though might not be unique within a given component)
-		
+
 		HashMap<Integer, ConnectedComponent> componentsMap = new HashMap<Integer, ConnectedComponent>();
-		
+
 		// fusion strategy: fuse higher labels with lower ones
 		// "highestKnownLabel" holds the highest known label
 		// -> loop backward from there to accumulate object size recursively
-		
+
 		int finalLabel = 0;
-		
+
 		for (int labelValue = highestKnownLabel; labelValue > 0; labelValue--)
 		{
 			Label label = labels[labelValue];
-			
+
 			int targetLabelValue = label.targetLabelValue;
-			
+
 			if (targetLabelValue < labelValue)
 			{
 				// label should be fused to targetLabel
-				
+
 				Label targetLabel = labels[targetLabelValue];
-				
+
 				// -> add label's size to targetLabel
 				targetLabel.size += label.size;
-				
+
 				// -> mark targetLabel as onEdge if label is
 				targetLabel.onEdgeX |= label.onEdgeX;
 				targetLabel.onEdgeY |= label.onEdgeY;
 				targetLabel.onEdgeZ |= label.onEdgeZ;
-				
+
 				// -> mark label to fuse with targetLabel
 				label.targetLabel = labels[targetLabelValue];
 			}
@@ -802,9 +895,9 @@ public class ConnectedComponents extends EzPlug
 				// label has same labelValue and targetLabelValue
 				// -> it cannot be fused to anything
 				// -> this is a terminal label
-				
+
 				// -> check if it obeys to user constraints
-				
+
 				if (label.size < minSize || label.size > maxSize)
 				{
 					// the component size is out of the given range
@@ -823,9 +916,9 @@ public class ConnectedComponents extends EzPlug
 					// -> assign its final labelValue (for the final image labeling pass)
 					finalLabel++;
 					label.targetLabelValue = finalLabel;
-					
+
 					// -> add this label to the list of valid labels
-					
+
 					ConnectedComponent component = new ConnectedComponent(label.size);
 					component.onEdgeX = label.onEdgeX;
 					component.onEdgeY = label.onEdgeY;
@@ -834,93 +927,54 @@ public class ConnectedComponents extends EzPlug
 				}
 			}
 		}
-		
+
 		// 3) second image pass: replace all labels by their final values
-		
+
 		for (int z = 0; z < depth; z++)
 		{
 			int[] _outputSlice = labeledStack.getImage(z).getDataXYAsInt(0);
-			
+
 			int pixelOffset = 0;
-			
+
 			for (int j = 0; j < height; j++)
 			{
 				for (int i = 0; i < width; i++, pixelOffset++)
 				{
 					int targetLabelValue = _outputSlice[pixelOffset];
-					
-					if (targetLabelValue == 0)
-						continue;
-					
+
+					if (targetLabelValue == 0) continue;
+
 					// if a fusion was indicated, retrieve the final label value
 					targetLabelValue = labels[targetLabelValue].getFinalLabelValue();
-					
+
 					// assign the final label in the output image
 					_outputSlice[pixelOffset] = targetLabelValue;
-					
-					if (targetLabelValue == 0)
-						continue;
-					
+
+					if (targetLabelValue == 0) continue;
+
 					// store the current pixel in the component
 					componentsMap.get(targetLabelValue).addPoint(new Point3i(i, j, z));
 				}
 			}
 		}
-		
+
 		return new ArrayList<ConnectedComponent>(componentsMap.values());
 	}
-	
-	private static class Label
+
+	public static DetectionResult convertToDetectionResult(Map<Integer, List<ConnectedComponent>> detections, Sequence sequence)
 	{
-		final double	imageValue;
-		
-		/**
-		 * final label that should replace the current label if fusion is needed
-		 */
-		int				targetLabelValue;
-		
-		/**
-		 * if non-null, indicates the parent object with which the current object should be fused
-		 */
-		Label			targetLabel;
-		
-		int				size;
-		
-		private boolean	onEdgeX;
-		
-		private boolean	onEdgeY;
-		
-		private boolean	onEdgeZ;
-		
-		/**
-		 * Creates a new label with the given value. If no parent is set to this label, the given
-		 * value will be the final one
-		 * 
-		 * @param value
-		 *            the pixel value
-		 * @param label
-		 *            the label value
-		 * @param onEdgeX
-		 *            true if the pixel is on the image edge along X
-		 * @param onEdgeY
-		 *            true if the pixel is on the image edge along Y
-		 * @param onEdgeZ
-		 *            true if the pixel is on the image edge along Z
-		 */
-		Label(double value, int label)
-		{
-			this.imageValue = value;
-			this.targetLabelValue = label;
-		}
-		
-		/**
-		 * Retrieves the final object label (recursively)
-		 * 
-		 * @return
-		 */
-		int getFinalLabelValue()
-		{
-			return targetLabel == null ? targetLabelValue : targetLabel.getFinalLabelValue();
-		}
+
+		DetectionResult detectionResult = new DetectionResult();
+		for (Integer t : detections.keySet())
+			for (ConnectedComponent cc : detections.get(t))
+			{
+				// TODO: add points information
+				Spot spot = new Spot(cc.getMassCenter().x, cc.getMassCenter().y, cc.getMassCenter().z);
+				detectionResult.addDetection(t, spot);
+			}
+
+		detectionResult.setSequence(sequence);
+
+		return detectionResult;
 	}
 }
