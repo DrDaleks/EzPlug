@@ -3,6 +3,8 @@ package plugins.adufour.connectedcomponents;
 import icy.image.IcyBufferedImage;
 import icy.image.colormap.FireColorMap;
 import icy.main.Icy;
+import icy.roi.ROI2D;
+import icy.roi.ROI2DArea;
 import icy.sequence.Sequence;
 import icy.sequence.VolumetricImage;
 import icy.swimmingPool.SwimmingObject;
@@ -79,6 +81,7 @@ public class ConnectedComponents extends EzPlug
 
 	EzVarBoolean exportSequence = new EzVarBoolean("Labeled sequence", true);
 	EzVarBoolean exportSwPool = new EzVarBoolean("Swimming pool", false);
+	EzVarBoolean exportROI = new EzVarBoolean("ROI (2D only)", false);
 
 	@Override
 	protected void initialize()
@@ -119,7 +122,7 @@ public class ConnectedComponents extends EzPlug
 				}
 			}
 		});
-		
+
 		addEzComponent(extractionMethodDetail);
 		addEzComponent(background);
 
@@ -131,7 +134,7 @@ public class ConnectedComponents extends EzPlug
 		boundSize.addVisibilityTriggerTo(minSize, true);
 		boundSize.addVisibilityTriggerTo(maxSize, true);
 
-		addEzComponent(new EzGroup("Export", exportSequence, exportSwPool));
+		addEzComponent(new EzGroup("Export", exportSequence, exportSwPool, exportROI));
 
 		addEzComponent(objectCount = new EzLabel(""));
 	}
@@ -145,7 +148,7 @@ public class ConnectedComponents extends EzPlug
 		int max = boundSize.getValue() ? maxSize.getValue() : Integer.MAX_VALUE;
 
 		Sequence outputSequence = new Sequence();
-		
+
 		components = extractConnectedComponents(input.getValue(), background.getValue(), extractionMethod.getValue(),
 				discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(), min, max, outputSequence);
 
@@ -169,6 +172,29 @@ public class ConnectedComponents extends EzPlug
 				DetectionResult result = convertToDetectionResult(components, input.getValue());
 				SwimmingObject object = new SwimmingObject(result, "Set of " + nbObjects + " connected components");
 				Icy.getMainInterface().getSwimmingPool().add(object);
+			}
+
+			if (exportROI.getValue() && outputSequence.getSizeZ() == 1)
+			{
+				Sequence in = input.getValue();
+				
+				in.beginUpdate();
+				
+				for(ROI2D roi : input.getValue().getROI2Ds())
+					if (roi instanceof ROI2DArea)
+						in.removeROI(roi);
+					
+				for (List<ConnectedComponent> ccs : components.values())
+					for (ConnectedComponent cc : ccs)
+					{
+						ROI2DArea area = new ROI2DArea();
+						for(Point3i pt : cc)
+						area.addPoint(pt.x, pt.y);
+						area.setT(cc.getT());
+						in.addROI(area);
+					}
+				
+				in.endUpdate();
 			}
 		}
 
