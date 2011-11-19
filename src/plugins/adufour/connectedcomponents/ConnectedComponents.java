@@ -9,8 +9,8 @@ import icy.sequence.Sequence;
 import icy.sequence.VolumetricImage;
 import icy.swimmingPool.SwimmingObject;
 import icy.type.DataType;
+import icy.type.collection.array.Array1DUtil;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,30 +58,31 @@ public class ConnectedComponents extends EzPlug
 		VALUE
 	}
 
-	EzVarSequence input = new EzVarSequence("Input");
+	EzVarSequence				input					= new EzVarSequence("Input");
 
-	EzVarEnum<ExtractionType> extractionMethod = new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
+	EzVarEnum<ExtractionType>	extractionMethod		= new EzVarEnum<ExtractionType>("Extraction mode",
+																ExtractionType.values());
 
-	EzLabel extractionMethodDetail = new EzLabel("Description");
+	EzLabel						extractionMethodDetail	= new EzLabel("Description");
 
-	EzVarInteger background = new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+	EzVarInteger				background				= new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
 
-	EzVarBoolean discardEdgesX = new EzVarBoolean("  along X", true);
-	EzVarBoolean discardEdgesY = new EzVarBoolean("  along Y", true);
-	EzVarBoolean discardEdgesZ = new EzVarBoolean("  along Z", true);
+	EzVarBoolean				discardEdgesX			= new EzVarBoolean("  along X", true);
+	EzVarBoolean				discardEdgesY			= new EzVarBoolean("  along Y", true);
+	EzVarBoolean				discardEdgesZ			= new EzVarBoolean("  along Z", true);
 
-	EzVarBoolean boundSize = new EzVarBoolean("Filter objects by size", false);
+	EzVarBoolean				boundSize				= new EzVarBoolean("Filter objects by size", false);
 
-	EzVarInteger minSize = new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
-	EzVarInteger maxSize = new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
+	EzVarInteger				minSize					= new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
+	EzVarInteger				maxSize					= new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
 
-	EzVarBoolean labeledExtraction;
+	EzVarBoolean				labeledExtraction;
 
-	EzLabel objectCount;
+	EzLabel						objectCount;
 
-	EzVarBoolean exportSequence = new EzVarBoolean("Labeled sequence", true);
-	EzVarBoolean exportSwPool = new EzVarBoolean("Swimming pool", false);
-	EzVarBoolean exportROI = new EzVarBoolean("ROI (2D only)", false);
+	EzVarBoolean				exportSequence			= new EzVarBoolean("Labeled sequence", true);
+	EzVarBoolean				exportSwPool			= new EzVarBoolean("Swimming pool", false);
+	EzVarBoolean				exportROI				= new EzVarBoolean("ROI (2D only)", false);
 
 	@Override
 	protected void initialize()
@@ -177,23 +178,22 @@ public class ConnectedComponents extends EzPlug
 			if (exportROI.getValue() && outputSequence.getSizeZ() == 1)
 			{
 				Sequence in = input.getValue();
-				
+
 				in.beginUpdate();
-				
-				for(ROI2D roi : input.getValue().getROI2Ds())
-					if (roi instanceof ROI2DArea)
-						in.removeROI(roi);
-					
+
+				for (ROI2D roi : input.getValue().getROI2Ds())
+					if (roi instanceof ROI2DArea) in.removeROI(roi);
+
 				for (List<ConnectedComponent> ccs : components.values())
 					for (ConnectedComponent cc : ccs)
 					{
 						ROI2DArea area = new ROI2DArea();
-						for(Point3i pt : cc)
-						area.addPoint(pt.x, pt.y);
+						for (Point3i pt : cc)
+							area.addPoint(pt.x, pt.y);
 						area.setT(cc.getT());
 						in.addROI(area);
 					}
-				
+
 				in.endUpdate();
 			}
 		}
@@ -207,25 +207,25 @@ public class ConnectedComponents extends EzPlug
 
 	private static class Label
 	{
-		final double imageValue;
+		final double	imageValue;
 
 		/**
 		 * final label that should replace the current label if fusion is needed
 		 */
-		int targetLabelValue;
+		int				targetLabelValue;
 
 		/**
 		 * if non-null, indicates the parent object with which the current object should be fused
 		 */
-		Label targetLabel;
+		Label			targetLabel;
 
-		int size;
+		int				size;
 
-		private boolean onEdgeX;
+		private boolean	onEdgeX;
 
-		private boolean onEdgeY;
+		private boolean	onEdgeY;
 
-		private boolean onEdgeZ;
+		private boolean	onEdgeZ;
 
 		/**
 		 * Creates a new label with the given value. If no parent is set to this label, the given
@@ -534,6 +534,7 @@ public class ConnectedComponents extends EzPlug
 			int voxelOffset = 0;
 
 			Object inputData = stack.getImage(z).getDataXY(0);
+			DataType dataType = stack.getImage(z).getDataType_();
 
 			for (int y = 0; y < height; y++)
 			{
@@ -543,7 +544,7 @@ public class ConnectedComponents extends EzPlug
 				{
 					onEdgeX = (x == 0 || x == width - 1);
 
-					double pixelValue = Array.getDouble(inputData, voxelOffset);
+					double pixelValue = Array1DUtil.getValue(inputData, voxelOffset, dataType);
 
 					boolean pixelEqualsUserValue = (pixelValue == value);
 
