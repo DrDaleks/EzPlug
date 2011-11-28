@@ -6,6 +6,7 @@ import icy.type.DataType;
 import icy.type.collection.array.Array1DUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.vecmath.Point3d;
@@ -145,7 +146,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	}
 	
 	/**
-	 * Computes the average intensity of the component on each band of the given sequence, at the
+	 * Computes the average intensity of the component on each channel of the given sequence, at the
 	 * time point where this component was found
 	 * 
 	 * @param sequence
@@ -157,7 +158,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	}
 	
 	/**
-	 * Computes the average intensity of the component on each band of the given sequence and the
+	 * Computes the average intensity of the component on each channel of the given sequence and the
 	 * specified time point
 	 * 
 	 * @param sequence
@@ -183,7 +184,47 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	}
 	
 	/**
-	 * Computes the maximum intensity of the component on each band of the given sequence, at the
+	 * Computes the minimum intensity of the component on each channel of the given sequence, at the
+	 * time point where this component was found
+	 * 
+	 * @param sequence
+	 * @return an array containing the average intensity of the component in each band
+	 */
+	public double[] computeMinIntensity(Sequence sequence)
+	{
+		return computeMinIntensity(sequence, t);
+	}
+	
+	/**
+	 * Computes the minimum intensity of the component on each channel of the given sequence and the
+	 * specified time point
+	 * 
+	 * @param sequence
+	 * @return an array containing the average intensity of the component in each band
+	 */
+	public double[] computeMinIntensity(Sequence sequence, int t)
+	{
+		double[] minIntensity = new double[sequence.getSizeC()];
+		Arrays.fill(minIntensity, Double.MAX_VALUE);
+		
+		for (Point3i point : points)
+		{
+			int offsetXY = point.x + point.y * sequence.getSizeX();
+			
+			Object dataCXY = sequence.getImage(t, point.z).getDataXYC();
+			
+			for (int c = 0; c < minIntensity.length; c++)
+			{
+				double val = Array1DUtil.getValue(((Object[]) dataCXY)[c], offsetXY, sequence.getDataType_().isSigned());
+				if (val < minIntensity[c])
+					minIntensity[c] = val;
+			}
+		}
+		return minIntensity;
+	}
+	
+	/**
+	 * Computes the maximum intensity of the component on each channel of the given sequence, at the
 	 * time point where this component was found
 	 * 
 	 * @param sequence
@@ -195,7 +236,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	}
 	
 	/**
-	 * Computes the maximum intensity pixel of the component on each band of the given sequence and
+	 * Computes the maximum intensity pixel of the component on each channel of the given sequence and
 	 * the specified time point
 	 * 
 	 * @param sequence
