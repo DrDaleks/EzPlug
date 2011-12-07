@@ -13,7 +13,7 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
-import plugins.fab.trackmanager.Detection;
+import plugins.nchenouard.spot.Detection;
 
 public class ConnectedComponent extends Detection implements Iterable<Point3i>
 {
