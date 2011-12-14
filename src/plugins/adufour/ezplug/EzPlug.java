@@ -248,7 +248,16 @@ public abstract class EzPlug extends Plugin implements PluginLibrary, PluginImag
 	 */
 	public void loadParameters(File file)
 	{
-		EzParameterIO.load(file, ezVars);
+		try
+		{
+			EzParameterIO.load(file, ezVars);
+		}
+		catch (EzException e)
+		{
+			EzMessage.message(e.getMessage(), MessageType.WARNING, OutputType.DIALOG);
+			if (!e.catchException)
+				throw e;
+		}
 	}
 	
 	@Override

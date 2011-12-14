@@ -55,7 +55,7 @@ class EzParameterIO
 	}
 	
 	@SuppressWarnings("unchecked")
-	static synchronized void load(File f, HashMap<String, EzVar<?>> varMap)
+	static synchronized void load(File f, HashMap<String, EzVar<?>> varMap) throws EzException
 	{
 		try
 		{
@@ -69,6 +69,10 @@ class EzParameterIO
 			{
 				@SuppressWarnings("rawtypes")
 				EzVar.Storable var = (EzVar.Storable) varMap.get(id);
+				if (var == null)
+				{
+					throw new EzException("Variable " + id + " does not exist or has been renamed", true);
+				}
 				Object value = valueMap.get(id);
 				var.setXMLValue(value);
 			}
