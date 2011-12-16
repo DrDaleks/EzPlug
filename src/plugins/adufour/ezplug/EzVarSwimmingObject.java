@@ -21,49 +21,49 @@ import javax.swing.event.ListDataListener;
 
 public class EzVarSwimmingObject<T> extends EzVar<SwimmingObject> implements SwimmingPoolListener
 {
-	private static final long				serialVersionUID	= 1L;
+	private static final long		serialVersionUID	= 1L;
 	
-	private JComboBox						jComboSequences;
+	private JComboBox				jComboBox;
 	
-	private JComboSequenceBoxListener		jComboSequenceBoxListener;
+	private JComboBoxListener		jComboBoxListener;
 	
-	private JComboBoxModel					jComboSequenceBoxModel;
+	private JComboBoxModel			jComboBoxModel;
 	
-	private JComboSequenceBoxRenderer		jComboSequenceBoxRenderer;
+	private JComboBoxRenderer		jComboBoxRenderer;
 	
-	private final ArrayList<SwimmingObject>	objects;
+	final ArrayList<SwimmingObject>	validObjects		= new ArrayList<SwimmingObject>();
 	
-	private final String					className;
-	
-	public EzVarSwimmingObject(String varName, Class<T> objectType)
+	public EzVarSwimmingObject(String varName)
 	{
 		super(varName);
-		
-		className = objectType.getName();
-		
-		objects = new ArrayList<SwimmingObject>();
 		
 		ThreadUtil.invoke(new Runnable()
 		{
 			public void run()
 			{
-				jComboSequenceBoxListener = new JComboSequenceBoxListener();
-				jComboSequenceBoxModel = new JComboBoxModel();
-				jComboSequenceBoxRenderer = new JComboSequenceBoxRenderer();
+				jComboBoxListener = new JComboBoxListener();
+				jComboBoxModel = new JComboBoxModel();
+				jComboBoxRenderer = new JComboBoxRenderer();
 				
-				jComboSequences = new JComboBox(jComboSequenceBoxModel);
+				jComboBox = new JComboBox(jComboBoxModel);
 				
-				if (Icy.getMainInterface().getSequences().size() > 0)
-					jComboSequences.setSelectedIndex(1);
+				for (SwimmingObject swObj : Icy.getMainInterface().getSwimmingPool().getObjects())
+					if (isValid(swObj))
+					{
+						validObjects.add(swObj);
+					}
 				
-				jComboSequences.setRenderer(jComboSequenceBoxRenderer);
+				if (validObjects.size() > 0) jComboBox.setSelectedIndex(1);
 				
-				jComboSequences.addActionListener(jComboSequenceBoxListener);
+				jComboBox.setRenderer(jComboBoxRenderer);
+				
+				jComboBox.addActionListener(jComboBoxListener);
 				
 				Icy.getMainInterface().getSwimmingPool().addListener(EzVarSwimmingObject.this);
 				
-				setComponent(jComboSequences);
+				setComponent(jComboBox);
 			}
+			
 		}, !SwingUtilities.isEventDispatchThread());
 		
 	}
@@ -99,17 +99,16 @@ public class EzVarSwimmingObject<T> extends EzVar<SwimmingObject> implements Swi
 		public Object getElementAt(int index)
 		{
 			// first is the "no" selection
-			if (index == 0)
-				return null;
+			if (index == 0) return null;
 			
-			return objects.get(index - 1);
+			return validObjects.get(index - 1);
 		}
 		
 		@Override
 		public int getSize()
 		{
 			// slot 0 is dedicated to "no selection", everything else is shifted up by one increment
-			return 1 + objects.size();
+			return 1 + validObjects.size();
 		}
 		
 		@Override
@@ -119,29 +118,31 @@ public class EzVarSwimmingObject<T> extends EzVar<SwimmingObject> implements Swi
 		
 	}
 	
-	private final class JComboSequenceBoxRenderer implements ListCellRenderer
+	private final class JComboBoxRenderer implements ListCellRenderer
 	{
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
 		{
-			if (value == null)
-				return new JLabel(" ");
+			if (value == null) return new JLabel("No selection");
 			
 			if (value instanceof SwimmingObject)
-				return new JLabel(((SwimmingObject) value).getName());
+			{
+				SwimmingObject swObj = (SwimmingObject) value;
+				String name = swObj.getName();
+				return new JLabel(name);
+			}
 			
 			return new JLabel("error"); // should never be displayed
 		}
 	}
 	
-	private final class JComboSequenceBoxListener implements ActionListener
+	private final class JComboBoxListener implements ActionListener
 	{
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			SwimmingObject newValue = (SwimmingObject) jComboSequenceBoxModel.getSelectedItem();
+			SwimmingObject newValue = (SwimmingObject) jComboBoxModel.getSelectedItem();
 			
-			if (newValue != null)
-				jComboSequences.setToolTipText(newValue.getName());
+			if (newValue != null) jComboBox.setToolTipText(newValue.getName());
 			
 			fireVariableChanged(newValue);
 		}
@@ -163,20 +164,34 @@ public class EzVarSwimmingObject<T> extends EzVar<SwimmingObject> implements Swi
 	 */
 	public SwimmingObject getValue(boolean throwExceptionIfNull) throws EzException
 	{
-		if (jComboSequenceBoxModel.getSelectedItem() == null)
+		if (jComboBoxModel.getSelectedItem() == null)
 		{
-			if (throwExceptionIfNull)
-				throw new EzException("Variable \"" + name + "\": No selection", true);
+			if (throwExceptionIfNull) throw new EzException("Variable \"" + name + "\": No selection", true);
 			return null;
 		}
 		
-		return (SwimmingObject) jComboSequenceBoxModel.getSelectedItem();
+		return (SwimmingObject) jComboBoxModel.getSelectedItem();
 	}
 	
 	@Override
 	public void setValue(SwimmingObject object)
 	{
-		jComboSequenceBoxModel.setSelectedItem(object);
+		jComboBoxModel.setSelectedItem(object);
+	}
+	
+	public boolean isValid(SwimmingObject swObj)
+	{
+		try
+		{
+			// if the value casts to T, the swimming object is valid
+			@SuppressWarnings({ "unchecked", "unused" })
+			T value = (T) swObj.getObject();
+			return true;
+		}
+		catch (ClassCastException ccE)
+		{
+			return false;
+		}
 	}
 	
 	@Override
@@ -184,19 +199,21 @@ public class EzVarSwimmingObject<T> extends EzVar<SwimmingObject> implements Swi
 	{
 		SwimmingObject object = event.getResult();
 		
-		if (object.getObjectClassName() != className)
-			return;
+		if (!isValid(object)) return;
 		
 		switch (event.getType())
 		{
 			case ELEMENT_ADDED:
-				objects.add(object);
+				validObjects.add(object);
 			break;
 			
 			case ELEMENT_REMOVED:
-				objects.remove(object);
+				validObjects.remove(object);
 			break;
 		}
+		
+		jComboBox.repaint();
+		jComboBox.updateUI();
 	}
 	
 	// Dispose //
@@ -206,15 +223,14 @@ public class EzVarSwimmingObject<T> extends EzVar<SwimmingObject> implements Swi
 	{
 		Icy.getMainInterface().getSwimmingPool().removeListener(this);
 		
-		jComboSequences.removeActionListener(jComboSequenceBoxListener);
-		jComboSequences.setRenderer(null);
-		jComboSequenceBoxListener = null;
-		jComboSequenceBoxRenderer = null;
+		jComboBox.removeActionListener(jComboBoxListener);
+		jComboBox.setRenderer(null);
+		jComboBoxListener = null;
+		jComboBoxRenderer = null;
 		
-		objects.clear();
+		validObjects.clear();
 		
 		super.dispose();
 	}
 	
-
 }
