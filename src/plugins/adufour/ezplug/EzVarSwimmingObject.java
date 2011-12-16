@@ -212,8 +212,14 @@ public class EzVarSwimmingObject<T> extends EzVar<SwimmingObject> implements Swi
 			break;
 		}
 		
-		jComboBox.repaint();
-		jComboBox.updateUI();
+		ThreadUtil.invoke(new Runnable()
+		{
+			public void run()
+			{
+				jComboBox.repaint();
+				jComboBox.updateUI();
+			}
+		}, !SwingUtilities.isEventDispatchThread());
 	}
 	
 	// Dispose //
