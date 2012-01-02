@@ -231,41 +231,43 @@ public class EzVarSequence extends EzVar<Sequence> implements MainListener
 	}
 	
 	@Override
-	public void viewerFocused(MainEvent event)
+	public void viewerFocused(final MainEvent event)
 	{
-		final Viewer viewer = (Viewer) event.getSource();
-		
-		if (viewer == null)
+		ThreadUtil.invokeLater(new Runnable()
 		{
-			Object o = jComboSequences.getSelectedItem();
-			
-			// the sequence was just closed
-			// if it was the selected one, select the "no sequence" option
-			
-			if (o instanceof Sequence && !Icy.getMainInterface().getSequences().contains(o))
+			public void run()
 			{
-				jComboSequences.setSelectedIndex(0);
-				jComboSequences.setToolTipText(null);
+				final Viewer viewer = (Viewer) event.getSource();
+				if (viewer == null)
+				{
+					Object o = jComboSequences.getSelectedItem();
+					
+					// the sequence was just closed
+					// if it was the selected one, select the "no sequence" option
+					
+					if (o instanceof Sequence && !Icy.getMainInterface().getSequences().contains(o))
+					{
+						jComboSequences.setSelectedIndex(0);
+						jComboSequences.setToolTipText(null);
+					}
+				}
+				else
+				{
+					// the focus has changed (or a new sequence was just opened)
+					// if nothing was selected, pick the newly focused sequence
+					
+					if (jComboSequences.getSelectedIndex() <= 0)
+					{
+						jComboSequences.setSelectedItem(viewer.getSequence());
+						jComboSequences.setToolTipText(viewer.getSequence().getName());
+					}
+				}
+				jComboSequences.repaint();
+				jComboSequences.updateUI();
+				// note: in case a VarSequence was declared but not registered, its owner is null
+				if (getUI() != null) getUI().repack(false);
 			}
-		}
-		else
-		{
-			// the focus has changed (or a new sequence was just opened)
-			// if nothing was selected, pick the newly focused sequence
-			
-			if (jComboSequences.getSelectedIndex() <= 0)
-			{
-				jComboSequences.setSelectedItem(viewer.getSequence());
-				jComboSequences.setToolTipText(viewer.getSequence().getName());
-			}
-		}
-		jComboSequences.repaint();
-		jComboSequences.updateUI();
-		
-		// note: in case a VarSequence was declared but not registered, its owner is null
-		if (getUI() != null)
-			getUI().repack(false);
-		
+		});
 	}
 	
 	@Override
