@@ -25,7 +25,7 @@ import javax.swing.event.ChangeListener;
 public abstract class EzVarNumeric<N extends Number> extends EzVar<N> implements MouseWheelListener, EzVar.Storable<N>, ChangeListener, EzTextParser<N>
 {
 	private static final long	serialVersionUID	= 1L;
-
+	
 	private static final int	MAX_SPINNER_WIDTH	= 100;
 	
 	private SpinnerNumberModel	spinnerModel;
@@ -69,8 +69,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N> implements
 				jSpinner.setPreferredSize(dim);
 				
 				setComponent(jSpinner);
-				if (getUI() != null && repackOwnerPlug)
-					getUI().repack(true);
+				if (getUI() != null && repackOwnerPlug) getUI().repack(true);
 			}
 		}, !SwingUtilities.isEventDispatchThread());
 	}
@@ -221,7 +220,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N> implements
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void setValue(N value)
+	public void setValue(final N value)
 	{
 		try
 		{
@@ -234,11 +233,17 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N> implements
 			if (comp instanceof JSpinner)
 			{
 				JSpinner spinner = (JSpinner) comp;
-				SpinnerNumberModel snm = (SpinnerNumberModel) spinner.getModel();
+				final SpinnerNumberModel snm = (SpinnerNumberModel) spinner.getModel();
 				
 				if (snm.getMinimum().compareTo(value) <= 0 && snm.getMaximum().compareTo(value) >= 0)
 				{
-					snm.setValue(value);
+					ThreadUtil.invokeLater(new Runnable()
+					{
+						public void run()
+						{
+							snm.setValue(value);
+						}
+					});
 				}
 				else
 				{
@@ -253,11 +258,26 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N> implements
 		}
 	}
 	
+	public void setEnabled(final boolean enabled)
+	{
+		if (getComponent() instanceof JSpinner) ThreadUtil.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				((JSpinner) getComponent()).setEnabled(enabled);
+			}
+		});
+		else
+			super.setEnabled(enabled);
+	}
+	
 	// MouseWheelListener //
 	
 	public void mouseWheelMoved(MouseWheelEvent e)
 	{
 		JSpinner jSpinner = (JSpinner) e.getSource();
+		
+		if (!jSpinner.isEnabled()) return;
 		
 		int clicks = Math.abs(e.getWheelRotation());
 		
@@ -268,8 +288,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N> implements
 		{
 			newValue = (up ? jSpinner.getNextValue() : jSpinner.getPreviousValue());
 			
-			if (newValue == null)
-				break;
+			if (newValue == null) break;
 			
 			jSpinner.setValue(newValue);
 		}

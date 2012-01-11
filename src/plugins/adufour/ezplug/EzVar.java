@@ -462,10 +462,15 @@ public abstract class EzVar<T> extends EzComponent
 	 * @param enabled
 	 *            the enabled state
 	 */
-	public void setEnabled(boolean enabled)
+	public void setEnabled(final boolean enabled)
 	{
-		jLabelName.setEnabled(enabled);
-		userInputComponent.setEnabled(enabled);
+		ThreadUtil.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				userInputComponent.setEnabled(enabled);
+			}
+		});
 	}
 	
 	/**
