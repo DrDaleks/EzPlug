@@ -260,39 +260,53 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N> implements
 	
 	public void setEnabled(final boolean enabled)
 	{
-		if (getComponent() instanceof JSpinner) ThreadUtil.invokeLater(new Runnable()
-		{
-			public void run()
+		if (getComponent() instanceof JSpinner)
+			ThreadUtil.invokeLater(new Runnable()
 			{
-				((JSpinner) getComponent()).setEnabled(enabled);
-			}
-		});
-		else
-			super.setEnabled(enabled);
+				public void run()
+				{
+					((JSpinner) getComponent()).setEnabled(enabled);
+				}
+			});
+		else super.setEnabled(enabled);
 	}
 	
 	// MouseWheelListener //
 	
+	@SuppressWarnings("unchecked")
 	public void mouseWheelMoved(MouseWheelEvent e)
 	{
 		JSpinner jSpinner = (JSpinner) e.getSource();
 		
 		if (!jSpinner.isEnabled()) return;
 		
-		int clicks = Math.abs(e.getWheelRotation());
+		int clicks = -e.getWheelRotation();
+		int absClicks = Math.abs(clicks);
+		int sign = (int) Math.signum(clicks);
 		
-		boolean up = (e.getWheelRotation() < 0);
-		Object newValue;
+		Number oldValue = spinnerModel.getNumber(), stepSize = spinnerModel.getStepSize();
+		Number newValue, finalValue = null;
 		
-		for (int i = 0; i < clicks; i++)
+		for (int i = 1; i <= absClicks; i++)
 		{
-			newValue = (up ? jSpinner.getNextValue() : jSpinner.getPreviousValue());
+			if ((oldValue instanceof Float) || (oldValue instanceof Double))
+			{
+				double v = oldValue.doubleValue() + stepSize.doubleValue() * sign * i;
+				newValue = (oldValue instanceof Double) ? new Double(v) : new Float(v);
+			}
+			else
+			{
+				newValue = new Integer(oldValue.intValue() + stepSize.intValue() * sign * i);
+			}
 			
-			if (newValue == null) break;
-			
-			jSpinner.setValue(newValue);
+			if (spinnerModel.getMaximum().compareTo(newValue) < 0) break;
+			if (spinnerModel.getMinimum().compareTo(newValue) > 0) break;
+			finalValue = newValue;
 		}
 		
+		if (finalValue == null || oldValue.equals(finalValue)) return;
+		
+		spinnerModel.setValue(finalValue);
 		fireVariableChanged(getValue());
 	}
 	
