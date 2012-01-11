@@ -54,7 +54,7 @@ public class EzVarFloat extends EzVarNumeric<Float>
 	 */
 	public EzVarFloat(String varName, float value, float min, float max, float step)
 	{
-		super(varName, new SpinnerNumberModel(value, min, max, step));
+		super(varName, new SpinnerNumberModel(value, (Comparable<Float>)min, (Comparable<Float>)max, step));
 	}
 	
 	/**
