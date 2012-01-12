@@ -1,8 +1,6 @@
 package plugins.adufour.ezplug;
 
-import icy.main.Icy;
-import icy.plugin.abstract_.Plugin;
-import icy.plugin.interface_.PluginImageAnalysis;
+import icy.plugin.abstract_.PluginActionable;
 import icy.plugin.interface_.PluginLibrary;
 import icy.type.value.IntegerValue;
 
@@ -108,7 +106,7 @@ import plugins.adufour.ezplug.EzMessage.OutputType;
  * </tr>
  * 
  * 
- * @see plugins.adufour.ezplug.EzGUI
+ * @see plugins.adufour.ezplug.EzInternalFrame
  * @author Alexandre Dufour
  * @version 2011-01-17: added collapse support for EzGroup components<br>
  *          2011-01-14: graphical is now thread-safe and compatible for non-GUI use<br>
@@ -126,7 +124,7 @@ import plugins.adufour.ezplug.EzMessage.OutputType;
  *          2008-04-20: new Variable implementation<br>
  *          2008-04-06: first implementation
  */
-public abstract class EzPlug extends Plugin implements PluginLibrary, PluginImageAnalysis, Runnable
+public abstract class EzPlug extends PluginActionable implements PluginLibrary, Runnable
 {
 	public static final String				EZPLUG_MAINTAINERS	= "Alexandre Dufour (adufour@pasteur.fr)";
 	
@@ -453,16 +451,16 @@ public abstract class EzPlug extends Plugin implements PluginLibrary, PluginImag
 		// pack the frame
 		ezgui.repack(true);
 		
-		// addIcyFrame(ezgui);
-		Icy.getMainInterface().addToDesktopPane(ezgui);
+		addIcyFrame(ezgui);
+		//Icy.getMainInterface().addToDesktopPane(ezgui);
 		
 		// Pack the window a second time after adding to the desktop pane,
 		// in order to inherit correct UI properties (borders, layouts, etc.)
 		// note: parameters need not be updated here
-		ezgui.repack(false);
+		//ezgui.repack(false);
 		
 		// this line is necessary since addIcyFrame forces visibility to true...
-		ezgui.setVisible(false);
+		//ezgui.setVisible(false);
 	}
 	
 	/**

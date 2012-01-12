@@ -27,7 +27,7 @@ public abstract class EzComponent extends Component
 	
 	protected boolean	visible		= true;
 	
-	private EzGUI		gui;
+	private EzGUIManager		gui;
 	
 	/**
 	 * The group to which this component belongs, or null if this component is top-level
@@ -80,7 +80,7 @@ public abstract class EzComponent extends Component
 	 * 
 	 * @return
 	 */
-	final EzGUI getUI()
+	final EzGUIManager getUI()
 	{
 		return this.gui;
 	}
@@ -91,7 +91,7 @@ public abstract class EzComponent extends Component
 	 * @param parent
 	 *            The parent frame of this component
 	 */
-	final void setUI(EzGUI parent)
+	final void setUI(EzGUIManager parent)
 	{
 		this.gui = parent;
 	}
