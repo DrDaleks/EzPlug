@@ -308,6 +308,25 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		});
 	}
 	
+	/**
+	 * 
+	 * @param value
+	 *            A value between 0 and 1 (any other value will set an infinitely active state)
+	 */
+	public void setProgressBarValue(final double value)
+	{
+		ThreadUtil.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				boolean inderterminate = value < 0 && value > 1;
+				jProgressBar.setIndeterminate(inderterminate);
+				
+				if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, value)) * 100));
+			}
+		});
+	}
+	
 	public void setProgressBarVisible(final boolean visible)
 	{
 		ThreadUtil.invokeLater(new Runnable()
