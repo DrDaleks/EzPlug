@@ -327,6 +327,23 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		});
 	}
 	
+	/**
+	 * Displays the given message on top of the progress bar
+	 * 
+	 * @param message
+	 *            A message to display
+	 */
+	public void setProgressBarMessage(final String message)
+	{
+		ThreadUtil.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				jProgressBar.setString(message);
+			}
+		});
+	}
+	
 	public void setProgressBarVisible(final boolean visible)
 	{
 		ThreadUtil.invokeLater(new Runnable()
