@@ -2,7 +2,6 @@ package plugins.adufour.ezplug;
 
 import icy.system.thread.ThreadUtil;
 
-import java.awt.Component;
 import java.awt.Container;
 
 /**
@@ -15,10 +14,8 @@ import java.awt.Container;
  * 
  * @author Alexandre Dufour
  */
-public abstract class EzComponent extends Component
+public abstract class EzComponent
 {
-	private static final long	serialVersionUID	= 1L;
-
 	/**
 	 * The name of this variable (as it will appear in the interface). This field is read-only (it
 	 * is set once upon component creation)
@@ -27,7 +24,7 @@ public abstract class EzComponent extends Component
 	
 	protected boolean	visible		= true;
 	
-	private EzGUIManager		gui;
+	private EzGUI		gui;
 	
 	/**
 	 * The group to which this component belongs, or null if this component is top-level
@@ -42,9 +39,17 @@ public abstract class EzComponent extends Component
 	/**
 	 * @return true if this component is visible on the user interface
 	 */
-	public boolean getVisible()
+	public boolean isVisible()
 	{
 		return visible;
+	}
+	
+	/**
+	 * @deprecated use {@link #isVisible()} instead
+	 */
+	public boolean getVisible()
+	{
+		return isVisible();
 	}
 	
 	/**
@@ -60,8 +65,7 @@ public abstract class EzComponent extends Component
 	
 	void addToContainer(final Container container)
 	{
-		if (!visible)
-			return;
+		if (!visible) return;
 		
 		ThreadUtil.invokeLater(new Runnable()
 		{
@@ -80,7 +84,7 @@ public abstract class EzComponent extends Component
 	 * 
 	 * @return
 	 */
-	final EzGUIManager getUI()
+	final EzGUI getUI()
 	{
 		return this.gui;
 	}
@@ -91,7 +95,7 @@ public abstract class EzComponent extends Component
 	 * @param parent
 	 *            The parent frame of this component
 	 */
-	final void setUI(EzGUIManager parent)
+	final void setUI(EzGUI parent)
 	{
 		this.gui = parent;
 	}
@@ -116,8 +120,7 @@ public abstract class EzComponent extends Component
 	 */
 	protected void setGroup(EzGroup group) throws IllegalArgumentException
 	{
-		if (parentGroup != null)
-			throw new IllegalArgumentException("component " + name + " already belongs to group " + parentGroup.name);
+		if (parentGroup != null) throw new IllegalArgumentException("component " + name + " already belongs to group " + parentGroup.name);
 		this.parentGroup = group;
 	}
 	

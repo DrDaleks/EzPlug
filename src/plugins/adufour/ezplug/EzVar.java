@@ -2,30 +2,23 @@ package plugins.adufour.ezplug;
 
 import icy.system.thread.ThreadUtil;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 
-import javax.swing.ComboBoxEditor;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
+
+import plugins.adufour.vars.gui.ComboBox;
+import plugins.adufour.vars.gui.VarEditor;
+import plugins.adufour.vars.gui.VarEditorFactory;
+import plugins.adufour.vars.lang.Constraint;
+import plugins.adufour.vars.lang.ConstraintByValue;
+import plugins.adufour.vars.lang.Var;
+import plugins.adufour.vars.lang.VarListener;
 
 /**
  * Class defining a variable for use within an EzPlug.<br>
@@ -46,61 +39,43 @@ import javax.swing.SwingUtilities;
  * 
  * @author Alexandre Dufour
  */
-public abstract class EzVar<T> extends EzComponent
+public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 {
-	private static final long	serialVersionUID	= 1L;
+	final Var<T>								variable;
 	
-	/**
-	 * Interface allowing variables to be saved and loaded from disk
-	 * 
-	 * @author Alexandre Dufour
-	 * 
-	 * @param <T>
-	 *            The type of object to store on disk. Developers are recommended to use simple
-	 *            object types to avoid huge XML parameters files
-	 */
-	public interface Storable<T>
-	{
-		/**
-		 * Gets the value that should be used to store into the XML parameter file
-		 * 
-		 */
-		T getXMLValue();
-		
-		/**
-		 * Reads the value from the XML file and sets the corresponding interface value
-		 * 
-		 * @param value
-		 */
-		void setXMLValue(T value);
-	}
+	private JLabel								jLabelName;
 	
-	private final List<EzVarListener<T>>	varChangeListeners	= new ArrayList<EzVarListener<T>>();
+	private VarEditor<T>						varEditor;
 	
-	private JLabel							jLabelName;
+	private final HashMap<EzComponent, T[]>		visibilityTriggers	= new HashMap<EzComponent, T[]>();
 	
-	private JComponent						userInputComponent;
-	
-	private HashMap<EzComponent, T[]>		visibilityTriggers	= new HashMap<EzComponent, T[]>();
+	private final ArrayList<EzVarListener<T>>	listeners			= new ArrayList<EzVarListener<T>>();
 	
 	/**
 	 * Constructs a new variable
 	 * 
-	 * @param varName
-	 *            The variable name
+	 * @param variable
+	 *            The variable to attach to this object
+	 * @param constraint
+	 *            the constraint to apply on the variable when receiving input, or null if a default
+	 *            constraint should be applied
 	 */
-	EzVar(String varName)
+	EzVar(final Var<T> variable, Constraint<T> constraint)
 	{
-		super(varName);
+		super(variable.getName());
+		this.variable = variable;
+		variable.setConstraint(constraint);
+		variable.addListener(this);
 		
-		ThreadUtil.invoke(new Runnable()
+		ThreadUtil.invokeLater(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				jLabelName = new JLabel(name);
+				jLabelName = new JLabel(variable.getName());
+				varEditor = VarEditorFactory.createEditor(variable);
 			}
-		}, !SwingUtilities.isEventDispatchThread());
+		});
 	}
 	
 	/**
@@ -112,113 +87,12 @@ public abstract class EzVar<T> extends EzComponent
 	 *            the list of values to store in the combo box
 	 * @param defaultValueIndex
 	 *            the index of the default selected item
-	 * @param allowUserInput
+	 * @param freeInput
 	 *            true to allow user manual input, false to restrict the selection to the given list
 	 */
-	EzVar(String varName, final T[] defaultValues, final int defaultValueIndex, final boolean allowUserInput)
+	EzVar(Var<T> variable, T[] defaultValues, int defaultValueIndex, boolean freeInput)
 	{
-		this(varName);
-		
-		ThreadUtil.invoke(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final JComboBox jComboBox = new JComboBox(defaultValues);
-				jComboBox.setEditable(allowUserInput);
-				jComboBox.setSelectedIndex(defaultValueIndex);
-				jComboBox.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent e)
-					{
-						fireVariableChanged(getValue());
-					}
-				});
-				
-				// Override the default renderer to support array-type items
-				jComboBox.setRenderer(new ListCellRenderer()
-				{
-					@Override
-					public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
-					{
-						return new JLabel(value == null ? "" : value.getClass().isArray() ? arrayToString(value) : value.toString());
-					}
-				});
-				
-				// if the combo box is editable by the user, override the editor to support
-				// array-type items
-				if (allowUserInput)
-				{
-					if (!(EzVar.this instanceof EzTextParser<?>))
-						throw new UnsupportedOperationException("This variable type is unable to parse text input");
-					
-					jComboBox.setEditor(new ComboBoxEditor()
-					{
-						JTextField	jTextField		= new JTextField();
-						final Color	defaultColor	= jTextField.getForeground();
-						final Color	errorColor		= Color.red;
-						
-						@Override
-						public void addActionListener(ActionListener l)
-						{
-							
-						}
-						
-						@Override
-						public Component getEditorComponent()
-						{
-							return jTextField;
-						}
-						
-						@SuppressWarnings("unchecked")
-						@Override
-						public T getItem()
-						{
-							T item = null;
-							
-							try
-							{
-								item = ((EzTextParser<T>) EzVar.this).parseInput(jTextField.getText());
-								jTextField.setForeground(defaultColor);
-								jTextField.setToolTipText(null);
-							}
-							catch (NumberFormatException nfE)
-							{
-								item = null;
-								// System.err.println("Error parsing user input :" +
-								// jTextField.getText());
-								jTextField.setForeground(errorColor);
-								jTextField.setToolTipText("Cannot parse input into a " + EzVar.this.getClass().getSimpleName().substring(3) + " variable");
-							}
-							
-							return item;
-						}
-						
-						@Override
-						public void removeActionListener(ActionListener l)
-						{
-							
-						}
-						
-						@Override
-						public void selectAll()
-						{
-							jTextField.selectAll();
-						}
-						
-						@Override
-						public void setItem(Object item)
-						{
-							if (item == null)
-								return;
-							jTextField.setText(item.getClass().isArray() ? arrayToString(item) : item.toString());
-						}
-					});
-				}
-				
-				setComponent(jComboBox);
-			}
-		}, !SwingUtilities.isEventDispatchThread());
+		this(variable, new ConstraintByValue<T>(defaultValues, defaultValueIndex, freeInput));
 	}
 	
 	/**
@@ -229,19 +103,7 @@ public abstract class EzVar<T> extends EzComponent
 	 */
 	public void addVarChangeListener(EzVarListener<T> listener)
 	{
-		varChangeListeners.add(listener);
-		
-//		// The listener is fired right away to allow the user to use the same code for
-//		// initialization and event listening code
-//		try
-//		{
-//			fireVariableChanged(getValue());
-//		}
-//		catch (EzException eze)
-//		{
-//			// thrown in case the value is null for some variables
-//			fireVariableChanged(null);
-//		}
+		listeners.add(listener);
 	}
 	
 	/**
@@ -261,58 +123,33 @@ public abstract class EzVar<T> extends EzComponent
 		updateVisibilityChain();
 	}
 	
-	/**
-	 * Pretty-prints an array in a human-readable form
-	 * 
-	 * @param array
-	 *            the array to pretty-print
-	 * @return a pretty-printed string of the given array
-	 * @throws IllegalArgumentException
-	 *             if the given argument is not an array
-	 */
-	private final String arrayToString(Object array) throws IllegalArgumentException
-	{
-		String s = "";
-		int length = Array.getLength(array);
-		
-		if (length > 0)
-			s += Array.get(array, 0);
-		
-		for (int i = 1; i < length; i++)
-			s += " " + Array.get(array, i);
-		
-		return s;
-	}
-	
 	@Override
 	protected void addTo(Container container)
-	{
-		GridBagLayout gridbag = (GridBagLayout) container.getLayout();
+	{	
 		GridBagConstraints gbc = new GridBagConstraints();
 		
 		gbc.insets = new Insets(2, 10, 2, 5);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		//gbc.weighty = 0;
-		gridbag.setConstraints(jLabelName, gbc);
-		container.add(jLabelName);
+		// gbc.weighty = 0;
+		container.add(jLabelName, gbc);
 		
 		gbc.weightx = 1;
-		//gbc.weighty = 0;
+		// gbc.weighty = 0;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(userInputComponent, gbc);
-		container.add(userInputComponent);
+		container.add(varEditor.editorComponent, gbc);
 	}
 	
 	protected void dispose()
 	{
 		this.visibilityTriggers.clear();
-		userInputComponent = null;
+		// the varEditor may be null if this EzVar was never visible on the GUI
+		if (varEditor != null) varEditor.dispose();
 		super.dispose();
 	}
 	
 	protected final void fireVariableChanged(T value)
 	{
-		for (EzVarListener<T> l : varChangeListeners)
+		for (EzVarListener<T> l : listeners)
 			l.variableChanged(this, value);
 		
 		if (getUI() != null)
@@ -320,14 +157,6 @@ public abstract class EzVar<T> extends EzComponent
 			updateVisibilityChain();
 			getUI().repack(true);
 		}
-	}
-	
-	/**
-	 * Gets the graphical component used to receive user input
-	 */
-	protected final Component getComponent()
-	{
-		return this.userInputComponent;
 	}
 	
 	/**
@@ -343,9 +172,9 @@ public abstract class EzVar<T> extends EzComponent
 	@SuppressWarnings("unchecked")
 	public T[] getDefaultValues(T[] dest)
 	{
-		if (userInputComponent instanceof JComboBox)
+		if (varEditor instanceof ComboBox)
 		{
-			JComboBox combo = (JComboBox) userInputComponent;
+			JComboBox combo = (JComboBox) varEditor.editorComponent;
 			
 			ArrayList<T> items = new ArrayList<T>(combo.getItemCount());
 			for (int i = 0; i < combo.getItemCount(); i++)
@@ -356,6 +185,11 @@ public abstract class EzVar<T> extends EzComponent
 		throw new UnsupportedOperationException("The input component is not a list of values");
 	}
 	
+	protected VarEditor<T> getVarEditor()
+	{
+		return varEditor;
+	}
+	
 	/**
 	 * Returns an EzPlug-wide unique identifier for this variable (used to save/load parameters)
 	 * 
@@ -363,7 +197,7 @@ public abstract class EzVar<T> extends EzComponent
 	 */
 	String getID()
 	{
-		String id = name;
+		String id = variable.getName();
 		
 		EzGroup group = getGroup();
 		
@@ -382,38 +216,14 @@ public abstract class EzVar<T> extends EzComponent
 	 * 
 	 * @return the user-selected (or -defined) value
 	 */
-	@SuppressWarnings("unchecked")
 	public T getValue()
 	{
-		// instead of deferring the implementation to all Var* classes,
-		// retrieve the input from the most popular components here
-		
-		if (userInputComponent instanceof JSpinner)
-			return (T) ((JSpinner) userInputComponent).getValue();
-		
-		if (userInputComponent instanceof JComboBox)
-			return (T) ((JComboBox) userInputComponent).getSelectedItem();
-		
-		if (userInputComponent instanceof JCheckBox)
-			return (T) (Boolean) ((JCheckBox) userInputComponent).isSelected();
-		
-		if (userInputComponent instanceof JTextField)
-		{
-			if (!(this instanceof EzTextParser))
-				throw new UnsupportedOperationException("Variable " + name + "cannot parse text input");
-			
-			return ((EzTextParser<T>) this).parseInput(((JTextField) userInputComponent).getText());
-		}
-		
-		if (userInputComponent == null)
-		{
-			String message = "Interface value cannot be accessed. Possible reasons: \n";
-			message += " - Variable " + name + " wasn't added to the interface\n";
-			message += " - The application is quitting";
-			throw new EzException(message, false);
-		}
-		
-		throw new UnsupportedOperationException("Unsupported input component: " + userInputComponent);
+		return variable.getValue();
+	}
+	
+	public Var<T> getVariable()
+	{
+		return variable;
 	}
 	
 	/**
@@ -424,7 +234,7 @@ public abstract class EzVar<T> extends EzComponent
 	 */
 	public void removeVarChangeListener(EzVarListener<T> listener)
 	{
-		varChangeListeners.remove(listener);
+		listeners.remove(listener);
 	}
 	
 	/**
@@ -432,7 +242,7 @@ public abstract class EzVar<T> extends EzComponent
 	 */
 	public void removeAllVarChangeListeners()
 	{
-		varChangeListeners.clear();
+		variable.removeListeners();
 	}
 	
 	/**
@@ -445,14 +255,9 @@ public abstract class EzVar<T> extends EzComponent
 	 */
 	public void setDefaultValues(T[] values, int defaultValueIndex, boolean allowUserInput)
 	{
-		if (userInputComponent instanceof JComboBox)
+		if (varEditor instanceof ComboBox)
 		{
-			JComboBox combo = (JComboBox) userInputComponent;
-			
-			combo.removeAllItems();
-			for (T value : values)
-				combo.addItem(value);
-			combo.setEditable(allowUserInput);
+			((ComboBox<T>) varEditor).setDefaultValues(values, defaultValueIndex, allowUserInput);
 		}
 	}
 	
@@ -462,15 +267,10 @@ public abstract class EzVar<T> extends EzComponent
 	 * @param enabled
 	 *            the enabled state
 	 */
-	public void setEnabled(final boolean enabled)
+	public void setEnabled(boolean enabled)
 	{
-		ThreadUtil.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				userInputComponent.setEnabled(enabled);
-			}
-		});
+		jLabelName.setEnabled(enabled);
+		varEditor.editorComponent.setEnabled(enabled);
 	}
 	
 	/**
@@ -484,18 +284,7 @@ public abstract class EzVar<T> extends EzComponent
 	 */
 	public void setValue(final T value) throws UnsupportedOperationException
 	{
-		if (userInputComponent instanceof JComboBox)
-		{
-			ThreadUtil.invoke(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					((JComboBox) userInputComponent).setSelectedItem(value);
-				}
-			}, !SwingUtilities.isEventDispatchThread());
-		}
-		else throw new UnsupportedOperationException("Variable " + name + " cannot be changed outside the interface");
+		variable.setValue(value);
 	}
 	
 	/**
@@ -507,12 +296,7 @@ public abstract class EzVar<T> extends EzComponent
 	public void setToolTipText(String text)
 	{
 		jLabelName.setToolTipText(text);
-		userInputComponent.setToolTipText(text);
-	}
-	
-	protected void setComponent(JComponent component)
-	{
-		this.userInputComponent = component;
+		varEditor.editorComponent.setToolTipText(text);
 	}
 	
 	/**
@@ -531,10 +315,10 @@ public abstract class EzVar<T> extends EzComponent
 	
 	public String toString()
 	{
-		return this.name;
+		return variable.getName() + " = " + variable.toString();
 	}
 	
-	private void updateVisibilityChain()
+	protected void updateVisibilityChain()
 	{
 		Set<EzComponent> componentsToUpdate = visibilityTriggers.keySet();
 		
@@ -543,8 +327,7 @@ public abstract class EzVar<T> extends EzComponent
 			component.setVisible(false);
 		
 		// if "this" is not visible, do anything else
-		if (!this.visible)
-			return;
+		if (!this.isVisible()) return;
 		
 		// otherwise, one by one, show the components w.r.t. the triggers
 		component: for (EzComponent component : componentsToUpdate)
@@ -561,5 +344,17 @@ public abstract class EzVar<T> extends EzComponent
 				}
 			}
 		}
+	}
+	
+	@Override
+	public void variableChanged(Var<T> source, T oldValue, T newValue)
+	{
+		fireVariableChanged(newValue);
+	}
+	
+	@Override
+	public void referenceChanged(Var<T> source, Var<? extends T> oldReference, Var<? extends T> newReference)
+	{
+		
 	}
 }

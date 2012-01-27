@@ -1,27 +1,33 @@
 package plugins.adufour.ezplug;
 
-import javax.swing.JFileChooser;
+import java.io.File;
 
-public class EzVarFolder extends EzVarFile
+import plugins.adufour.vars.gui.FileChooser;
+import plugins.adufour.vars.gui.FileMode;
+import plugins.adufour.vars.lang.VarFile;
+
+public class EzVarFolder extends EzVar<File>
 {
-	private static final long	serialVersionUID	= 1L;
-
 	/**
-	 * Creates a new variable that receives a disk folder
+	 * Constructs a new input variable with given name and default folder dialog path
 	 * 
 	 * @param varName
-	 *            the variable name
+	 *            the name of the variable (as it will appear in the interface)
 	 * @param path
-	 *            the initial path (or null for a default path)
+	 *            the default path to show in the file dialog
 	 */
 	public EzVarFolder(String varName, String path)
 	{
-		super(varName, path);
-		
-		jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		jFileChooser.setAcceptAllFileFilterUsed(false);
-		jFileChooser.setFileHidingEnabled(true);
-		super.setButtonText("Select folder...");
+		super(new VarFile(varName, path == null ? null : new File(path)), new VarFile.VarConstraintByFileType(path, FileMode.FOLDERS, null, false));
 	}
 	
+	/**
+	 * Replaces the button text by the given string
+	 * 
+	 * @param text
+	 */
+	public void setButtonText(String text)
+	{
+		((FileChooser) getVarEditor()).setButtonText(text);
+	}
 }

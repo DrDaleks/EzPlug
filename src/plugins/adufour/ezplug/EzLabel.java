@@ -19,8 +19,6 @@ import javax.swing.SwingUtilities;
  */
 public class EzLabel extends EzComponent
 {
-	private static final long	serialVersionUID	= 1L;
-	
 	private JTextArea			jTextArea;
 	
 	/**

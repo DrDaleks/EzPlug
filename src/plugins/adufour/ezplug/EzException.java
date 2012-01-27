@@ -1,16 +1,10 @@
 package plugins.adufour.ezplug;
 
-/**
- * Convenience class for the EzPlug framework that allows to raise exceptions occurring within the
- * EzPlug layer to optimize bug finding / reporting / fixing.
- * 
- * @author Alexandre Dufour
- */
 public class EzException extends RuntimeException
 {
 	private static final long	serialVersionUID	= 666L;
 	
-	final boolean				catchException;
+	public final boolean		catchException;
 	
 	/**
 	 * Creates a new instance of EzException with the specified message and catching behavior.

@@ -54,7 +54,7 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 	
 	private JPanel					jPanelParameters;
 	
-	private final List<Component>	components					= new ArrayList<Component>();
+	private final List<Object>		components					= new ArrayList<Object>();
 	
 	private JPanel					jPanelBottom;
 	
@@ -182,13 +182,15 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		{
 			jPanelParameters.removeAll();
 			
-			for (Component component : components)
-				if (component instanceof EzComponent)
+			for (Object object : components)
+				if (object instanceof EzComponent)
 				{
-					((EzComponent) component).addToContainer(jPanelParameters);
+					((EzComponent) object).addToContainer(jPanelParameters);
 				}
-				else
+				else if (object instanceof Component)
 				{
+					Component component = (Component) object;
+					
 					GridBagLayout gridbag = (GridBagLayout) jPanelParameters.getLayout();
 					
 					GridBagConstraints gbc = new GridBagConstraints();
@@ -204,6 +206,7 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 					
 					jPanelParameters.add(component);
 				}
+				else throw new UnsupportedOperationException("Cannot add a " + object.getClass().getSimpleName() + " to the graphical interface");
 		}
 		
 		pack();
@@ -327,23 +330,6 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		});
 	}
 	
-	/**
-	 * Displays the given message on top of the progress bar
-	 * 
-	 * @param message
-	 *            A message to display
-	 */
-	public void setProgressBarMessage(final String message)
-	{
-		ThreadUtil.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				jProgressBar.setString(message);
-			}
-		});
-	}
-	
 	public void setProgressBarVisible(final boolean visible)
 	{
 		ThreadUtil.invokeLater(new Runnable()
@@ -446,9 +432,12 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		
 		// dispose all components
 		
-		for (Component component : components)
-			if (component instanceof EzComponent) ((EzComponent) component).dispose(); // FIXME
-				
+		for (Object object : components)
+			if (object instanceof EzComponent)
+			{
+				((EzComponent) object).dispose();
+			}
+		
 		components.clear();
 		
 		jPanelParameters.removeAll();
@@ -543,6 +532,19 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		graphics.fillOval(-width + (width / 2), height / 3, width * 2, height * 3);
 		
 		// graphics.dispose();
+	}
+	
+	public void setProgressBarMessage(final String string)
+	{
+		ThreadUtil.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				jProgressBar.setString(string);
+				jProgressBar.setStringPainted(!string.trim().equals(""));
+			}
+		});
 	}
 	
 }

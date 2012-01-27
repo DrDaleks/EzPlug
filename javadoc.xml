@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="protected" author="true" classpath="/Users/adufour/github/ICY/Vars/bin:/Applications/icy.app/Contents/Resources/Java/icy.jar" destdir="doc" doctitle="EzPlug API - Easy Plug-in development for ICY" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="plugins.adufour.ezplug" source="1.6" sourcepath="src" splitindex="true" use="true" version="true"/>
+    </target>
+</project>
