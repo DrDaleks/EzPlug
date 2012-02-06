@@ -131,7 +131,7 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 	}
 	
 	@Override
-	protected IcyInternalFrame creatInternalFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable)
+	protected IcyInternalFrame createInternalFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable)
 	{
 		return new EzInternalFrame(title, resizable, closable, maximizable, iconifiable);
 	}

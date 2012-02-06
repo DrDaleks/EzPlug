@@ -1,7 +1,5 @@
 package plugins.adufour.ezplug;
 
-import icy.system.thread.ThreadUtil;
-
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -47,6 +45,8 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	
 	private VarEditor<T>						varEditor;
 	
+	private boolean								guiInitialized		= false;
+	
 	private final HashMap<EzComponent, T[]>		visibilityTriggers	= new HashMap<EzComponent, T[]>();
 	
 	private final ArrayList<EzVarListener<T>>	listeners			= new ArrayList<EzVarListener<T>>();
@@ -66,16 +66,6 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		this.variable = variable;
 		variable.setConstraint(constraint);
 		variable.addListener(this);
-		
-		ThreadUtil.invokeLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				jLabelName = new JLabel(variable.getName());
-				varEditor = VarEditorFactory.createEditor(variable);
-			}
-		});
 	}
 	
 	/**
@@ -125,7 +115,14 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	
 	@Override
 	protected void addTo(Container container)
-	{	
+	{
+		if (!guiInitialized)
+		{
+			jLabelName = new JLabel(variable.getName());
+			varEditor = VarEditorFactory.createEditor(variable);
+			guiInitialized = true;
+		}
+		
 		GridBagConstraints gbc = new GridBagConstraints();
 		
 		gbc.insets = new Insets(2, 10, 2, 5);
@@ -152,7 +149,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		for (EzVarListener<T> l : listeners)
 			l.variableChanged(this, value);
 		
-		if (getUI() != null)
+		if (getUI() != null && guiInitialized)
 		{
 			updateVisibilityChain();
 			getUI().repack(true);
