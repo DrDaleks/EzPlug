@@ -45,8 +45,6 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	
 	private VarEditor<T>						varEditor;
 	
-	private boolean								guiInitialized		= false;
-	
 	private final HashMap<EzComponent, T[]>		visibilityTriggers	= new HashMap<EzComponent, T[]>();
 	
 	private final ArrayList<EzVarListener<T>>	listeners			= new ArrayList<EzVarListener<T>>();
@@ -66,6 +64,8 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		this.variable = variable;
 		variable.setConstraint(constraint);
 		variable.addListener(this);
+		
+		jLabelName = new JLabel(variable.getName());
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		gbc.insets = new Insets(2, 10, 2, 5);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		// gbc.weighty = 0;
-		container.add(getJLabelName(), gbc);
+		container.add(jLabelName, gbc);
 		
 		gbc.weightx = 1;
 		// gbc.weighty = 0;
@@ -142,7 +142,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		for (EzVarListener<T> l : listeners)
 			l.variableChanged(this, value);
 		
-		if (getUI() != null && guiInitialized)
+		if (getUI() != null && varEditor != null)
 		{
 			updateVisibilityChain();
 			getUI().repack(true);
@@ -175,16 +175,10 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		throw new UnsupportedOperationException("The input component is not a list of values");
 	}
 	
-	private JLabel getJLabelName()
-	{
-		if (jLabelName == null) jLabelName = new JLabel(variable.getName());
-		
-		return jLabelName;
-	}
-	
 	protected VarEditor<T> getVarEditor()
 	{
 		if (varEditor == null) varEditor = VarEditorFactory.createEditor(variable);
+		
 		return varEditor;
 	}
 	
@@ -267,7 +261,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	 */
 	public void setEnabled(boolean enabled)
 	{
-		getJLabelName().setEnabled(enabled);
+		jLabelName.setEnabled(enabled);
 		getVarEditor().editorComponent.setEnabled(enabled);
 	}
 	
@@ -293,7 +287,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	 */
 	public void setToolTipText(String text)
 	{
-		getJLabelName().setToolTipText(text);
+		jLabelName.setToolTipText(text);
 		getVarEditor().editorComponent.setToolTipText(text);
 	}
 	
