@@ -9,11 +9,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LayoutManager;
-import java.awt.Point;
 import java.lang.reflect.Field;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 
@@ -37,8 +35,7 @@ public class EzInternalFrame extends IcyInternalFrame
 	@Override
 	public void doLayout()
 	{
-		if (isVisible())
-			super.doLayout();
+		if (isVisible()) super.doLayout();
 	}
 	
 	@Override
@@ -108,8 +105,9 @@ public class EzInternalFrame extends IcyInternalFrame
 	{
 		private static final long	serialVersionUID	= 1L;
 		
-		final Icon					icon				= frame.getFrameIcon();
-		final Point					iconLocation		= new Point(5, (EzGUI.LOGO_HEIGHT / 2) - (icon.getIconHeight() / 2));
+		// final Icon icon = frame.getFrameIcon();
+		// final Point iconLocation = new Point(5, (EzGUI.LOGO_HEIGHT / 2) - (icon.getIconHeight() /
+		// 2));
 		
 		public EzInternalFrameTitlePane()
 		{
@@ -137,7 +135,7 @@ public class EzInternalFrame extends IcyInternalFrame
 			EzGUI.paintTitlePane(g2d, getWidth(), getHeight(), EzInternalFrame.this.getTitle(), true);
 			
 			// paint the icon manually, as it is not the default for internal frames
-			icon.paintIcon(frame, g, iconLocation.x, iconLocation.y);
+			// icon.paintIcon(frame, g, iconLocation.x, iconLocation.y);
 		}
 		
 		/**
@@ -155,8 +153,8 @@ public class EzInternalFrame extends IcyInternalFrame
 				boolean leftToRight = getComponentOrientation().isLeftToRight();
 				
 				int w = getWidth();
-				int x = leftToRight ? w : 0;
-				int y = 2;
+				int x;
+				int y = 4;
 				int spacing;
 				
 				// assumes all buttons have the same dimensions
@@ -164,17 +162,18 @@ public class EzInternalFrame extends IcyInternalFrame
 				int buttonHeight = closeButton.getIcon().getIconHeight();
 				int buttonWidth = closeButton.getIcon().getIconWidth();
 				
-				// old version (patched by Alexandre Dufour)
-				// y = (getHeight() - buttonHeight) / 2;
-				y = 4;
+				spacing = 5;
+				x = leftToRight ? spacing : w - 16 - spacing;
+				menuBar.setBounds(x, y, 16, 16);
+				
+				x = leftToRight ? w : 0;
 				
 				if (isClosable())
 				{
 					spacing = 4;
 					x += leftToRight ? -spacing - buttonWidth : spacing;
 					closeButton.setBounds(x, y, buttonWidth, buttonHeight);
-					if (!leftToRight)
-						x += buttonWidth;
+					if (!leftToRight) x += buttonWidth;
 				}
 				
 				if (isMaximizable())
@@ -182,8 +181,7 @@ public class EzInternalFrame extends IcyInternalFrame
 					spacing = isClosable() ? 2 : 4;
 					x += leftToRight ? -spacing - buttonWidth : spacing;
 					maxButton.setBounds(x, y, buttonWidth, buttonHeight);
-					if (!leftToRight)
-						x += buttonWidth;
+					if (!leftToRight) x += buttonWidth;
 				}
 				
 				if (isIconifiable())
@@ -191,8 +189,7 @@ public class EzInternalFrame extends IcyInternalFrame
 					spacing = isMaximizable() ? 2 : (isClosable() ? 2 : 4);
 					x += leftToRight ? -spacing - buttonWidth : spacing;
 					iconButton.setBounds(x, y, buttonWidth, buttonHeight);
-					if (!leftToRight)
-						x += buttonWidth;
+					if (!leftToRight) x += buttonWidth;
 				}
 			}
 		}
