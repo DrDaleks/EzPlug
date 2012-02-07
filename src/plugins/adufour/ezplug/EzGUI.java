@@ -38,7 +38,9 @@ import org.pushingpixels.substance.api.ComponentState;
 import org.pushingpixels.substance.api.SubstanceColorScheme;
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 
-public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
+import plugins.adufour.ezplug.EzGroup.FoldListener;
+
+public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, FoldListener
 {
 	public static final int			LOGO_HEIGHT					= 32;
 	
@@ -123,8 +125,9 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		getContentPane().add(jPanelBottom, BorderLayout.SOUTH);
 		
 		// set custom plugin icon
-		getInternalFrame().setFrameIcon(ezPlug.getDescriptor().getIcon());
-		getExternalFrame().setIconImage(ezPlug.getDescriptor().getIconAsImage());
+		// ImageIcon icon = ResourceUtil.scaleIcon(ezPlug.getDescriptor().getIcon(), LOGO_HEIGHT);
+		// getInternalFrame().setFrameIcon(icon);
+		// getExternalFrame().setIconImage(icon.getImage());
 		
 		pack();
 		center();
@@ -157,7 +160,11 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		// Special case #2: if the component is a group, add its internal components recursively
 		else if (component instanceof EzGroup)
 		{
-			for (EzComponent groupComponent : (EzGroup) component)
+			EzGroup group = (EzGroup) component;
+			
+			group.addFoldListener(this);
+			
+			for (EzComponent groupComponent : group)
 				addEzComponent(groupComponent, false);
 		}
 		
@@ -166,6 +173,12 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener
 		if (isSingle) components.add(component);
 	}
 	
+	@Override
+	public void foldStateChanged(boolean state)
+	{
+		repack(true);
+	}
+
 	/**
 	 * Re-packs the user interface. This method should be called if one of the components was
 	 * changed either in size or visibility state
