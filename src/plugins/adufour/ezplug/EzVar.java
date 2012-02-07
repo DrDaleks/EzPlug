@@ -116,24 +116,17 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	@Override
 	protected void addTo(Container container)
 	{
-		if (!guiInitialized)
-		{
-			jLabelName = new JLabel(variable.getName());
-			varEditor = VarEditorFactory.createEditor(variable);
-			guiInitialized = true;
-		}
-		
 		GridBagConstraints gbc = new GridBagConstraints();
 		
 		gbc.insets = new Insets(2, 10, 2, 5);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		// gbc.weighty = 0;
-		container.add(jLabelName, gbc);
+		container.add(getJLabelName(), gbc);
 		
 		gbc.weightx = 1;
 		// gbc.weighty = 0;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		container.add(varEditor.editorComponent, gbc);
+		container.add(getVarEditor().editorComponent, gbc);
 	}
 	
 	protected void dispose()
@@ -169,9 +162,9 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	@SuppressWarnings("unchecked")
 	public T[] getDefaultValues(T[] dest)
 	{
-		if (varEditor instanceof ComboBox)
+		if (getVarEditor() instanceof ComboBox)
 		{
-			JComboBox combo = (JComboBox) varEditor.editorComponent;
+			JComboBox combo = (JComboBox) getVarEditor().editorComponent;
 			
 			ArrayList<T> items = new ArrayList<T>(combo.getItemCount());
 			for (int i = 0; i < combo.getItemCount(); i++)
@@ -182,8 +175,16 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		throw new UnsupportedOperationException("The input component is not a list of values");
 	}
 	
+	private JLabel getJLabelName()
+	{
+		if (jLabelName == null) jLabelName = new JLabel(variable.getName());
+		
+		return jLabelName;
+	}
+	
 	protected VarEditor<T> getVarEditor()
 	{
+		if (varEditor == null) varEditor = VarEditorFactory.createEditor(variable);
 		return varEditor;
 	}
 	
@@ -252,9 +253,9 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	 */
 	public void setDefaultValues(T[] values, int defaultValueIndex, boolean allowUserInput)
 	{
-		if (varEditor instanceof ComboBox)
+		if (getVarEditor() instanceof ComboBox)
 		{
-			((ComboBox<T>) varEditor).setDefaultValues(values, defaultValueIndex, allowUserInput);
+			((ComboBox<T>) getVarEditor()).setDefaultValues(values, defaultValueIndex, allowUserInput);
 		}
 	}
 	
@@ -266,8 +267,8 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	 */
 	public void setEnabled(boolean enabled)
 	{
-		jLabelName.setEnabled(enabled);
-		varEditor.editorComponent.setEnabled(enabled);
+		getJLabelName().setEnabled(enabled);
+		getVarEditor().editorComponent.setEnabled(enabled);
 	}
 	
 	/**
@@ -292,8 +293,8 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	 */
 	public void setToolTipText(String text)
 	{
-		jLabelName.setToolTipText(text);
-		varEditor.editorComponent.setToolTipText(text);
+		getJLabelName().setToolTipText(text);
+		getVarEditor().editorComponent.setToolTipText(text);
 	}
 	
 	/**
