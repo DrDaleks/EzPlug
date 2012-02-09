@@ -1,10 +1,12 @@
 package plugins.adufour.ezplug;
 
+import icy.main.Icy;
 import icy.sequence.Sequence;
 
 import javax.swing.JComboBox;
 
 import plugins.adufour.vars.gui.SequenceChooser;
+import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.lang.VarSequence;
 
 /**
@@ -40,5 +42,16 @@ public class EzVarSequence extends EzVar<Sequence>
     public void setNoSequenceSelection()
     {
     	((JComboBox)((SequenceChooser)getVarEditor()).editorComponent).setSelectedIndex(0);
+    }
+    
+    @Override
+    protected VarEditor<Sequence> getVarEditor()
+    {
+    	VarEditor<Sequence> editor = super.getVarEditor();
+    	
+    	// Initialize with the currently active sequence (if any)
+    	variable.setValue(Icy.getMainInterface().getFocusedSequence());
+    	
+    	return editor;
     }
 }
