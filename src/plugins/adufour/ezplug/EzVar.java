@@ -137,6 +137,16 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		super.dispose();
 	}
 	
+	/**
+	 * Privileged access to fire listeners from inside the EzPlug package. This method is called
+	 * after the GUI was created in order to trigger listeners declared in the
+	 * {@link EzPlug#initialize()} method
+	 */
+	final void fireVariableChangedInternal()
+	{
+		fireVariableChanged(variable.getValue());
+	}
+	
 	protected final void fireVariableChanged(T value)
 	{
 		for (EzVarListener<T> l : listeners)
