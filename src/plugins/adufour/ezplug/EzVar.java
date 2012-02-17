@@ -41,9 +41,9 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 {
 	final Var<T>								variable;
 	
-	private JLabel								jLabelName;
+	private final JLabel						jLabelName;
 	
-	private VarEditor<T>						varEditor;
+	private final VarEditor<T>					varEditor;
 	
 	private final HashMap<EzComponent, T[]>		visibilityTriggers	= new HashMap<EzComponent, T[]>();
 	
@@ -63,9 +63,10 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 		super(variable.getName());
 		this.variable = variable;
 		variable.setConstraint(constraint);
-		variable.addListener(this);
+		// variable.addListener(this);  // FIXME move to interface creation time
 		
 		jLabelName = new JLabel(variable.getName());
+		varEditor = VarEditorFactory.createEditor(variable);
 	}
 	
 	/**
@@ -187,8 +188,6 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	
 	protected VarEditor<T> getVarEditor()
 	{
-		if (varEditor == null) varEditor = VarEditorFactory.createEditor(variable);
-		
 		return varEditor;
 	}
 	
