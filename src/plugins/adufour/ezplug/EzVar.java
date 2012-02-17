@@ -213,14 +213,32 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 	}
 	
 	/**
-	 * Reads the value from the interface (here the default combo box). This default cast can be
-	 * overriden with an input parsing method
+	 * Returns the variable value. By default, null is considered a valid value. In order to show an
+	 * error message (or throw an exception in head-less mode), use the {@link #getValue(boolean)}
+	 * method instead
 	 * 
-	 * @return the user-selected (or -defined) value
+	 * @return The variable value
 	 */
 	public T getValue()
 	{
-		return variable.getValue();
+		return getValue(false);
+	}
+	
+	/**
+	 * Returns the variable value (or fails if the variable is null).
+	 * 
+	 * @param forbidNull
+	 *            set to true to display an error message (or to throw an exception in head-less
+	 *            mode)
+	 * @return the variable value
+	 * @throws EzException
+	 *             if the variable value is null and forbidNull is true
+	 */
+	public T getValue(boolean forbidNull) throws EzException
+	{
+		T val = variable.getValue();
+		if (val == null && forbidNull) throw new EzException("Variable " + variable.getName() + " has not been set", true);
+		return val;
 	}
 	
 	public Var<T> getVariable()

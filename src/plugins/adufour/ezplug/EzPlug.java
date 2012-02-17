@@ -2,6 +2,7 @@ package plugins.adufour.ezplug;
 
 import icy.plugin.abstract_.Plugin;
 import icy.plugin.interface_.PluginLibrary;
+import icy.system.thread.ThreadUtil;
 import icy.type.value.IntegerValue;
 
 import java.awt.Component;
@@ -258,7 +259,7 @@ public abstract class EzPlug extends Plugin implements PluginLibrary, Runnable, 
 	}
 	
 	/**
-	 * @return the number of active (not-destroyed) instances of this plugin
+	 * @return the number of active (not-destroyed) instances of this plug-in
 	 */
 	public static int getNbInstances()
 	{
@@ -349,9 +350,19 @@ public abstract class EzPlug extends Plugin implements PluginLibrary, Runnable, 
 			
 			if (timeTrial) System.out.println(getName() + " executed in " + (System.nanoTime() - startTime) / 1000000 + " ms");
 		}
-		catch (EzException e)
+		catch (final EzException e)
 		{
-			JOptionPane.showMessageDialog(ezgui.getFrame(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			if (ezgui != null)
+			{
+				
+				ThreadUtil.invokeLater(new Runnable()
+				{
+					public void run()
+					{
+						JOptionPane.showMessageDialog(ezgui.getFrame(), e.getMessage(), "Error in plug-in " + getName(), JOptionPane.ERROR_MESSAGE);
+					}
+				});
+			}
 			if (!e.catchException) throw e;
 		}
 		finally

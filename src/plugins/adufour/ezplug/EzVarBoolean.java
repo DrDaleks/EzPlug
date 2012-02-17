@@ -24,12 +24,4 @@ public class EzVarBoolean extends EzVar<Boolean>
 	{
 		super(new VarBoolean(varName, defaultValue), null);
 	}
-	
-	/**
-	 * Legacy method
-	 */
-	public void setValue(Boolean value)
-	{
-		super.setValue(value);
-	}
 }

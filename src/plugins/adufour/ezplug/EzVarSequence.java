@@ -28,14 +28,6 @@ public class EzVarSequence extends EzVar<Sequence>
     }
     
     /**
-     * Legacy method
-     */
-    public Sequence getValue()
-    {
-    	return super.getValue();
-    }
-    
-    /**
      * Force the sequence chooser to the "no sequence" selection
      */
     public void setNoSequenceSelection()
