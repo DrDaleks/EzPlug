@@ -392,6 +392,7 @@ public abstract class EzPlug extends Plugin implements PluginLibrary, Runnable, 
 		if (ezgui == null) createUI();
 		
 		ezgui.setVisible(true);
+		ezgui.toFront();
 	}
 	
 	/**
