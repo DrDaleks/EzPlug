@@ -358,7 +358,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 
             for (T triggerValue : componentTriggerValues)
             {
-                if (this.getValue().equals(triggerValue))
+                if (triggerValue == getValue())
                 {
                     // this call will be recursive in case of a EzVar object
                     component.setVisible(true);
