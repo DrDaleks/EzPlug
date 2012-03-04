@@ -3,6 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="ICY_HOME/icy.jar"/>
-	<classpathentry kind="var" path="ICY_HOME/plugins/adufour/vars/lang/Var.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Vars"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
