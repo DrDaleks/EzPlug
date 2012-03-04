@@ -1,6 +1,6 @@
 package plugins.adufour.ezplug;
 
-import plugins.adufour.vars.lang.VarNumbers;
+import plugins.adufour.vars.lang.VarDoubleArray;
 
 /**
  * Double arrays
@@ -43,6 +43,6 @@ public class EzVarDoubleArray extends EzVar<Double[]>
      */
     public EzVarDoubleArray(String varName, Double[][] defaultValues, int defaultValueIndex, boolean allowUserInput) throws NullPointerException
     {
-        super(new VarNumbers.Double(varName, null), defaultValues, defaultValueIndex, allowUserInput);
+        super(new VarDoubleArray(varName, null), defaultValues, defaultValueIndex, allowUserInput);
     }
 }

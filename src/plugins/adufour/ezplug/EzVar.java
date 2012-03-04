@@ -16,7 +16,7 @@ import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.lang.Constraint;
 import plugins.adufour.vars.lang.ConstraintByValue;
 import plugins.adufour.vars.lang.Var;
-import plugins.adufour.vars.lang.VarListener;
+import plugins.adufour.vars.util.VarListener;
 
 /**
  * Class defining a variable for use within an EzPlug.<br>
@@ -369,7 +369,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     }
 
     @Override
-    public void variableChanged(Var<T> source, T oldValue, T newValue)
+    public void valueChanged(Var<T> source, T oldValue, T newValue)
     {
         fireVariableChanged(newValue);
     }

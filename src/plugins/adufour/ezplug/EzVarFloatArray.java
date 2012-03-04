@@ -1,6 +1,6 @@
 package plugins.adufour.ezplug;
 
-import plugins.adufour.vars.lang.VarNumbers;
+import plugins.adufour.vars.lang.VarFloatArray;
 
 /**
  * Float arrays
@@ -43,6 +43,6 @@ public class EzVarFloatArray extends EzVar<Float[]>
      */
     public EzVarFloatArray(String varName, Float[][] defaultValues, int defaultValueIndex, boolean allowUserInput) throws NullPointerException
     {
-        super(new VarNumbers.Float(varName, null), defaultValues, defaultValueIndex, allowUserInput);
+        super(new VarFloatArray(varName, null), defaultValues, defaultValueIndex, allowUserInput);
     }
 }
