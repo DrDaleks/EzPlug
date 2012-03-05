@@ -1,7 +1,8 @@
 package plugins.adufour.ezplug;
 
+import icy.common.Version;
+import icy.main.Icy;
 import icy.plugin.abstract_.Plugin;
-import icy.plugin.abstract_.PluginActionable;
 import icy.plugin.interface_.PluginLibrary;
 import icy.system.thread.ThreadUtil;
 import icy.type.value.IntegerValue;
@@ -43,12 +44,12 @@ import javax.swing.JOptionPane;
  * parameters from/to disk via XML files.<br>
  * <br>
  * An example showing most of the features in action is available online <a
- * href="http://icy.bioimageanalysis.org/index.php?display=detailPlugin&pluginId=77">here</a>. 
+ * href="http://icy.bioimageanalysis.org/index.php?display=detailPlugin&pluginId=77">here</a>.
  * 
  * @see plugins.adufour.ezplug.EzInternalFrame
  * @author Alexandre Dufour
  */
-public abstract class EzPlug extends PluginActionable implements PluginLibrary, Runnable
+public abstract class EzPlug extends Plugin implements icy.plugin.interface_.PluginImageAnalysis, PluginLibrary, Runnable
 {
 	public static final String				EZPLUG_MAINTAINERS	= "Alexandre Dufour (adufour@pasteur.fr)";
 	
@@ -168,6 +169,18 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
 			
 			// show the interface to the user
 			showUI();
+			
+			// check obsolete version
+			if (Icy.version.isLower(new Version(1, 2, 0, 0)))
+			{
+				String message = "Warning: you are using an obsolete version of Icy, and cannot benefit from latest improvements.\n";
+				message += "Here are four ways to upgrade or stay up to date:\n";
+				message += " - Use the \"i\" > \"Check for update\" menu\n";
+				message += " - Enable the \"Check for application update at startup\" in the preferences menu\n";
+				message += " - Check the \"Enable auto update\" in the preferences menu, to always be up to date\n";
+				message += " - If the upgrade process fails, download Icy again from http://icy.bioimageanalysis.org";
+				JOptionPane.showMessageDialog(null, message, "Warning: Icy upgrade available", JOptionPane.WARNING_MESSAGE);
+			}
 		}
 		catch (EzException e)
 		{
