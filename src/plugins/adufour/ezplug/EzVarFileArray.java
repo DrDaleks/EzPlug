@@ -3,7 +3,7 @@ package plugins.adufour.ezplug;
 import java.io.File;
 
 import plugins.adufour.vars.gui.FileMode;
-import plugins.adufour.vars.lang.VarFiles;
+import plugins.adufour.vars.lang.VarFileArray;
 
 /**
  * Class defining a variable of type String, embarking a button triggering a file dialog as graphical component
@@ -23,6 +23,6 @@ public class EzVarFileArray extends EzVar<File[]>
      */
     public EzVarFileArray(String varName, final String path)
     {
-        super(new VarFiles(varName, null), new VarFiles.VarConstraintByFileType(path, FileMode.FILES, null, false));
+        super(new VarFileArray(varName, null), new VarFileArray.VarConstraintByFileType(path, FileMode.FILES, null, false));
     }
 }
