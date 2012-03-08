@@ -309,12 +309,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         variable.setValue(value);
     }
 
-    /**
-     * Assigns a tool-tip text to the variable, which pops up when the user hovers the mouse on it.
-     * 
-     * @param text
-     *            the text to display (usually no more than 20 words)
-     */
+    @Override
     public void setToolTipText(String text)
     {
         jLabelName.setToolTipText(text);

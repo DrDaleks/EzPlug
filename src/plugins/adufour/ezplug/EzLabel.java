@@ -95,5 +95,11 @@ public class EzLabel extends EzComponent
 		gridbag.setConstraints(jTextArea, gbc);
 		container.add(jTextArea);
 	}
+
+	@Override
+	public void setToolTipText(String text)
+	{
+		jTextArea.setToolTipText(text);
+	}
 	
 }

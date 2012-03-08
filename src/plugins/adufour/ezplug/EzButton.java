@@ -62,6 +62,12 @@ public class EzButton extends EzComponent
     }
 
     @Override
+	public void setToolTipText(String text)
+	{
+		jButton.setToolTipText(text);
+	}
+
+	@Override
     public void dispose()
     {
         jButton = null;

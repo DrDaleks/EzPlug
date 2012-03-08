@@ -124,6 +124,14 @@ public abstract class EzComponent
 		this.parentGroup = group;
 	}
 	
+    /**
+     * Assigns a tool-tip text to the variable, which pops up when the user hovers the mouse on it.
+     * 
+     * @param text
+     *            the text to display (usually no more than 20 words)
+     */
+	public abstract void setToolTipText(String text);
+	
 	protected void dispose()
 	{
 		this.gui = null;
