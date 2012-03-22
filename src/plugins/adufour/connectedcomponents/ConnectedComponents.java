@@ -1019,7 +1019,7 @@ public class ConnectedComponents extends EzPlug
 					if (targetLabelValue == 0) continue;
 					
 					// store the current pixel in the component
-					componentsMap.get(targetLabelValue).addPoint(new Point3i(i, j, z));
+					componentsMap.get(targetLabelValue).addPointInternal(new Point3i(i, j, z));
 				}
 			}
 		}

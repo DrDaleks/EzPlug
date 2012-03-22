@@ -62,14 +62,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		coordsSum = new Point3d();
 	}
 	
-	/**
-	 * Adds a point to this component. This method also accumulates coordinates to optimize the mass
-	 * center computation
-	 * 
-	 * @param point
-	 *            the point to add
-	 */
-	void addPoint(Point3i point)
+	void addPointInternal(Point3i point)
 	{
 		points.add(point);
 		
@@ -82,15 +75,27 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	}
 	
 	/**
+	 * Adds a point to this component and updates the mass center
+	 * 
+	 * @param point
+	 *            the point to add
+	 */
+	public void addPoint(Point3i point)
+	{
+		addPointInternal(point);
+		updateDetectionCoords();
+	}
+	
+	/**
 	 * Adds a point to this component. This method also accumulates coordinates to optimize the mass
 	 * center computation
 	 * 
 	 * @param point
 	 *            the point to add
 	 */
-	void removePoint(Point3i point)
+	void removePointInternal(Point3i point)
 	{
-		points.remove(point);
+		if (!points.remove(point)) return;
 		
 		// accumulate coordinates to compute the mass center
 		coordsSum.x -= point.x;
@@ -98,6 +103,15 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		coordsSum.z -= point.z;
 		
 		coordsDirty = true;
+	}
+	
+	public void removeAllPoints()
+	{
+		points.clear();
+		coordsSum.set(0, 0, 0);
+		x = 0;
+		y = 0;
+		z = 0;
 	}
 	
 	/**
@@ -536,7 +550,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		
 		for (Point3i srcPt : this)
 			for (Point3i dstPt : component)
-				if (srcPt.equals(dstPt)) intersection.addPoint(srcPt);
+				if (srcPt.equals(dstPt)) intersection.addPointInternal(srcPt);
 		
 		return intersection;
 	}
