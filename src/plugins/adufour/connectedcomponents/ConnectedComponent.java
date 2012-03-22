@@ -32,10 +32,17 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	 */
 	boolean								onEdgeZ;
 	
+	private boolean						coordsDirty;
+	
 	/**
 	 * the array of points in this object
 	 */
 	private final ArrayList<Point3i>	points;
+	
+	/**
+	 * the array of contour points of this object
+	 */
+	private Point3i[]					contourPoints;
 	
 	/**
 	 * Sum of all points coordinates. The mass center is given by the ratio of each component by the
@@ -44,15 +51,14 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	private final Point3d				coordsSum;
 	
 	/**
-	 * Creates a new connected component with the specified time and size
+	 * Creates a new connected component with given initial capacity
 	 * 
-	 * @param t
-	 * @param size
+	 * @param initialCapacity
 	 */
-	public ConnectedComponent(int size)
+	public ConnectedComponent(int initialCapacity)
 	{
 		super(0, 0, 0, 0);
-		this.points = new ArrayList<Point3i>(size);
+		this.points = new ArrayList<Point3i>(initialCapacity);
 		coordsSum = new Point3d();
 	}
 	
@@ -63,7 +69,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	 * @param point
 	 *            the point to add
 	 */
-	public void addPoint(Point3i point)
+	void addPoint(Point3i point)
 	{
 		points.add(point);
 		
@@ -71,6 +77,8 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		coordsSum.x += point.x;
 		coordsSum.y += point.y;
 		coordsSum.z += point.z;
+		
+		coordsDirty = true;
 	}
 	
 	/**
@@ -80,7 +88,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	 * @param point
 	 *            the point to add
 	 */
-	public void removePoint(Point3i point)
+	void removePoint(Point3i point)
 	{
 		points.remove(point);
 		
@@ -88,6 +96,8 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		coordsSum.x -= point.x;
 		coordsSum.y -= point.y;
 		coordsSum.z -= point.z;
+		
+		coordsDirty = true;
 	}
 	
 	/**
@@ -216,8 +226,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 			for (int c = 0; c < minIntensity.length; c++)
 			{
 				double val = Array1DUtil.getValue(((Object[]) dataCXY)[c], offsetXY, sequence.getDataType_().isSigned());
-				if (val < minIntensity[c])
-					minIntensity[c] = val;
+				if (val < minIntensity[c]) minIntensity[c] = val;
 			}
 		}
 		return minIntensity;
@@ -236,8 +245,8 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	}
 	
 	/**
-	 * Computes the maximum intensity pixel of the component on each channel of the given sequence and
-	 * the specified time point
+	 * Computes the maximum intensity pixel of the component on each channel of the given sequence
+	 * and the specified time point
 	 * 
 	 * @param sequence
 	 * @return an array containing the average intensity of the component in each band
@@ -255,8 +264,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 			for (int c = 0; c < maxIntensity.length; c++)
 			{
 				double val = Array1DUtil.getValue(((Object[]) dataCXY)[c], offsetXY, sequence.getDataType_().isSigned());
-				if (val > maxIntensity[c])
-					maxIntensity[c] = val;
+				if (val > maxIntensity[c]) maxIntensity[c] = val;
 			}
 		}
 		return maxIntensity;
@@ -281,8 +289,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 				Vector3d dstV = new Vector3d(dstPt.x, dstPt.y, dstPt.z);
 				dstV.sub(srcV);
 				double length = dstV.length();
-				if (length < distance)
-					distance = length;
+				if (length < distance) distance = length;
 			}
 		}
 		return distance;
@@ -339,6 +346,36 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		return vector;
 	}
 	
+	void updateDetectionCoords()
+	{
+		double factor = 1.0 / getSize();
+		x = coordsSum.x * factor;
+		y = coordsSum.y * factor;
+		z = coordsSum.z * factor;
+		coordsDirty = false;
+	}
+	
+	@Override
+	public double getX()
+	{
+		if (coordsDirty) updateDetectionCoords();
+		return x;
+	}
+	
+	@Override
+	public double getY()
+	{
+		if (coordsDirty) updateDetectionCoords();
+		return y;
+	}
+	
+	@Override
+	public double getZ()
+	{
+		if (coordsDirty) updateDetectionCoords();
+		return z;
+	}
+	
 	/**
 	 * Computes the mass center of this component
 	 * 
@@ -346,9 +383,11 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	 */
 	public Point3d getMassCenter()
 	{
-		Point3d massCenter = new Point3d(coordsSum);
-		massCenter.scale(1.0 / getSize());
-		return massCenter;
+		if (coordsDirty) updateDetectionCoords();
+		return new Point3d(x, y, z);
+		// Point3d massCenter = new Point3d(coordsSum);
+		// massCenter.scale(1.0 / getSize());
+		// return massCenter;
 	}
 	
 	/**
@@ -364,8 +403,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		for (Point3i p : this)
 		{
 			double dist = point.distance(new Point3d(p.x, p.y, p.z));
-			if (dist > maxDist)
-				maxDist = dist;
+			if (dist > maxDist) maxDist = dist;
 		}
 		
 		return maxDist;
@@ -382,14 +420,108 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	}
 	
 	/**
-	 * Creates an array all pixels of this component. This array is a copy of the internal point
-	 * array. To add or remove points, use the appropriate methods instead
-	 * 
-	 * @return
+	 * @return An array containing all the pixels of this component
 	 */
 	public Point3i[] getPoints()
 	{
 		return points.toArray(new Point3i[getSize()]);
+	}
+	
+	/**
+	 * @param outputSequence
+	 *            an optional output sequence to receive the extracted contour
+	 * @return An array containing all the contour pixels of this component
+	 */
+	public Point3i[] getContourPoints(Sequence outputSequence)
+	{
+		if (contourPoints == null)
+		{
+			ArrayList<Point3i> buffer = new ArrayList<Point3i>(getSize() / 2);
+			
+			Point3i min = new Point3i(), max = new Point3i();
+			computeBoundingBox(min, max);
+			
+			Sequence mask = toSequence();
+			int w = mask.getSizeX();
+			int h = mask.getSizeY();
+			int d = mask.getSizeZ();
+			
+			byte[][] outputMask = null;
+			
+			if (outputSequence != null)
+			{
+				outputSequence.removeAllImage();
+				for (int i = 0; i < d; i++)
+				{
+					outputSequence.setImage(0, i, new IcyBufferedImage(w, h, 1, DataType.UBYTE));
+				}
+				
+				outputMask = outputSequence.getDataXYZAsByte(0, 0);
+			}
+			
+			byte[][] mask_z_xy = mask.getDataXYZAsByte(0, 0);
+			
+			Point3i localP = new Point3i();
+			
+			if (min.z != max.z)
+			{
+				mainLoop: for (Point3i p : points)
+				{
+					localP.sub(p, min);
+					
+					int xy = localP.y * w + localP.x;
+					
+					if (localP.x == 0 || localP.y == 0 || localP.x == w - 1 || localP.y == h - 1 || localP.z == 0 || localP.z == d - 1)
+					{
+						buffer.add(p);
+						if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
+						continue;
+					}
+					
+					for (byte[] z : new byte[][] { mask_z_xy[localP.z - 1], mask_z_xy[localP.z], mask_z_xy[localP.z + 1] })
+						if (z[xy - w - 1] == 0 || z[xy - w] == 0 || z[xy - w + 1] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w - 1] == 0 || z[xy + w] == 0 || z[xy + w + 1] == 0)
+						{
+							buffer.add(p);
+							if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
+							continue mainLoop;
+						}
+					
+					// the top and bottom neighbors were forgotten in the previous loop
+					if (mask_z_xy[localP.z - 1][xy] == 0 || mask_z_xy[localP.z + 1][xy] == 0)
+					{
+						buffer.add(p);
+					}
+				}
+			}
+			else
+			{
+				for (Point3i p : points)
+				{
+					localP.sub(p, min);
+					
+					int xy = localP.y * w + localP.x;
+					
+					if (localP.x == 0 || localP.y == 0 || localP.x == w - 1 || localP.y == h - 1)
+					{
+						buffer.add(p);
+						if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
+						continue;
+					}
+					
+					byte[] z = mask_z_xy[localP.z];
+					
+					if (z[xy - w - 1] == 0 || z[xy - w] == 0 || z[xy - w + 1] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w - 1] == 0 || z[xy + w] == 0 || z[xy + w + 1] == 0)
+					{
+						buffer.add(p);
+						if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
+					}
+				}
+			}
+			
+			contourPoints = buffer.toArray(new Point3i[buffer.size()]);
+		}
+		
+		return contourPoints;
 	}
 	
 	/**
@@ -404,8 +536,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 		
 		for (Point3i srcPt : this)
 			for (Point3i dstPt : component)
-				if (srcPt.equals(dstPt))
-					intersection.addPoint(srcPt);
+				if (srcPt.equals(dstPt)) intersection.addPoint(srcPt);
 		
 		return intersection;
 	}
@@ -456,7 +587,6 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	@Override
 	public String toString()
 	{
-		Point3d center = getMassCenter();
-		return "[" + center.x + ", " + center.y + ", " + center.z + "], " + getSize() + " points";
+		return "[" + getX() + ", " + getY() + ", " + getZ() + "], " + getSize() + " points";
 	}
 }
