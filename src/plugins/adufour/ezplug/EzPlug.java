@@ -137,14 +137,6 @@ public abstract class EzPlug extends Plugin implements icy.plugin.interface_.Plu
 		
 		// clear all variables
 		
-		for (EzVar<?> var : ezVars.values())
-		{
-			// remove any listeners we know about
-			var.removeAllVarChangeListeners();
-			
-			var.setUI(null);
-		}
-		
 		ezVars.clear();
 		
 		ezgui = null;
