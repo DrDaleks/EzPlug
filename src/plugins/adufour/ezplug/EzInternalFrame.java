@@ -148,6 +148,7 @@ public class EzInternalFrame extends IcyInternalFrame
         public void paintComponent(Graphics g)
         {
             Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setFont(getFont().deriveFont(Font.BOLD + Font.ITALIC, EzGUI.FONT_SIZE));
             EzGUI.paintTitlePane(g2d, getWidth(), getHeight(), EzInternalFrame.this.getTitle(), true);
 
             // paint the icon manually, as it is not the default for internal frames
