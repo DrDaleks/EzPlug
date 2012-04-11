@@ -189,8 +189,6 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 	 */
 	public void repack(boolean updateParametersPanel)
 	{
-		setVisible(false);
-		
 		if (updateParametersPanel)
 		{
 			jPanelParameters.removeAll();
@@ -223,7 +221,6 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 		}
 		
 		pack();
-		setVisible(true);
 	}
 	
 	/**
@@ -416,8 +413,6 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 	
 	public void onClosed()
 	{
-		// if (isExternalized()) ((IcyInternalFrame) getInternalFrame()).close(true);
-		
 		if (ezPlug == null) return;
 		
 		if (executionThread != null && executionThread.isAlive())
@@ -441,8 +436,6 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 			}
 		}
 		
-		ezPlug.cleanFromUI();
-		
 		// dispose all components
 		
 		for (Object object : components)
@@ -450,6 +443,8 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 			{
 				((EzComponent) object).dispose();
 			}
+		
+		ezPlug.cleanFromUI();
 		
 		components.clear();
 		
