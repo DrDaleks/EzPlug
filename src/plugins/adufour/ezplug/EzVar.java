@@ -126,7 +126,10 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         gbc.weightx = 1;
         // gbc.weighty = 0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        container.add(getVarEditor().editorComponent, gbc);
+        
+        VarEditor<T> ed = getVarEditor();
+        ed.setEnabled(true); // activates listeners
+        container.add(ed.getEditorComponent(), gbc);
     }
 
     protected void dispose()
@@ -178,7 +181,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         if (getVarEditor() instanceof ComboBox)
         {
-            JComboBox combo = (JComboBox) getVarEditor().editorComponent;
+            JComboBox combo = ((ComboBox<T>) getVarEditor()).getEditorComponent();
 
             ArrayList<T> items = new ArrayList<T>(combo.getItemCount());
             for (int i = 0; i < combo.getItemCount(); i++)
@@ -292,7 +295,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     public void setEnabled(boolean enabled)
     {
         jLabelName.setEnabled(enabled);
-        getVarEditor().editorComponent.setEnabled(enabled);
+        getVarEditor().setEnabled(enabled);
     }
 
     /**
@@ -313,7 +316,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     public void setToolTipText(String text)
     {
         jLabelName.setToolTipText(text);
-        getVarEditor().editorComponent.setToolTipText(text);
+        getVarEditor().getEditorComponent().setToolTipText(text);
     }
 
     /**

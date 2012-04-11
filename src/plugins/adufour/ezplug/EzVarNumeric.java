@@ -57,7 +57,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public void setMinValue(Comparable<N> minValue) throws UnsupportedOperationException
     {
-        JComponent comp = getVarEditor().editorComponent;
+        JComponent comp = getVarEditor().getEditorComponent();
 
         if (comp instanceof JSpinner)
         {
@@ -95,7 +95,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public void setStep(N step) throws UnsupportedOperationException
     {
-        JComponent comp = getVarEditor().editorComponent;
+        JComponent comp = getVarEditor().getEditorComponent();
 
         if (comp instanceof JSpinner)
         {
@@ -134,7 +134,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public void setMaxValue(Comparable<N> maxValue)
     {
-        JComponent comp = getVarEditor().editorComponent;
+        JComponent comp = getVarEditor().getEditorComponent();
 
         if (comp instanceof JSpinner)
         {
@@ -161,7 +161,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public void setValues(N value, Comparable<N> min, Comparable<N> max, N step)
     {
-        JComponent comp = getVarEditor().editorComponent;
+        JComponent comp = getVarEditor().getEditorComponent();
 
         if (comp instanceof JSpinner)
         {
