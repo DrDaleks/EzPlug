@@ -145,28 +145,13 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	 *            the first corner of the bounding box in X-Y-Z order (Upper-Left hand-Top)
 	 * @param end
 	 *            the second corner of the bounding box in X-Y-Z order (Lower-Right hand-Bottom)
+	 * @deprecated Use
+	 *             {@link ShapeDescriptor#computeBoundingBox(ConnectedComponent, Point3i, Point3i)}
+	 *             instead
 	 */
 	public void computeBoundingBox(Point3i start, Point3i end)
 	{
-		start.x = Integer.MAX_VALUE;
-		start.y = Integer.MAX_VALUE;
-		start.z = Integer.MAX_VALUE;
-		
-		end.x = 0;
-		end.y = 0;
-		end.z = 0;
-		
-		for (Point3i point : points)
-		{
-			start.x = Math.min(start.x, point.x);
-			end.x = Math.max(end.x, point.x);
-			
-			start.y = Math.min(start.y, point.y);
-			end.y = Math.max(end.y, point.y);
-			
-			start.z = Math.min(start.z, point.z);
-			end.z = Math.max(end.z, point.z);
-		}
+		ShapeDescriptor.computeBoundingBox(this, start, end);
 	}
 	
 	/**
@@ -443,17 +428,17 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 	
 	/**
 	 * @param outputSequence
-	 *            an optional output sequence to receive the extracted contour
+	 *            (set to null if not wanted) an output sequence to receive the extracted contour
 	 * @return An array containing all the contour pixels of this component
 	 */
 	public Point3i[] getContourPoints(Sequence outputSequence)
 	{
 		if (contourPoints == null)
 		{
-			ArrayList<Point3i> buffer = new ArrayList<Point3i>(getSize() / 2);
+			ArrayList<Point3i> list = new ArrayList<Point3i>(getSize() / 2);
 			
 			Point3i min = new Point3i(), max = new Point3i();
-			computeBoundingBox(min, max);
+			ShapeDescriptor.computeBoundingBox(this, min, max);
 			
 			Sequence mask = toSequence();
 			int w = mask.getSizeX();
@@ -487,15 +472,15 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 					
 					if (localP.x == 0 || localP.y == 0 || localP.x == w - 1 || localP.y == h - 1 || localP.z == 0 || localP.z == d - 1)
 					{
-						buffer.add(p);
+						list.add(p);
 						if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
 						continue;
 					}
 					
 					for (byte[] z : new byte[][] { mask_z_xy[localP.z - 1], mask_z_xy[localP.z], mask_z_xy[localP.z + 1] })
-						if (z[xy - w - 1] == 0 || z[xy - w] == 0 || z[xy - w + 1] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w - 1] == 0 || z[xy + w] == 0 || z[xy + w + 1] == 0)
+						if (z[xy - w] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w] == 0 || z[xy - w - 1] == 0 || z[xy - w + 1] == 0 || z[xy + w - 1] == 0 || z[xy + w + 1] == 0)
 						{
-							buffer.add(p);
+							list.add(p);
 							if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
 							continue mainLoop;
 						}
@@ -503,7 +488,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 					// the top and bottom neighbors were forgotten in the previous loop
 					if (mask_z_xy[localP.z - 1][xy] == 0 || mask_z_xy[localP.z + 1][xy] == 0)
 					{
-						buffer.add(p);
+						list.add(p);
 					}
 				}
 			}
@@ -517,22 +502,22 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
 					
 					if (localP.x == 0 || localP.y == 0 || localP.x == w - 1 || localP.y == h - 1)
 					{
-						buffer.add(p);
+						list.add(p);
 						if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
 						continue;
 					}
 					
 					byte[] z = mask_z_xy[localP.z];
 					
-					if (z[xy - w - 1] == 0 || z[xy - w] == 0 || z[xy - w + 1] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w - 1] == 0 || z[xy + w] == 0 || z[xy + w + 1] == 0)
+					if (z[xy - w] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w] == 0)// || z[xy - w - 1] == 0 || z[xy - w + 1] == 0 || z[xy + w - 1] == 0 || z[xy + w + 1] == 0)
 					{
-						buffer.add(p);
+						list.add(p);
 						if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
 					}
 				}
 			}
 			
-			contourPoints = buffer.toArray(new Point3i[buffer.size()]);
+			contourPoints = list.toArray(new Point3i[list.size()]);
 		}
 		
 		return contourPoints;

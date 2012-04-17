@@ -158,12 +158,19 @@ public class ConnectedComponents extends EzPlug
 		
 		int nbObjects = 0;
 		for (List<ConnectedComponent> ccs : components.values())
+		{
 			nbObjects += ccs.size();
-		
-		objectCount.setText("Total: " + nbObjects + " components");
+			
+			// for(ConnectedComponent cc : ccs)
+			// {
+			// System.out.println(ShapeDescriptor.computeEccentricity(cc));
+			// }
+		}
 		
 		if (getUI() != null)
 		{
+			objectCount.setText("Total: " + nbObjects + " components");
+			
 			if (exportSequence.getValue())
 			{
 				ConnectedComponentsPainter painter = new ConnectedComponentsPainter(components);
@@ -223,12 +230,29 @@ public class ConnectedComponents extends EzPlug
 			xlsManager.setLabel(2, 0, "x");
 			xlsManager.setLabel(3, 0, "y");
 			xlsManager.setLabel(4, 0, "z");
-			xlsManager.setLabel(5, 0, "size");
+			xlsManager.setLabel(5, 0, "area");
+			xlsManager.setLabel(6, 0, "sphericity");
+			xlsManager.setLabel(7, 0, "eccentricity");
+			xlsManager.setLabel(8, 0, "M100");
+			xlsManager.setLabel(9, 0, "M010");
+			xlsManager.setLabel(10, 0, "M001");
+			xlsManager.setLabel(11, 0, "M110");
+			xlsManager.setLabel(12, 0, "M101");
+			xlsManager.setLabel(13, 0, "M011");
+			xlsManager.setLabel(14, 0, "M111");
+			xlsManager.setLabel(15, 0, "M200");
+			xlsManager.setLabel(16, 0, "M020");
+			xlsManager.setLabel(17, 0, "M002");
+			xlsManager.setLabel(18, 0, "M220");
+			xlsManager.setLabel(19, 0, "M202");
+			xlsManager.setLabel(20, 0, "M022");
+			xlsManager.setLabel(21, 0, "M222");
 			
 			int cpt = 1;
 			for (Integer time : components.keySet())
 				for (ConnectedComponent cc : components.get(time))
 				{
+					boolean is2D = ShapeDescriptor.is2D(cc);
 					Point3d center = cc.getMassCenter();
 					xlsManager.setNumber(0, cpt, cpt);
 					xlsManager.setNumber(1, cpt, time);
@@ -236,6 +260,22 @@ public class ConnectedComponents extends EzPlug
 					xlsManager.setNumber(3, cpt, center.y);
 					xlsManager.setNumber(4, cpt, center.z);
 					xlsManager.setNumber(5, cpt, cc.getSize());
+					xlsManager.setNumber(6, cpt, ShapeDescriptor.computeSphericity(cc));
+					xlsManager.setNumber(7, cpt, ShapeDescriptor.computeEccentricity(cc));
+					xlsManager.setNumber(8, cpt, ShapeDescriptor.computeGeometricMoment(cc, 1, 0, 0));
+					xlsManager.setNumber(9, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 1, 0));
+					if (!is2D) xlsManager.setNumber(10, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 0, 1));
+					xlsManager.setNumber(11, cpt, ShapeDescriptor.computeGeometricMoment(cc, 1, 1, 0));
+					if (!is2D) xlsManager.setNumber(12, cpt, ShapeDescriptor.computeGeometricMoment(cc, 1, 0, 1));
+					if (!is2D) xlsManager.setNumber(13, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 1, 1));
+					if (!is2D) xlsManager.setNumber(14, cpt, ShapeDescriptor.computeGeometricMoment(cc, 1, 1, 1));
+					xlsManager.setNumber(15, cpt, ShapeDescriptor.computeGeometricMoment(cc, 2, 0, 0));
+					xlsManager.setNumber(16, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 2, 0));
+					if (!is2D) xlsManager.setNumber(17, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 0, 2));
+					xlsManager.setNumber(18, cpt, ShapeDescriptor.computeGeometricMoment(cc, 2, 2, 0));
+					if (!is2D) xlsManager.setNumber(19, cpt, ShapeDescriptor.computeGeometricMoment(cc, 2, 0, 2));
+					if (!is2D) xlsManager.setNumber(20, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 2, 2));
+					if (!is2D) xlsManager.setNumber(21, cpt, ShapeDescriptor.computeGeometricMoment(cc, 2, 2, 2));
 					cpt++;
 					if (cpt == Short.MAX_VALUE)
 					{
