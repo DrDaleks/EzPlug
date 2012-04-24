@@ -34,6 +34,11 @@ public class EzVarSequence extends EzVar<Sequence>
     
     public void setValue(final Sequence value) throws UnsupportedOperationException
     {
+    	// 1) adjust the graphical interface (will also change the variable value) 
     	((SequenceChooser)getVarEditor()).getEditorComponent().setSelectedItem(value);
+    	// 2) if value is not in the list of opened sequences, the variable will be unchanged
+    	// => set it a second time here
+    	getVariable().setValue(value);
+    	// (note: listeners will not be fired twice if the first line worked)
     }
 }
