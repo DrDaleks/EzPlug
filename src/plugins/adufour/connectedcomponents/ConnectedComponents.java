@@ -13,6 +13,8 @@ import icy.type.DataType;
 import icy.type.collection.array.Array1DUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,22 @@ public class ConnectedComponents extends EzPlug
 		VALUE
 	}
 	
+	public enum Sorting
+	{
+		/**
+		 * Components are not sorted
+		 */
+		ARBITRARY,
+		/**
+		 * Components are sorted by ascending depth value
+		 */
+		DEPTH_ASC,
+		/**
+		 * Components are sorted by descending depth value
+		 */
+		DEPTH_DESC
+	}
+	
 	EzVarSequence				input					= new EzVarSequence("Input");
 	
 	EzVarEnum<ExtractionType>	extractionMethod		= new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
@@ -83,6 +101,9 @@ public class ConnectedComponents extends EzPlug
 	EzLabel						objectCount;
 	
 	EzVarBoolean				exportSequence			= new EzVarBoolean("Labeled sequence", true);
+	
+	EzVarEnum<Sorting>			labelSorting			= new EzVarEnum<ConnectedComponents.Sorting>("Sort components", Sorting.values(), Sorting.ARBITRARY);
+	
 	EzVarBoolean				exportSwPool			= new EzVarBoolean("Swimming pool", false);
 	EzVarBoolean				exportROI				= new EzVarBoolean("ROI (2D only)", false);
 	EzVarBoolean				exportExcel				= new EzVarBoolean("Export to Excel", false);
@@ -137,7 +158,8 @@ public class ConnectedComponents extends EzPlug
 		boundSize.addVisibilityTriggerTo(minSize, true);
 		boundSize.addVisibilityTriggerTo(maxSize, true);
 		
-		addEzComponent(new EzGroup("Export", exportSequence, exportSwPool, exportROI, exportExcel, exportExcelFile));
+		addEzComponent(new EzGroup("Export", exportSequence, labelSorting, exportSwPool, exportROI, exportExcel, exportExcelFile));
+		exportSequence.addVisibilityTriggerTo(labelSorting, true);
 		exportExcel.addVisibilityTriggerTo(exportExcelFile, true);
 		
 		addEzComponent(objectCount = new EzLabel(""));
@@ -173,8 +195,31 @@ public class ConnectedComponents extends EzPlug
 			
 			if (exportSequence.getValue())
 			{
-				ConnectedComponentsPainter painter = new ConnectedComponentsPainter(components);
-				outputSequence.addPainter(painter);
+				switch (labelSorting.getValue())
+				{
+					case DEPTH_ASC:
+						createLabeledSequence(outputSequence, components, new Comparator<ConnectedComponent>()
+						{
+							@Override
+							public int compare(ConnectedComponent o1, ConnectedComponent o2)
+							{
+								return (int) Math.signum(o1.getZ() - o2.getZ());
+							}
+						});
+					break;
+					
+					case DEPTH_DESC:
+						createLabeledSequence(outputSequence, components, new Comparator<ConnectedComponent>()
+						{
+							@Override
+							public int compare(ConnectedComponent o1, ConnectedComponent o2)
+							{
+								return (int) Math.signum(o2.getZ() - o1.getZ());
+							}
+						});
+					break;
+				}
+				
 				addSequence(outputSequence);
 			}
 			
@@ -504,7 +549,7 @@ public class ConnectedComponents extends EzPlug
 			componentsMap.put(t, components);
 		}
 		
-		labeledSequence.updateComponentsBounds(true, true);
+		labeledSequence.updateChannelsBounds(true);
 		labeledSequence.getColorModel().setColormap(0, new FireColorMap());
 		
 		return componentsMap;
@@ -1082,5 +1127,38 @@ public class ConnectedComponents extends EzPlug
 		detectionResult.setSequence(sequence);
 		
 		return detectionResult;
+	}
+	
+	/**
+	 * Fill the channel 0 of the given sequence with the list of components sorted using the given
+	 * comparator
+	 * 
+	 * @param output
+	 *            a sequence of type INT
+	 * @param detections
+	 * @param sorter
+	 */
+	public static void createLabeledSequence(Sequence output, Map<Integer, List<ConnectedComponent>> detections, Comparator<ConnectedComponent> sorter)
+	{
+		int width = output.getSizeX();
+		
+		for (Integer t : detections.keySet())
+		{
+			int id = 1;
+			
+			ConnectedComponent[] ccs = detections.get(t).toArray(new ConnectedComponent[] {});
+			Arrays.sort(ccs, sorter);
+			
+			int[][] data = output.getDataXYZAsInt(t, 0);
+			
+			for (ConnectedComponent cc : ccs)
+			{
+				for (Point3i pt : cc)
+				{
+					data[pt.z][pt.y * width + pt.x] = id;
+				}
+				id++;
+			}
+		}
 	}
 }
