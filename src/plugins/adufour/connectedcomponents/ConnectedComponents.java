@@ -68,15 +68,39 @@ public class ConnectedComponents extends EzPlug
 		/**
 		 * Components are not sorted
 		 */
-		ARBITRARY,
+		ARBITRARY(null),
 		/**
 		 * Components are sorted by ascending depth value
 		 */
-		DEPTH_ASC,
+		DEPTH_ASC(new Comparator<ConnectedComponent>()
+		{
+			@Override
+			public int compare(ConnectedComponent o1, ConnectedComponent o2)
+			{
+				return (int) Math.signum(o1.getZ() - o2.getZ());
+			}
+		}),
 		/**
 		 * Components are sorted by descending depth value
 		 */
-		DEPTH_DESC
+		DEPTH_DESC(new Comparator<ConnectedComponent>()
+		{
+			@Override
+			public int compare(ConnectedComponent o1, ConnectedComponent o2)
+			{
+				return (int) Math.signum(o2.getZ() - o1.getZ());
+			}
+		});
+		
+		/**
+		 * The comparator which can be used to sort an array of connected components
+		 */
+		public final Comparator<ConnectedComponent>	comparator;
+		
+		Sorting(Comparator<ConnectedComponent> comparator)
+		{
+			this.comparator = comparator;
+		}
 	}
 	
 	EzVarSequence				input					= new EzVarSequence("Input");
@@ -195,30 +219,7 @@ public class ConnectedComponents extends EzPlug
 			
 			if (exportSequence.getValue())
 			{
-				switch (labelSorting.getValue())
-				{
-					case DEPTH_ASC:
-						createLabeledSequence(outputSequence, components, new Comparator<ConnectedComponent>()
-						{
-							@Override
-							public int compare(ConnectedComponent o1, ConnectedComponent o2)
-							{
-								return (int) Math.signum(o1.getZ() - o2.getZ());
-							}
-						});
-					break;
-					
-					case DEPTH_DESC:
-						createLabeledSequence(outputSequence, components, new Comparator<ConnectedComponent>()
-						{
-							@Override
-							public int compare(ConnectedComponent o1, ConnectedComponent o2)
-							{
-								return (int) Math.signum(o2.getZ() - o1.getZ());
-							}
-						});
-					break;
-				}
+				createLabeledSequence(outputSequence, components, labelSorting.getValue().comparator);
 				
 				addSequence(outputSequence);
 			}
@@ -1131,23 +1132,25 @@ public class ConnectedComponents extends EzPlug
 	
 	/**
 	 * Fill the channel 0 of the given sequence with the list of components sorted using the given
-	 * comparator
+	 * comparator. The method does nothing if the given comparator is null
 	 * 
 	 * @param output
 	 *            a sequence of type INT
-	 * @param detections
-	 * @param sorter
+	 * @param components
+	 * @param comparator
 	 */
-	public static void createLabeledSequence(Sequence output, Map<Integer, List<ConnectedComponent>> detections, Comparator<ConnectedComponent> sorter)
+	public static void createLabeledSequence(Sequence output, Map<Integer, List<ConnectedComponent>> components, Comparator<ConnectedComponent> comparator)
 	{
+		if (comparator == null) return;
+		
 		int width = output.getSizeX();
 		
-		for (Integer t : detections.keySet())
+		for (Integer t : components.keySet())
 		{
 			int id = 1;
 			
-			ConnectedComponent[] ccs = detections.get(t).toArray(new ConnectedComponent[] {});
-			Arrays.sort(ccs, sorter);
+			ConnectedComponent[] ccs = components.get(t).toArray(new ConnectedComponent[] {});
+			Arrays.sort(ccs, comparator);
 			
 			int[][] data = output.getDataXYZAsInt(t, 0);
 			
