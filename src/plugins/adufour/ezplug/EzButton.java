@@ -56,7 +56,7 @@ public class EzButton extends EzComponent
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
 
-        jButton.setFocusable(false);
+//        jButton.setFocusable(false);
         gridbag.setConstraints(jButton, gbc);
         container.add(jButton);
     }
