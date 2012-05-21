@@ -242,9 +242,17 @@ public class ShapeDescriptor
 	{
 		if (is2D(cc))
 		{
-			Point2d radii = new Point2d();
-			computeEllipse(cc, null, radii, null, null);
-			return Math.min(radii.x, radii.y) / Math.max(radii.x, radii.y);
+			try
+			{
+				Point2d radii = new Point2d();
+				computeEllipse(cc, null, radii, null, null);
+				return Math.min(radii.x, radii.y) / Math.max(radii.x, radii.y);
+			}
+			catch (RuntimeException e)
+			{
+				// error during the ellipse computation
+				return Double.NaN;
+			}
 		}
 		else
 		{
@@ -391,8 +399,10 @@ public class ShapeDescriptor
 	 *            algebraic parameters of the fitting ellipse: <i>ax</i><sup>2</sup> + 2<i>bxy</i> +
 	 *            <i>cy</i><sup>2</sup> +2<i>dx</i> + 2<i>fy</i> + <i>g</i> = 0. The vector <b>A</b>
 	 *            represented in the array is normed, so that ||<b>A</b>||=1.
+	 * @throws RuntimeException
+	 *             if the ellipse calculation fails (e.g. if a singular matrix is detected)
 	 */
-	public static void computeEllipse(ConnectedComponent cc, Point2d center, Point2d radii, VarDouble angle, double[] equation)
+	public static void computeEllipse(ConnectedComponent cc, Point2d center, Point2d radii, VarDouble angle, double[] equation) throws RuntimeException
 	{
 		Point3i[] points = cc.getPoints();
 		Point3d ccenter = cc.getMassCenter();
