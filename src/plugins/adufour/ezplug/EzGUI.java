@@ -39,40 +39,69 @@ import org.pushingpixels.substance.api.SubstanceColorScheme;
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 
 import plugins.adufour.ezplug.EzGroup.FoldListener;
+import plugins.adufour.vars.lang.Var;
+import plugins.adufour.vars.lang.VarDouble;
+import plugins.adufour.vars.util.VarListener;
 
 public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, FoldListener
 {
-	public static final int			LOGO_HEIGHT					= 32;
+	public static final int				LOGO_HEIGHT					= 32;
 	
-	public static final int			FONT_SIZE					= 16;
+	public static final int				FONT_SIZE					= 16;
 	
-	private static final boolean	USE_SKIN_COLOR_SCHEME		= true;
+	private static final boolean		USE_SKIN_COLOR_SCHEME		= true;
 	
-	private Color					logoTitleColor;
+	private Color						logoTitleColor;
 	
-	private EzPlug					ezPlug;
+	private EzPlug						ezPlug;
 	
-	private Thread					executionThread;
+	private Thread						executionThread;
 	
-	private JPanel					jPanelParameters;
+	private JPanel						jPanelParameters;
 	
-	private final List<Object>		components					= new ArrayList<Object>();
+	private final List<Object>			components					= new ArrayList<Object>();
 	
-	private JPanel					jPanelBottom;
+	private JPanel						jPanelBottom;
 	
-	private JPanel					jPanelButtons;
+	private JPanel						jPanelButtons;
 	
-	private JButton					jButtonRun;
+	private JButton						jButtonRun;
 	
-	private JButton					jButtonStop;
+	private JButton						jButtonStop;
 	
-	private JButton					jButtonSaveParameters;
+	private JButton						jButtonSaveParameters;
 	
-	private JButton					jButtonLoadParameters;
+	private JButton						jButtonLoadParameters;
 	
-	private boolean					jButtonsParametersVisible	= true;
+	private boolean						jButtonsParametersVisible	= true;
 	
-	private JProgressBar			jProgressBar;
+	private JProgressBar				jProgressBar;
+	
+	private VarDouble					progressBarValue			= new VarDouble("Progress", 0.0);
+	
+	private final VarListener<Double>	progressListener			= new VarListener<Double>()
+																	{
+																		@Override
+																		public void valueChanged(Var<Double> source, Double oldValue, final Double newValue)
+																		{
+																			ThreadUtil.invokeLater(new Runnable()
+																			{
+																				public void run()
+																				{
+																					boolean inderterminate = newValue < 0 && newValue > 1;
+																					jProgressBar.setIndeterminate(inderterminate);
+																					
+																					if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
+																				}
+																			});
+																		}
+																		
+																		@Override
+																		public void referenceChanged(Var<Double> source, Var<? extends Double> oldReference, Var<? extends Double> newReference)
+																		{
+																			
+																		}
+																	};
 	
 	public EzGUI(final EzPlug ezPlug)
 	{
@@ -120,6 +149,8 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 		jProgressBar = new JProgressBar();
 		jProgressBar.setString("Running...");
 		jPanelBottom.add(jProgressBar);
+		
+		progressBarValue.addListener(progressListener);
 		
 		getContentPane().add(jPanelParameters, BorderLayout.CENTER);
 		getContentPane().add(jPanelBottom, BorderLayout.SOUTH);
@@ -178,7 +209,7 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 	{
 		repack(true);
 	}
-
+	
 	/**
 	 * Re-packs the user interface. This method should be called if one of the components was
 	 * changed either in size or visibility state
@@ -322,22 +353,24 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 	}
 	
 	/**
+	 * Returns the variable used by the interface's progress bar. Any change to this variable will
+	 * automatically affect the corresponding progress bar
+	 * 
+	 * @return
+	 */
+	public VarDouble getProgressBarValue()
+	{
+		return progressBarValue;
+	}
+	
+	/**
 	 * 
 	 * @param value
 	 *            A value between 0 and 1 (any other value will set an infinitely active state)
 	 */
 	public void setProgressBarValue(final double value)
 	{
-		ThreadUtil.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				boolean inderterminate = value < 0 && value > 1;
-				jProgressBar.setIndeterminate(inderterminate);
-				
-				if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, value)) * 100));
-			}
-		});
+		progressBarValue.setValue(value);
 	}
 	
 	public void setProgressBarVisible(final boolean visible)
@@ -456,6 +489,7 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 		if (jButtonStop != null) jButtonStop.removeActionListener(this);
 		jButtonLoadParameters.removeActionListener(this);
 		jButtonSaveParameters.removeActionListener(this);
+		progressBarValue.addListener(progressListener);
 		
 		ezPlug = null;
 		
