@@ -12,9 +12,8 @@ import javax.swing.JLabel;
 
 import plugins.adufour.vars.gui.ComboBox;
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.VarEditorFactory;
-import plugins.adufour.vars.lang.Constraint;
-import plugins.adufour.vars.lang.ConstraintByValue;
+import plugins.adufour.vars.gui.model.ValueSelectionModel;
+import plugins.adufour.vars.gui.model.VarEditorModel;
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.util.VarListener;
 
@@ -58,14 +57,14 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
      *            the constraint to apply on the variable when receiving input, or null if a default
      *            constraint should be applied
      */
-    EzVar(final Var<T> variable, Constraint<T> constraint)
+    EzVar(final Var<T> variable, VarEditorModel<T> constraint)
     {
         super(variable.getName());
         this.variable = variable;
-        variable.setConstraint(constraint);
+        variable.setDefaultEditorModel(constraint);
 
         jLabelName = new JLabel(variable.getName());
-        varEditor = VarEditorFactory.createEditor(variable);
+        varEditor = variable.createVarEditor();
     }
 
     /**
@@ -82,7 +81,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
      */
     EzVar(Var<T> variable, T[] defaultValues, int defaultValueIndex, boolean freeInput)
     {
-        this(variable, new ConstraintByValue<T>(defaultValues, defaultValueIndex, freeInput));
+        this(variable, new ValueSelectionModel<T>(defaultValues, defaultValueIndex, freeInput));
     }
 
     /**

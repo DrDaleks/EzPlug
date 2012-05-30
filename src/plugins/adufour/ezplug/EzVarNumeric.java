@@ -4,8 +4,8 @@ import javax.swing.JComponent;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
-import plugins.adufour.vars.lang.Constraint;
-import plugins.adufour.vars.lang.ConstraintByRange;
+import plugins.adufour.vars.gui.model.VarEditorModel;
+import plugins.adufour.vars.gui.model.RangeModel;
 import plugins.adufour.vars.lang.Var;
 
 /**
@@ -19,7 +19,7 @@ import plugins.adufour.vars.lang.Var;
  */
 public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
 {
-    protected EzVarNumeric(Var<N> variable, Constraint<N> constraint)
+    protected EzVarNumeric(Var<N> variable, VarEditorModel<N> constraint)
     {
         super(variable, constraint);
     }
@@ -38,11 +38,11 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
     @SuppressWarnings("unchecked")
 	public N getMinValue()
     {
-        Constraint<N> cons = variable.getConstraint();
+        VarEditorModel<N> cons = variable.getDefaultEditorModel();
 
-        if (cons instanceof ConstraintByRange)
+        if (cons instanceof RangeModel)
         {
-            return (N) ((ConstraintByRange<N>) cons).getMinimum();
+            return (N) ((RangeModel<N>) cons).getMinimum();
         }
         else
             throw new UnsupportedOperationException("This variable is not constrained by range");
@@ -76,11 +76,11 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public N getStep() throws UnsupportedOperationException
     {
-        Constraint<N> cons = variable.getConstraint();
+        VarEditorModel<N> cons = variable.getDefaultEditorModel();
 
-        if (cons instanceof ConstraintByRange)
+        if (cons instanceof RangeModel)
         {
-            return ((ConstraintByRange<N>) cons).getStepSize();
+            return ((RangeModel<N>) cons).getStepSize();
         }
         else
             throw new UnsupportedOperationException("This variable is not constrained by range");
@@ -115,11 +115,11 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
     @SuppressWarnings("unchecked")
 	public N getMaxValue()
     {
-        Constraint<N> cons = variable.getConstraint();
+        VarEditorModel<N> cons = variable.getDefaultEditorModel();
 
-        if (cons instanceof ConstraintByRange)
+        if (cons instanceof RangeModel)
         {
-            return (N) ((ConstraintByRange<N>) cons).getMaximum();
+            return (N) ((RangeModel<N>) cons).getMaximum();
         }
         else
             throw new UnsupportedOperationException("This variable is not constrained by range");

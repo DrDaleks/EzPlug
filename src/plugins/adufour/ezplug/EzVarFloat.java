@@ -1,5 +1,6 @@
 package plugins.adufour.ezplug;
 
+import plugins.adufour.vars.gui.model.FloatRangeModel;
 import plugins.adufour.vars.lang.VarFloat;
 
 /**
@@ -53,7 +54,7 @@ public class EzVarFloat extends EzVarNumeric<Float>
 	 */
 	public EzVarFloat(String varName, float value, float min, float max, float step)
 	{
-		super(new VarFloat(varName, 0.0f), new VarFloat.RangeConstraint(value, min, max, step));
+		super(new VarFloat(varName, 0.0f), new FloatRangeModel(value, min, max, step));
 	}
 	
 	/**

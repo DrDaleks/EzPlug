@@ -1,5 +1,6 @@
 package plugins.adufour.ezplug;
 
+import plugins.adufour.vars.gui.model.IntegerRangeModel;
 import plugins.adufour.vars.lang.VarInteger;
 
 /**
@@ -51,7 +52,7 @@ public class EzVarInteger extends EzVarNumeric<Integer>
      */
     public EzVarInteger(String varName, int value, int min, int max, int step)
     {
-        super(new VarInteger(varName, value), new VarInteger.RangeConstraint(value, min, max, step));
+        super(new VarInteger(varName, value), new IntegerRangeModel(value, min, max, step));
     }
 
     /**

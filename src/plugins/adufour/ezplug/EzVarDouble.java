@@ -1,5 +1,6 @@
 package plugins.adufour.ezplug;
 
+import plugins.adufour.vars.gui.model.DoubleRangeModel;
 import plugins.adufour.vars.lang.VarDouble;
 
 /**
@@ -51,7 +52,7 @@ public class EzVarDouble extends EzVarNumeric<Double>
      */
     public EzVarDouble(String varName, double value, double min, double max, double step)
     {
-        super(new VarDouble(varName, value), new VarDouble.RangeConstraint(value, min, max, step));
+        super(new VarDouble(varName, value), new DoubleRangeModel(value, min, max, step));
     }
 
     /**
