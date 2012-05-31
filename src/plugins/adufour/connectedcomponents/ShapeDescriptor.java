@@ -257,8 +257,15 @@ public class ShapeDescriptor
 		else
 		{
 			Point3d radii = new Point3d();
-			computeEllipse(cc, null, radii, null, null);
-			return Math.min(radii.x, radii.y) / Math.max(radii.x, radii.y);
+			try
+			{
+				computeEllipse(cc, null, radii, null, null);
+				return Math.min(radii.x, radii.y) / Math.max(radii.x, radii.y);
+			}
+			catch (Exception e)
+			{
+				return Double.NaN;
+			}
 		}
 	}
 	
