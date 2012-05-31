@@ -33,6 +33,8 @@ import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.adufour.vars.lang.VarArray;
+import plugins.adufour.vars.lang.VarSequence;
 import plugins.nchenouard.spot.DetectionResult;
 import plugins.nchenouard.spot.Spot;
 
@@ -103,35 +105,38 @@ public class ConnectedComponents extends EzPlug
 		}
 	}
 	
-	EzVarSequence				input					= new EzVarSequence("Input");
+	protected EzVarSequence					input					= new EzVarSequence("Input");
 	
-	EzVarEnum<ExtractionType>	extractionMethod		= new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
+	protected EzVarEnum<ExtractionType>		extractionMethod		= new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
 	
-	EzLabel						extractionMethodDetail	= new EzLabel("Description");
+	protected EzLabel						extractionMethodDetail	= new EzLabel("Description");
 	
-	EzVarInteger				background				= new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+	protected EzVarInteger					background				= new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
 	
-	EzVarBoolean				discardEdgesX			= new EzVarBoolean("  along X", true);
-	EzVarBoolean				discardEdgesY			= new EzVarBoolean("  along Y", true);
-	EzVarBoolean				discardEdgesZ			= new EzVarBoolean("  along Z", true);
+	protected EzVarBoolean					discardEdgesX			= new EzVarBoolean("  along X", true);
+	protected EzVarBoolean					discardEdgesY			= new EzVarBoolean("  along Y", true);
+	protected EzVarBoolean					discardEdgesZ			= new EzVarBoolean("  along Z", true);
 	
-	EzVarBoolean				boundSize				= new EzVarBoolean("Filter objects by size", false);
+	protected EzVarBoolean					boundSize				= new EzVarBoolean("Filter objects by size", false);
 	
-	EzVarInteger				minSize					= new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
-	EzVarInteger				maxSize					= new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
+	protected EzVarInteger					minSize					= new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
+	protected EzVarInteger					maxSize					= new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
 	
-	EzVarBoolean				labeledExtraction;
+	protected EzVarBoolean					labeledExtraction;
 	
-	EzLabel						objectCount;
+	protected EzLabel						objectCount;
 	
-	EzVarBoolean				exportSequence			= new EzVarBoolean("Labeled sequence", true);
+	protected EzVarBoolean					exportSequence			= new EzVarBoolean("Labeled sequence", true);
 	
-	EzVarEnum<Sorting>			labelSorting			= new EzVarEnum<ConnectedComponents.Sorting>("Sort components", Sorting.values(), Sorting.ARBITRARY);
+	protected EzVarEnum<Sorting>			labelSorting			= new EzVarEnum<ConnectedComponents.Sorting>("Sort components", Sorting.values(), Sorting.ARBITRARY);
 	
-	EzVarBoolean				exportSwPool			= new EzVarBoolean("Swimming pool", false);
-	EzVarBoolean				exportROI				= new EzVarBoolean("ROI (2D only)", false);
-	EzVarBoolean				exportExcel				= new EzVarBoolean("Export to Excel", false);
-	EzVarFile					exportExcelFile			= new EzVarFile("Excel file", "");
+	protected EzVarBoolean					exportSwPool			= new EzVarBoolean("Swimming pool", false);
+	protected EzVarBoolean					exportROI				= new EzVarBoolean("ROI (2D only)", false);
+	protected EzVarBoolean					exportExcel				= new EzVarBoolean("Export to Excel", false);
+	protected EzVarFile						exportExcelFile			= new EzVarFile("Excel file", "");
+	
+	protected VarSequence					outputSequence			= new VarSequence("output", null);
+	protected VarArray<ConnectedComponent>	outputCCs				= new VarArray<ConnectedComponent>("components", ConnectedComponent[].class, null);
 	
 	@Override
 	protected void initialize()
@@ -192,26 +197,27 @@ public class ConnectedComponents extends EzPlug
 	@Override
 	protected void execute()
 	{
-		Map<Integer, List<ConnectedComponent>> components = new TreeMap<Integer, List<ConnectedComponent>>();
+		ArrayList<ConnectedComponent> componentsList = new ArrayList<ConnectedComponent>();
+		Map<Integer, List<ConnectedComponent>> componentsMap = new TreeMap<Integer, List<ConnectedComponent>>();
 		
 		int min = boundSize.getValue() ? minSize.getValue() : 0;
 		int max = boundSize.getValue() ? maxSize.getValue() : Integer.MAX_VALUE;
 		
-		Sequence outputSequence = new Sequence();
+		Sequence output = new Sequence();
 		
-		components = extractConnectedComponents(input.getValue(), background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(),
-				min, max, outputSequence);
+		componentsMap = extractConnectedComponents(input.getValue(), background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(),
+				min, max, output);
+		
+		outputSequence.setValue(output);
 		
 		int nbObjects = 0;
-		for (List<ConnectedComponent> ccs : components.values())
+		for (List<ConnectedComponent> ccs : componentsMap.values())
 		{
 			nbObjects += ccs.size();
-			
-			// for(ConnectedComponent cc : ccs)
-			// {
-			// System.out.println(ShapeDescriptor.computeEccentricity(cc));
-			// }
+			componentsList.addAll(ccs);
 		}
+		
+		outputCCs.setValue(componentsList.toArray(new ConnectedComponent[nbObjects]));
 		
 		if (getUI() != null)
 		{
@@ -219,19 +225,19 @@ public class ConnectedComponents extends EzPlug
 			
 			if (exportSequence.getValue())
 			{
-				createLabeledSequence(outputSequence, components, labelSorting.getValue().comparator);
+				createLabeledSequence(output, componentsMap, labelSorting.getValue().comparator);
 				
-				addSequence(outputSequence);
+				addSequence(output);
 			}
 			
 			if (exportSwPool.getValue())
 			{
-				DetectionResult result = convertToDetectionResult(components, input.getValue());
+				DetectionResult result = convertToDetectionResult(componentsMap, input.getValue());
 				SwimmingObject object = new SwimmingObject(result, "Set of " + nbObjects + " connected components");
 				Icy.getMainInterface().getSwimmingPool().add(object);
 			}
 			
-			if (exportROI.getValue() && outputSequence.getSizeZ() == 1)
+			if (exportROI.getValue() && output.getSizeZ() == 1)
 			{
 				Sequence in = input.getValue();
 				
@@ -240,7 +246,7 @@ public class ConnectedComponents extends EzPlug
 				for (ROI2D roi : input.getValue().getROI2Ds())
 					if (roi instanceof ROI2DArea) in.removeROI(roi);
 				
-				for (List<ConnectedComponent> ccs : components.values())
+				for (List<ConnectedComponent> ccs : componentsMap.values())
 					for (ConnectedComponent cc : ccs)
 					{
 						ROI2DArea area = new ROI2DArea();
@@ -295,8 +301,8 @@ public class ConnectedComponents extends EzPlug
 			xlsManager.setLabel(21, 0, "M222");
 			
 			int cpt = 1;
-			for (Integer time : components.keySet())
-				for (ConnectedComponent cc : components.get(time))
+			for (Integer time : componentsMap.keySet())
+				for (ConnectedComponent cc : componentsMap.get(time))
 				{
 					boolean is2D = ShapeDescriptor.is2D(cc);
 					Point3d center = cc.getMassCenter();
