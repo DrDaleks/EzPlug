@@ -356,7 +356,7 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 	 * Returns the variable used by the interface's progress bar. Any change to this variable will
 	 * automatically affect the corresponding progress bar
 	 * 
-	 * @return
+	 * @return the variable controlling the progress bar
 	 */
 	public VarDouble getProgressBarValue()
 	{

@@ -3,6 +3,7 @@ package plugins.adufour.ezplug;
 import java.io.File;
 
 import plugins.adufour.vars.gui.FileMode;
+import plugins.adufour.vars.gui.model.FileTypeListModel;
 import plugins.adufour.vars.lang.VarFileArray;
 
 /**
@@ -23,6 +24,6 @@ public class EzVarFileArray extends EzVar<File[]>
      */
     public EzVarFileArray(String varName, final String path)
     {
-        super(new VarFileArray(varName, null), new VarFileArray.VarConstraintByFileType(path, FileMode.FILES, null, false));
+        super(new VarFileArray(varName, null), new FileTypeListModel(path, FileMode.FILES, null, false));
     }
 }

@@ -4,6 +4,7 @@ import java.io.File;
 
 import plugins.adufour.vars.gui.FileChooser;
 import plugins.adufour.vars.gui.FileMode;
+import plugins.adufour.vars.gui.model.FileTypeModel;
 import plugins.adufour.vars.lang.VarFile;
 
 public class EzVarFolder extends EzVar<File>
@@ -18,7 +19,7 @@ public class EzVarFolder extends EzVar<File>
 	 */
 	public EzVarFolder(String varName, String path)
 	{
-		super(new VarFile(varName, path == null ? null : new File(path)), new VarFile.VarConstraintByFileType(path, FileMode.FOLDERS, null, false));
+		super(new VarFile(varName, path == null ? null : new File(path)), new FileTypeModel(path, FileMode.FOLDERS, null, false));
 	}
 	
 	/**
