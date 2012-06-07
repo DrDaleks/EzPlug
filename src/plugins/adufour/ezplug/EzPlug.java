@@ -51,20 +51,20 @@ import javax.swing.JOptionPane;
  */
 public abstract class EzPlug extends Plugin implements icy.plugin.interface_.PluginImageAnalysis, PluginLibrary, Runnable
 {
-	public static final String				EZPLUG_MAINTAINERS	= "Alexandre Dufour (adufour@pasteur.fr)";
+	public static final String	            EZPLUG_MAINTAINERS	= "Alexandre Dufour (adufour@pasteur.fr)";
 	
 	/**
 	 * Number of active instances of this plugin
 	 */
-	private static IntegerValue				nbInstances			= new IntegerValue(0);
+	private static IntegerValue	            nbInstances	       = new IntegerValue(0);
 	
-	private EzGUI							ezgui;
+	private EzGUI	                        ezgui;
 	
 	private final HashMap<String, EzVar<?>>	ezVars;
 	
-	private boolean							timeTrial			= false;
+	private boolean	                        timeTrial	       = false;
 	
-	private long							startTime;
+	private long	                        startTime;
 	
 	protected EzPlug()
 	{
@@ -111,10 +111,12 @@ public abstract class EzPlug extends Plugin implements icy.plugin.interface_.Plu
 	}
 	
 	/**
-	 * Cleans user-defined structures before the window is closed.<br>
-	 * This method should be used if this EzPlug has references to some structures which should be
-	 * cleaned properly before closing the plug window (e.g. painters on a sequence, I/O streams,
-	 * etc.)
+	 * Cleans user-defined structures when the plug-in window is closed. This method should be used
+	 * if this EzPlug has references to some structures which should be cleaned properly before
+	 * closing the plug window (e.g. painters on a sequence, I/O streams, etc.).<br>
+	 * NOTE: this method is called after cleaning of the graphical user interface. Hence, any
+	 * attempt to access graphical components (or change the value of EzVar objects) will result in
+	 * a null pointer exception.
 	 */
 	public abstract void clean();
 	
@@ -305,6 +307,16 @@ public abstract class EzPlug extends Plugin implements icy.plugin.interface_.Plu
 		if (ezgui == null) return;
 		
 		ezgui.setVisible(false);
+	}
+	
+	/**
+	 * @return true if the graphical user interface has not been initialized (e.g. when running
+	 *         without screen or on a server). If this method returns true, then the
+	 *         {@link #getUI()} will return null
+	 */
+	public boolean isHeadLess()
+	{
+		return getUI() != null;
 	}
 	
 	/**

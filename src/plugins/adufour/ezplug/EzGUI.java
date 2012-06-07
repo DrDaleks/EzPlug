@@ -5,12 +5,14 @@ import icy.gui.frame.IcyExternalFrame;
 import icy.gui.frame.IcyFrame;
 import icy.gui.frame.IcyInternalFrame;
 import icy.gui.util.GuiUtil;
+import icy.main.Icy;
 import icy.system.thread.ThreadUtil;
 
 import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -19,17 +21,21 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.filechooser.FileSystemView;
@@ -45,63 +51,63 @@ import plugins.adufour.vars.util.VarListener;
 
 public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, FoldListener
 {
-	public static final int				LOGO_HEIGHT					= 32;
+	public static final int	                   LOGO_HEIGHT	             = 32;
 	
-	public static final int				FONT_SIZE					= 16;
+	public static final int	                   FONT_SIZE	             = 16;
 	
-	private static final boolean		USE_SKIN_COLOR_SCHEME		= true;
+	private static final boolean	           USE_SKIN_COLOR_SCHEME	 = true;
 	
-	private Color						logoTitleColor;
+	private Color	                           logoTitleColor;
 	
-	private EzPlug						ezPlug;
+	private EzPlug	                           ezPlug;
 	
-	private Thread						executionThread;
+	private Thread	                           executionThread;
 	
-	private JPanel						jPanelParameters;
+	private JPanel	                           jPanelParameters;
 	
-	private final List<Object>			components					= new ArrayList<Object>();
+	private final List<Object>	               components	             = new ArrayList<Object>();
 	
-	private JPanel						jPanelBottom;
+	private JPanel	                           jPanelBottom;
 	
-	private JPanel						jPanelButtons;
+	private JPanel	                           jPanelButtons;
 	
-	private JButton						jButtonRun;
+	private JButton	                           jButtonRun;
 	
-	private JButton						jButtonStop;
+	private JButton	                           jButtonStop;
 	
-	private JButton						jButtonSaveParameters;
+	private JButton	                           jButtonSaveParameters;
 	
-	private JButton						jButtonLoadParameters;
+	private JButton	                           jButtonLoadParameters;
 	
-	private boolean						jButtonsParametersVisible	= true;
+	private boolean	                           jButtonsParametersVisible	= true;
 	
-	private JProgressBar				jProgressBar;
+	private JProgressBar	                   jProgressBar;
 	
-	private VarDouble					progressBarValue			= new VarDouble("Progress", 0.0);
+	private VarDouble	                       progressBarValue	         = new VarDouble("Progress", 0.0);
 	
-	private final VarListener<Double>	progressListener			= new VarListener<Double>()
-																	{
-																		@Override
-																		public void valueChanged(Var<Double> source, Double oldValue, final Double newValue)
-																		{
-																			ThreadUtil.invokeLater(new Runnable()
-																			{
-																				public void run()
-																				{
-																					boolean inderterminate = newValue < 0 && newValue > 1;
-																					jProgressBar.setIndeterminate(inderterminate);
-																					
-																					if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
-																				}
-																			});
-																		}
-																		
-																		@Override
-																		public void referenceChanged(Var<Double> source, Var<? extends Double> oldReference, Var<? extends Double> newReference)
-																		{
-																			
-																		}
-																	};
+	private final VarListener<Double>	       progressListener	         = new VarListener<Double>()
+	                                                                     {
+		                                                                     @Override
+		                                                                     public void valueChanged(Var<Double> source, Double oldValue, final Double newValue)
+		                                                                     {
+			                                                                     ThreadUtil.invokeLater(new Runnable()
+			                                                                     {
+				                                                                     public void run()
+				                                                                     {
+					                                                                     boolean inderterminate = newValue < 0 && newValue > 1;
+					                                                                     jProgressBar.setIndeterminate(inderterminate);
+					                                                                     
+					                                                                     if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
+				                                                                     }
+			                                                                     });
+		                                                                     }
+		                                                                     
+		                                                                     @Override
+		                                                                     public void referenceChanged(Var<Double> source, Var<? extends Double> oldReference, Var<? extends Double> newReference)
+		                                                                     {
+			                                                                     
+		                                                                     }
+	                                                                     };
 	
 	public EzGUI(final EzPlug ezPlug)
 	{
@@ -161,7 +167,71 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
 		// getExternalFrame().setIconImage(icon.getImage());
 		
 		pack();
-		center();
+		
+		setOptimalLocation();
+	}
+	
+	private void setOptimalLocation()
+	{
+		// place the window beside other EzPlugs
+		Point location = new Point();
+		
+		if (isExternalized())
+		{
+			location = Icy.getMainInterface().getMainFrame().getLocationOnScreen();
+			location.y += Icy.getMainInterface().getMainFrame().getHeight();
+		}
+		
+		boolean validLocation = false;
+		
+		Dimension screenDim = getToolkit().getScreenSize();
+		
+		loop: while (!validLocation)
+		{
+			AbstractList<? extends Component> comps;
+			
+			if (isInternalized())
+			{
+				comps = new ArrayList<JInternalFrame>(Arrays.asList(Icy.getMainInterface().getDesktopPane().getAllFrames()));
+			}
+			else
+			{
+				comps = Icy.getMainInterface().getExternalFrames();
+			}
+			
+			for (Component gui : comps)
+			{
+				if (this.getFrame() == gui || !gui.isShowing()) continue;
+				
+				// final Point wLoc = isInternalized() ? ezGUIs.get(gui) :
+				// gui.getFrame().getLocationOnScreen();
+				final Point wLoc = isInternalized() ? gui.getLocation() : gui.getLocationOnScreen();
+				
+				if (wLoc.distanceSq(location) < 400)
+				{
+					Dimension dim = gui.getPreferredSize();
+					location.x += dim.width;
+					if (location.x > screenDim.width - dim.width)
+					{
+						// no more space in x, move along y
+						location.x = 0;
+						location.y += dim.height;
+						
+						if (location.y > screenDim.height - dim.height)
+						{
+							// no more space on screen, break
+							location.x = 0;
+							location.y = 0;
+							break;
+						}
+					}
+					validLocation = false;
+					continue loop;
+				}
+			}
+			validLocation = true;
+		}
+		setLocation(location);
 	}
 	
 	@Override
