@@ -316,7 +316,7 @@ public abstract class EzPlug extends Plugin implements icy.plugin.interface_.Plu
 	 */
 	public boolean isHeadLess()
 	{
-		return getUI() != null;
+		return getUI() == null;
 	}
 	
 	/**
