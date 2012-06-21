@@ -63,7 +63,7 @@ class EzVarIO
         if (xml == null) throw new EzException("unable to load parameter file", true);
 
         Element root = XMLUtil.getRootElement(xml);
-        ArrayList<Element> elements = XMLUtil.getSubElements(root);
+        ArrayList<Element> elements = XMLUtil.getElements(root);
         for (Element element : elements)
         {
             String id = XMLUtil.getAttributeValue(element, Var.XML_KEY_ID, null);
