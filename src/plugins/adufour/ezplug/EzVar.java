@@ -57,7 +57,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
      *            the constraint to apply on the variable when receiving input, or null if a default
      *            constraint should be applied
      */
-    EzVar(final Var<T> variable, VarEditorModel<T> constraint)
+    protected EzVar(final Var<T> variable, VarEditorModel<T> constraint)
     {
         super(variable.getName());
         this.variable = variable;
@@ -79,7 +79,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
      * @param freeInput
      *            true to allow user manual input, false to restrict the selection to the given list
      */
-    EzVar(Var<T> variable, T[] defaultValues, int defaultValueIndex, boolean freeInput)
+    protected EzVar(Var<T> variable, T[] defaultValues, int defaultValueIndex, boolean freeInput)
     {
         this(variable, new ValueSelectionModel<T>(defaultValues, defaultValueIndex, freeInput));
     }
