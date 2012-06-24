@@ -1,15 +1,14 @@
 package plugins.adufour.ezplug;
 
-import plugins.adufour.vars.lang.VarIntegerArray;
+import plugins.adufour.vars.lang.VarFloatArrayNative;
 
 /**
- * Integer arrays
+ * Float arrays
  * 
- * @deprecated use {@link EzVarIntegerArrayNative} instead (optimized performances)
  * @author Alexandre Dufour
  * 
  */
-public class EzVarIntegerArray extends EzVar<Integer[]>
+public class EzVarFloatArrayNative extends EzVar<float[]>
 {
     /**
      * Creates a new integer variable with a given array of possible values
@@ -23,7 +22,7 @@ public class EzVarIntegerArray extends EzVar<Integer[]>
      * @throws NullPointerException
      *             if the defaultValues parameter is null
      */
-    public EzVarIntegerArray(String varName, Integer[][] defaultValues, boolean allowUserInput) throws NullPointerException
+    public EzVarFloatArrayNative(String varName, float[][] defaultValues, boolean allowUserInput) throws NullPointerException
     {
         this(varName, defaultValues, 0, allowUserInput);
     }
@@ -42,8 +41,8 @@ public class EzVarIntegerArray extends EzVar<Integer[]>
      * @throws NullPointerException
      *             if the defaultValues parameter is null
      */
-    public EzVarIntegerArray(String varName, Integer[][] defaultValues, int defaultValueIndex, boolean allowUserInput) throws NullPointerException
+    public EzVarFloatArrayNative(String varName, float[][] defaultValues, int defaultValueIndex, boolean allowUserInput) throws NullPointerException
     {
-        super(new VarIntegerArray(varName, null), defaultValues, defaultValueIndex, allowUserInput);
+        super(new VarFloatArrayNative(varName, null), defaultValues, defaultValueIndex, allowUserInput);
     }
 }

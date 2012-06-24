@@ -5,6 +5,7 @@ import plugins.adufour.vars.lang.VarDoubleArray;
 /**
  * Double arrays
  * 
+ * @deprecated use {@link EzVarDoubleArrayNative} instead (optimized performances)
  * @author Alexandre Dufour
  * 
  */
