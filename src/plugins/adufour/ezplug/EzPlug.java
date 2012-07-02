@@ -4,7 +4,6 @@ import icy.common.Version;
 import icy.main.Icy;
 import icy.plugin.abstract_.Plugin;
 import icy.plugin.abstract_.PluginActionable;
-import icy.plugin.interface_.PluginImageAnalysis;
 import icy.plugin.interface_.PluginLibrary;
 import icy.system.thread.ThreadUtil;
 import icy.type.value.IntegerValue;
@@ -51,7 +50,7 @@ import javax.swing.JOptionPane;
  * @see plugins.adufour.ezplug.EzInternalFrame
  * @author Alexandre Dufour
  */
-public abstract class EzPlug extends Plugin implements PluginImageAnalysis, PluginLibrary, Runnable
+public abstract class EzPlug extends PluginActionable implements PluginLibrary, Runnable
 {
 	public static final String	            EZPLUG_MAINTAINERS	= "Alexandre Dufour (adufour@pasteur.fr)";
 	

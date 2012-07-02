@@ -88,6 +88,6 @@ public class EzVarInteger extends EzVarNumeric<Integer>
      */
     public EzVarInteger(String varName, Integer[] defaultValues, int defaultValueIndex, boolean allowUserInput) throws NullPointerException
     {
-        super(new VarInteger(varName, null), defaultValues, defaultValueIndex, allowUserInput);
+        super(new VarInteger(varName, 0), defaultValues, defaultValueIndex, allowUserInput);
     }
 }
