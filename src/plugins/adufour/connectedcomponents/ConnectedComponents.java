@@ -35,7 +35,7 @@ import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
-import plugins.adufour.vars.lang.VarArray;
+import plugins.adufour.vars.lang.VarGenericArray;
 import plugins.adufour.vars.lang.VarSequence;
 import plugins.nchenouard.spot.DetectionResult;
 import plugins.nchenouard.spot.Spot;
@@ -107,38 +107,38 @@ public class ConnectedComponents extends EzPlug implements Block
         }
     }
     
-    protected EzVarSequence                input                  = new EzVarSequence("Input");
+    protected EzVarSequence                         input                  = new EzVarSequence("Input");
     
-    protected EzVarEnum<ExtractionType>    extractionMethod       = new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
+    protected EzVarEnum<ExtractionType>             extractionMethod       = new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
     
-    protected EzLabel                      extractionMethodDetail = new EzLabel("Description");
+    protected EzLabel                               extractionMethodDetail = new EzLabel("Description");
     
-    protected EzVarInteger                 background             = new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+    protected EzVarInteger                          background             = new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
     
-    protected EzVarBoolean                 discardEdgesX          = new EzVarBoolean("  along X", true);
-    protected EzVarBoolean                 discardEdgesY          = new EzVarBoolean("  along Y", true);
-    protected EzVarBoolean                 discardEdgesZ          = new EzVarBoolean("  along Z", true);
+    protected EzVarBoolean                          discardEdgesX          = new EzVarBoolean("  along X", true);
+    protected EzVarBoolean                          discardEdgesY          = new EzVarBoolean("  along Y", true);
+    protected EzVarBoolean                          discardEdgesZ          = new EzVarBoolean("  along Z", true);
     
-    protected EzVarBoolean                 boundSize              = new EzVarBoolean("Filter objects by size", false);
+    protected EzVarBoolean                          boundSize              = new EzVarBoolean("Filter objects by size", false);
     
-    protected EzVarInteger                 minSize                = new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
-    protected EzVarInteger                 maxSize                = new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
+    protected EzVarInteger                          minSize                = new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
+    protected EzVarInteger                          maxSize                = new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
     
-    protected EzVarBoolean                 labeledExtraction;
+    protected EzVarBoolean                          labeledExtraction;
     
-    protected EzLabel                      objectCount;
+    protected EzLabel                               objectCount;
     
-    protected EzVarBoolean                 exportSequence         = new EzVarBoolean("Labeled sequence", true);
+    protected EzVarBoolean                          exportSequence         = new EzVarBoolean("Labeled sequence", true);
     
-    protected EzVarEnum<Sorting>           labelSorting           = new EzVarEnum<ConnectedComponents.Sorting>("Sort components", Sorting.values(), Sorting.ARBITRARY);
+    protected EzVarEnum<Sorting>                    labelSorting           = new EzVarEnum<ConnectedComponents.Sorting>("Sort components", Sorting.values(), Sorting.ARBITRARY);
     
-    protected EzVarBoolean                 exportSwPool           = new EzVarBoolean("Swimming pool", false);
-    protected EzVarBoolean                 exportROI              = new EzVarBoolean("ROI (2D only)", false);
-    protected EzVarBoolean                 exportExcel            = new EzVarBoolean("Export to Excel", false);
-    protected EzVarFile                    exportExcelFile        = new EzVarFile("Excel file", "");
+    protected EzVarBoolean                          exportSwPool           = new EzVarBoolean("Swimming pool", false);
+    protected EzVarBoolean                          exportROI              = new EzVarBoolean("ROI (2D only)", false);
+    protected EzVarBoolean                          exportExcel            = new EzVarBoolean("Export to Excel", false);
+    protected EzVarFile                             exportExcelFile        = new EzVarFile("Excel file", "");
     
-    protected VarSequence                  outputSequence         = new VarSequence("output", null);
-    protected VarArray<ConnectedComponent> outputCCs              = new VarArray<ConnectedComponent>("components", ConnectedComponent[].class, null);
+    protected VarSequence                           outputSequence         = new VarSequence("output", null);
+    protected VarGenericArray<ConnectedComponent[]> outputCCs              = new VarGenericArray<ConnectedComponent[]>("components", ConnectedComponent[].class, null);
     
     @Override
     protected void initialize()
