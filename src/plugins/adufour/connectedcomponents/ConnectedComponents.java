@@ -323,11 +323,12 @@ public class ConnectedComponents extends EzPlug implements Block
             xlsManager.setLabel(20, 0, "M022");
             xlsManager.setLabel(21, 0, "M222");
             
+            ConnectedComponentDescriptor shapeDescriptor = new ConnectedComponentDescriptor();
             int cpt = 1;
             for (Integer time : componentsMap.keySet())
                 for (ConnectedComponent cc : componentsMap.get(time))
                 {
-                    boolean is2D = ShapeDescriptor.is2D(cc);
+                    boolean is2D = shapeDescriptor.is2D(cc);
                     Point3d center = cc.getMassCenter();
                     xlsManager.setNumber(0, cpt, cpt);
                     xlsManager.setNumber(1, cpt, time);
@@ -335,22 +336,22 @@ public class ConnectedComponents extends EzPlug implements Block
                     xlsManager.setNumber(3, cpt, center.y);
                     xlsManager.setNumber(4, cpt, center.z);
                     xlsManager.setNumber(5, cpt, cc.getSize());
-                    xlsManager.setNumber(6, cpt, ShapeDescriptor.computeSphericity(cc));
-                    xlsManager.setNumber(7, cpt, ShapeDescriptor.computeEccentricity(cc));
-                    xlsManager.setNumber(8, cpt, ShapeDescriptor.computeGeometricMoment(cc, 1, 0, 0));
-                    xlsManager.setNumber(9, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 1, 0));
-                    if (!is2D) xlsManager.setNumber(10, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 0, 1));
-                    xlsManager.setNumber(11, cpt, ShapeDescriptor.computeGeometricMoment(cc, 1, 1, 0));
-                    if (!is2D) xlsManager.setNumber(12, cpt, ShapeDescriptor.computeGeometricMoment(cc, 1, 0, 1));
-                    if (!is2D) xlsManager.setNumber(13, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 1, 1));
-                    if (!is2D) xlsManager.setNumber(14, cpt, ShapeDescriptor.computeGeometricMoment(cc, 1, 1, 1));
-                    xlsManager.setNumber(15, cpt, ShapeDescriptor.computeGeometricMoment(cc, 2, 0, 0));
-                    xlsManager.setNumber(16, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 2, 0));
-                    if (!is2D) xlsManager.setNumber(17, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 0, 2));
-                    xlsManager.setNumber(18, cpt, ShapeDescriptor.computeGeometricMoment(cc, 2, 2, 0));
-                    if (!is2D) xlsManager.setNumber(19, cpt, ShapeDescriptor.computeGeometricMoment(cc, 2, 0, 2));
-                    if (!is2D) xlsManager.setNumber(20, cpt, ShapeDescriptor.computeGeometricMoment(cc, 0, 2, 2));
-                    if (!is2D) xlsManager.setNumber(21, cpt, ShapeDescriptor.computeGeometricMoment(cc, 2, 2, 2));
+                    xlsManager.setNumber(6, cpt, shapeDescriptor.computeSphericity(cc));
+                    xlsManager.setNumber(7, cpt, shapeDescriptor.computeEccentricity(cc));
+                    xlsManager.setNumber(8, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 0));
+                    xlsManager.setNumber(9, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 0));
+                    if (!is2D) xlsManager.setNumber(10, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 1));
+                    xlsManager.setNumber(11, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 0));
+                    if (!is2D) xlsManager.setNumber(12, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 1));
+                    if (!is2D) xlsManager.setNumber(13, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 1));
+                    if (!is2D) xlsManager.setNumber(14, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 1));
+                    xlsManager.setNumber(15, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 0));
+                    xlsManager.setNumber(16, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 0));
+                    if (!is2D) xlsManager.setNumber(17, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 2));
+                    xlsManager.setNumber(18, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 0));
+                    if (!is2D) xlsManager.setNumber(19, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 2));
+                    if (!is2D) xlsManager.setNumber(20, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 2));
+                    if (!is2D) xlsManager.setNumber(21, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 2));
                     cpt++;
                     if (cpt == Short.MAX_VALUE)
                     {

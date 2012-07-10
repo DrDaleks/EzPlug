@@ -51,6 +51,8 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
      */
     private final Point3d            coordsSum;
     
+    private final ConnectedComponentDescriptor    shapeDescriptor = new ConnectedComponentDescriptor();
+    
     /**
      * Creates a new connected component with given initial capacity
      * 
@@ -147,12 +149,12 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
      * @param end
      *            the second corner of the bounding box in X-Y-Z order (Lower-Right hand-Bottom)
      * @deprecated Use
-     *             {@link ShapeDescriptor#computeBoundingBox(ConnectedComponent, Point3i, Point3i)}
+     *             {@link ConnectedComponentDescriptor#computeBoundingBox(ConnectedComponent, Point3i, Point3i)}
      *             instead
      */
     public void computeBoundingBox(Point3i start, Point3i end)
     {
-        ShapeDescriptor.computeBoundingBox(this, start, end);
+        shapeDescriptor.computeBoundingBox(this, start, end);
     }
     
     /**
@@ -439,7 +441,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
             ArrayList<Point3i> list = new ArrayList<Point3i>(getSize() / 2);
             
             Point3i min = new Point3i(), max = new Point3i();
-            ShapeDescriptor.computeBoundingBox(this, min, max);
+            shapeDescriptor.computeBoundingBox(this, min, max);
             
             Sequence mask = toSequence();
             int w = mask.getSizeX();
@@ -510,11 +512,11 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
                     
                     byte[] z = mask_z_xy[localP.z];
                     
-					if (z[xy - w] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w] == 0)
-					// || z[xy - w - 1] == 0 
-					// || z[xy - w + 1] == 0
-					// || z[xy + w - 1] == 0
-					// || z[xy + w + 1] == 0)
+                    if (z[xy - w] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w] == 0)
+                    // || z[xy - w - 1] == 0
+                    // || z[xy - w + 1] == 0
+                    // || z[xy + w - 1] == 0
+                    // || z[xy + w + 1] == 0)
                     {
                         list.add(p);
                         if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
