@@ -8,12 +8,13 @@ import java.util.HashMap;
 import java.util.Set;
 
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 
-import plugins.adufour.vars.gui.ComboBox;
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.model.ValueSelectionModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
+import plugins.adufour.vars.gui.swing.ComboBox;
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.util.VarListener;
 
@@ -128,7 +129,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         
         VarEditor<T> ed = getVarEditor();
         ed.setEnabled(true); // activates listeners
-        container.add(ed.getEditorComponent(), gbc);
+        container.add((JComponent)ed.getEditorComponent(), gbc);
     }
 
     protected void dispose()
@@ -315,7 +316,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     public void setToolTipText(String text)
     {
         jLabelName.setToolTipText(text);
-        getVarEditor().getEditorComponent().setToolTipText(text);
+        getVarEditor().setComponentToolTipText(text);
     }
 
     /**

@@ -2,9 +2,9 @@ package plugins.adufour.ezplug;
 
 import java.io.File;
 
-import plugins.adufour.vars.gui.FileChooser;
 import plugins.adufour.vars.gui.FileMode;
 import plugins.adufour.vars.gui.model.FileTypeModel;
+import plugins.adufour.vars.gui.swing.FileChooser;
 import plugins.adufour.vars.lang.VarFile;
 
 /**

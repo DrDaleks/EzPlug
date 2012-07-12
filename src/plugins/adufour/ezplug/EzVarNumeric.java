@@ -1,11 +1,10 @@
 package plugins.adufour.ezplug;
 
-import javax.swing.JComponent;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
-import plugins.adufour.vars.gui.model.VarEditorModel;
 import plugins.adufour.vars.gui.model.RangeModel;
+import plugins.adufour.vars.gui.model.VarEditorModel;
 import plugins.adufour.vars.lang.Var;
 
 /**
@@ -57,7 +56,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public void setMinValue(Comparable<N> minValue) throws UnsupportedOperationException
     {
-        JComponent comp = getVarEditor().getEditorComponent();
+        Object comp = getVarEditor().getEditorComponent();
 
         if (comp instanceof JSpinner)
         {
@@ -95,7 +94,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public void setStep(N step) throws UnsupportedOperationException
     {
-        JComponent comp = getVarEditor().getEditorComponent();
+        Object comp = getVarEditor().getEditorComponent();
 
         if (comp instanceof JSpinner)
         {
@@ -134,7 +133,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public void setMaxValue(Comparable<N> maxValue)
     {
-        JComponent comp = getVarEditor().getEditorComponent();
+        Object comp = getVarEditor().getEditorComponent();
 
         if (comp instanceof JSpinner)
         {
@@ -161,7 +160,7 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
      */
     public void setValues(N value, Comparable<N> min, Comparable<N> max, N step)
     {
-        JComponent comp = getVarEditor().getEditorComponent();
+        Object comp = getVarEditor().getEditorComponent();
 
         if (comp instanceof JSpinner)
         {
