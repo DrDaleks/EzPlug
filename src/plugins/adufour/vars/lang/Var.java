@@ -1,8 +1,6 @@
 package plugins.adufour.vars.lang;
 
 import icy.file.xml.XMLPersistent;
-import icy.plugin.abstract_.Plugin;
-import icy.plugin.interface_.PluginLibrary;
 import icy.util.XMLUtil;
 
 import java.util.ArrayList;
@@ -53,7 +51,7 @@ import plugins.adufour.vars.util.VarListener;
  * @param <T>
  *            The type of the inner (boxed) value
  */
-public class Var<T> extends Plugin implements PluginLibrary, XMLPersistent, VarListener<T>
+public class Var<T> implements XMLPersistent, VarListener<T>
 {
     /**
      * Attribute key defining the unique identifier of a variable. This key is used by the
