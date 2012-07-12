@@ -43,6 +43,6 @@ public class EzVarIntegerArrayNative extends EzVar<int[]>
      */
     public EzVarIntegerArrayNative(String varName, int[][] defaultValues, int defaultValueIndex, boolean allowUserInput) throws NullPointerException
     {
-        super(new VarIntegerArrayNative(varName, null), defaultValues, defaultValueIndex, allowUserInput);
+        super(new VarIntegerArrayNative(varName, defaultValues == null ? null : defaultValues[defaultValueIndex]), defaultValues, defaultValueIndex, allowUserInput);
     }
 }

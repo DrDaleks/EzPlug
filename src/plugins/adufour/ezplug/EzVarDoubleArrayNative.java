@@ -26,7 +26,7 @@ public class EzVarDoubleArrayNative extends EzVar<double[]>
     {
         this(varName, defaultValues, 0, allowUserInput);
     }
-
+    
     /**
      * Creates a new integer variable with a given array of possible values
      * 
@@ -43,6 +43,6 @@ public class EzVarDoubleArrayNative extends EzVar<double[]>
      */
     public EzVarDoubleArrayNative(String varName, double[][] defaultValues, int defaultValueIndex, boolean allowUserInput) throws NullPointerException
     {
-        super(new VarDoubleArrayNative(varName, null), defaultValues, defaultValueIndex, allowUserInput);
+        super(new VarDoubleArrayNative(varName, defaultValues == null ? null : defaultValues[defaultValueIndex]), defaultValues, defaultValueIndex, allowUserInput);
     }
 }

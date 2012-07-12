@@ -43,6 +43,6 @@ public class EzVarFloatArrayNative extends EzVar<float[]>
      */
     public EzVarFloatArrayNative(String varName, float[][] defaultValues, int defaultValueIndex, boolean allowUserInput) throws NullPointerException
     {
-        super(new VarFloatArrayNative(varName, null), defaultValues, defaultValueIndex, allowUserInput);
+        super(new VarFloatArrayNative(varName, defaultValues == null ? null : defaultValues[defaultValueIndex]), defaultValues, defaultValueIndex, allowUserInput);
     }
 }
