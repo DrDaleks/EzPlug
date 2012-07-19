@@ -228,7 +228,7 @@ public class ConnectedComponents extends EzPlug implements Block
         
         Sequence output = new Sequence();
         
-        componentsMap = extractConnectedComponents(input.getValue(), background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(),
+        componentsMap = extractConnectedComponents(input.getValue(true), background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(),
                 min, max, output);
         
         outputSequence.setValue(output);

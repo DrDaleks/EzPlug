@@ -16,15 +16,16 @@ import javax.vecmath.SingularMatrixException;
 import javax.vecmath.Vector3d;
 
 import plugins.adufour.blocks.lang.Block;
+import plugins.adufour.blocks.util.BlockInfo;
 import plugins.adufour.blocks.util.VarList;
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarDouble;
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
-public class ConnectedComponentDescriptor extends Plugin implements PluginBundled, Block
+public class ConnectedComponentDescriptor extends Plugin implements PluginBundled, Block, BlockInfo
 {
-    Var<ConnectedComponent> varCC        = new Var<ConnectedComponent>("component", ConnectedComponent.class);
+    Var<ConnectedComponent> varCC        = new Var<ConnectedComponent>("Connected component", ConnectedComponent.class);
     
     VarDouble               perimeter    = new VarDouble("perimeter", 0.0);
     
@@ -45,7 +46,7 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
     @Override
     public void declareInput(VarList inputMap)
     {
-        inputMap.add(varCC);
+        inputMap.add("component", varCC);
     }
     
     @Override
@@ -638,5 +639,18 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
         for (double[] row : array)
             Arrays.fill(row, 1.0);
         return new Matrix(array, m, n);
+    }
+
+    @Override
+    public String getName()
+    {
+        return "Shape descriptor";
+    }
+
+    @Override
+    public String getDescription()
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
