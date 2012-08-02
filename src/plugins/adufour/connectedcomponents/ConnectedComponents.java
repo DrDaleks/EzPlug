@@ -273,9 +273,11 @@ public class ConnectedComponents extends EzPlug implements Block
                     for (ConnectedComponent cc : ccs)
                     {
                         ROI2DArea area = new ROI2DArea();
+                        area.beginUpdate();
                         for (Point3i pt : cc)
                             area.addPoint(pt.x, pt.y);
                         area.setT(cc.getT());
+                        area.endUpdate();
                         in.addROI(area);
                     }
                 
