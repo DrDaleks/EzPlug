@@ -37,6 +37,7 @@ import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.adufour.vars.lang.VarGenericArray;
 import plugins.adufour.vars.lang.VarSequence;
+import plugins.adufour.vars.util.VarException;
 import plugins.nchenouard.spot.DetectionResult;
 import plugins.nchenouard.spot.Spot;
 
@@ -228,7 +229,10 @@ public class ConnectedComponents extends EzPlug implements Block
         
         Sequence output = new Sequence();
         
-        componentsMap = extractConnectedComponents(input.getValue(true), background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(),
+        Sequence inputSequence = input.getValue(true);
+        if (inputSequence.getSizeT() == 0) throw new VarException("Cannot extract connected components from an emtpy sequence !");
+        
+        componentsMap = extractConnectedComponents(inputSequence, background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(),
                 min, max, output);
         
         outputSequence.setValue(output);
@@ -554,6 +558,8 @@ public class ConnectedComponents extends EzPlug implements Block
     public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ,
             int minSize, int maxSize, Sequence labeledSequence)
     {
+        if (inputSequence == null || inputSequence.getSizeT() == 0) throw new IllegalArgumentException("Cannot extract connected components from an emtpy sequence !");
+        
         int width = inputSequence.getSizeX();
         int height = inputSequence.getSizeY();
         
