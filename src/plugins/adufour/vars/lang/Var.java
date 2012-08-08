@@ -254,7 +254,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     {
         T returnValue = reference == null ? value : reference.getValue();
         
-        if (returnValue == null && forbidNull) throw new VarException("Parameter " + name + " has not been set.");
+        if (returnValue == null && forbidNull) throw new VarException("Parameter \"" + name + "\" has not been set.");
         
         return returnValue;
     }
