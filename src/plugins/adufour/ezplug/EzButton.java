@@ -92,4 +92,15 @@ public class EzButton extends EzComponent
 		jButton = null;
 		super.dispose();
 	}
+
+    public void setEnabled(final boolean enabled)
+    {
+        ThreadUtil.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                jButton.setEnabled(enabled);
+            }
+        });
+    }
 }
