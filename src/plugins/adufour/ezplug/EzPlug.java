@@ -1,15 +1,19 @@
 package plugins.adufour.ezplug;
 
 import icy.common.Version;
+import icy.file.FileUtil;
 import icy.main.Icy;
+import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import icy.plugin.abstract_.PluginActionable;
 import icy.plugin.interface_.PluginLibrary;
+import icy.system.IcyExceptionHandler;
 import icy.system.IcyHandledException;
 import icy.type.value.IntegerValue;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 
@@ -53,6 +57,29 @@ import javax.swing.JOptionPane;
 public abstract class EzPlug extends PluginActionable implements PluginLibrary, Runnable
 {
     public static final String              EZPLUG_MAINTAINERS = "Alexandre Dufour (adufour@pasteur.fr)";
+    
+    /**
+     * This piece of code removes the Vars plug-in from Icy, since it has been merged into EzPlug
+     * v.2.0
+     */
+    static
+    {
+        String path = new File("").getAbsolutePath() + FileUtil.separator + "plugins.adufour.vars".replace('.', FileUtil.separatorChar);
+        if (FileUtil.exists(path))
+        {
+            try
+            {
+                FileUtil.delete(new File(path), true);
+                IcyExceptionHandler.report(PluginLoader.getPlugin("plugins.adufour.ezplug.EzPlug"), "Vars uninstalled.");
+            }
+            catch (Throwable t)
+            {
+                StringWriter sw = new StringWriter();
+                t.printStackTrace(new PrintWriter(sw));
+                IcyExceptionHandler.report(PluginLoader.getPlugin("plugins.adufour.ezplug.EzPlug"), "couldn't uninstall Vars:\n" + sw.toString());
+            }
+        }
+    }
     
     /**
      * Number of active instances of this plugin
