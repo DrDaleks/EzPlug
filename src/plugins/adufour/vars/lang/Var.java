@@ -303,17 +303,22 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     @Override
     public boolean loadFromXML(Node node)
     {
+        String xmlValue = null;
         try
         {
-            T xmlValue = parse(XMLUtil.getAttributeValue((Element) node, XML_KEY_VALUE, null));
-            setValue(xmlValue);
+            xmlValue = XMLUtil.getAttributeValue((Element) node, XML_KEY_VALUE, null);
+            
+            if (xmlValue.isEmpty()) return true;
+            
+            T value = parse(xmlValue);
+            setValue(value);
             return true;
         }
         catch (UnsupportedOperationException e)
         {
-            if (node.getNodeValue() != null)
+            if (xmlValue != null)
             {
-                System.err.println("Warning: unable to parse " + node.getNodeValue() + " into a " + getClass().getSimpleName());
+                System.err.println("Warning: unable to parse " + xmlValue + " into a " + getClass().getSimpleName());
             }
             
             setValue(null);
