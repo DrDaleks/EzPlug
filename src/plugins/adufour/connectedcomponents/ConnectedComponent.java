@@ -18,6 +18,8 @@ import plugins.nchenouard.spot.Detection;
 
 public class ConnectedComponent extends Detection implements Iterable<Point3i>
 {
+    private int c = -1;
+    
     /**
      * True if the component is on the image edge along X
      */
@@ -636,5 +638,15 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
     public String toString()
     {
         return "[" + getX() + ", " + getY() + ", " + getZ() + "], " + getSize() + " points";
+    }
+
+    public int getC()
+    {
+        return c;
+    }
+    
+    public void setC(int c)
+    {
+        this.c = c;
     }
 }
