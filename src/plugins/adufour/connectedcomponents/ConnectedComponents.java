@@ -209,6 +209,8 @@ public class ConnectedComponents extends EzPlug implements Block
         inputMap.add("size filter", boundSize.getVariable());
         inputMap.add("min. size", minSize.getVariable());
         inputMap.add("max. size", maxSize.getVariable());
+        inputMap.add(exportExcel.getVariable());
+        inputMap.add(exportExcelFile.getVariable());
     }
     
     @Override
@@ -306,37 +308,38 @@ public class ConnectedComponents extends EzPlug implements Block
                 return;
             }
             
-            xlsManager.setLabel(0, 0, "#");
-            xlsManager.setLabel(1, 0, "t");
-            xlsManager.setLabel(2, 0, "x");
-            xlsManager.setLabel(3, 0, "y");
-            xlsManager.setLabel(4, 0, "z");
-            xlsManager.setLabel(5, 0, "area");
-            xlsManager.setLabel(6, 0, "sphericity");
-            xlsManager.setLabel(7, 0, "eccentricity");
-            xlsManager.setLabel(8, 0, "M100");
-            xlsManager.setLabel(9, 0, "M010");
-            xlsManager.setLabel(10, 0, "M001");
-            xlsManager.setLabel(11, 0, "M110");
-            xlsManager.setLabel(12, 0, "M101");
-            xlsManager.setLabel(13, 0, "M011");
-            xlsManager.setLabel(14, 0, "M111");
-            xlsManager.setLabel(15, 0, "M200");
-            xlsManager.setLabel(16, 0, "M020");
-            xlsManager.setLabel(17, 0, "M002");
-            xlsManager.setLabel(18, 0, "M220");
-            xlsManager.setLabel(19, 0, "M202");
-            xlsManager.setLabel(20, 0, "M022");
-            xlsManager.setLabel(21, 0, "M222");
+            xlsManager.setLabel(0, 0, input.getValue().getName());
+            xlsManager.setLabel(0, 1, "#");
+            xlsManager.setLabel(1, 1, "t");
+            xlsManager.setLabel(2, 1, "x");
+            xlsManager.setLabel(3, 1, "y");
+            xlsManager.setLabel(4, 1, "z");
+            xlsManager.setLabel(5, 1, "area");
+            xlsManager.setLabel(6, 1, "sphericity");
+            xlsManager.setLabel(7, 1, "eccentricity");
+            xlsManager.setLabel(8, 1, "M100");
+            xlsManager.setLabel(9, 1, "M010");
+            xlsManager.setLabel(10, 1, "M001");
+            xlsManager.setLabel(11, 1, "M110");
+            xlsManager.setLabel(12, 1, "M101");
+            xlsManager.setLabel(13, 1, "M011");
+            xlsManager.setLabel(14, 1, "M111");
+            xlsManager.setLabel(15, 1, "M200");
+            xlsManager.setLabel(16, 1, "M020");
+            xlsManager.setLabel(17, 1, "M002");
+            xlsManager.setLabel(18, 1, "M220");
+            xlsManager.setLabel(19, 1, "M202");
+            xlsManager.setLabel(20, 1, "M022");
+            xlsManager.setLabel(21, 1, "M222");
             
             ConnectedComponentDescriptor shapeDescriptor = new ConnectedComponentDescriptor();
-            int cpt = 1;
+            int cpt = 2;
             for (Integer time : componentsMap.keySet())
                 for (ConnectedComponent cc : componentsMap.get(time))
                 {
                     boolean is2D = shapeDescriptor.is2D(cc);
                     Point3d center = cc.getMassCenter();
-                    xlsManager.setNumber(0, cpt, cpt);
+                    xlsManager.setNumber(0, cpt, cpt - 1);
                     xlsManager.setNumber(1, cpt, time);
                     xlsManager.setNumber(2, cpt, center.x);
                     xlsManager.setNumber(3, cpt, center.y);
