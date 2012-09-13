@@ -35,7 +35,7 @@ public interface EzStoppable
             // this method is only called when the EzPlug process has been killed
             String message = "Plug-in " + source.getName() + " has requested to kill thread " + t.getName() + " while it was still running.\n"
                     + "Implement the EzStoppable interface to handle clean exit calls and avoid this message.";
-            IcyExceptionHandler.handlePluginException(source, new InterruptedException(message), false);
+            IcyExceptionHandler.handleException(source, new InterruptedException(message), false);
         }
     }
 }

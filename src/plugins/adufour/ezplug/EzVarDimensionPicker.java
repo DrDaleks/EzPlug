@@ -7,7 +7,7 @@ import plugins.adufour.vars.util.VarListener;
 
 public class EzVarDimensionPicker extends EzVarInteger
 {
-    private final class SequenceListener implements VarListener<Sequence>
+    private final class SequenceChangedListener implements VarListener<Sequence>
     {
         @Override
         public void valueChanged(Var<Sequence> source, Sequence oldValue, Sequence newValue)
@@ -34,7 +34,7 @@ public class EzVarDimensionPicker extends EzVarInteger
 
     final Var<Sequence>    s;
     final DimensionId      dim;
-    final SequenceListener listener;
+    final SequenceChangedListener listener;
 
     /**
      * Constructs a new selector for the specified dimension. By default, <code>-1</code> is not a
@@ -88,9 +88,11 @@ public class EzVarDimensionPicker extends EzVarInteger
     public EzVarDimensionPicker(String varName, DimensionId dim, Var<Sequence> sequence, boolean allowAll)
     {
         super(varName, allowAll ? -1 : 0, allowAll ? -1 : 0, 0, 1);
+        if (allowAll) setToolTipText("Choose -1 to select all values");
         s = sequence;
         this.dim = dim;
-        s.addListener(listener = new SequenceListener());
+        s.addListener(listener = new SequenceChangedListener());
+        listener.valueChanged(sequence, null, sequence.getValue());
     }
 
     private int getSize(Sequence s, DimensionId dim)

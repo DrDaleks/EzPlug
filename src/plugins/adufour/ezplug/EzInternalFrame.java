@@ -17,7 +17,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 
-import org.jdesktop.swingx.graphics.GraphicsUtilities;
 import org.jdesktop.swingx.graphics.ShadowRenderer;
 import org.pushingpixels.substance.internal.ui.SubstanceInternalFrameUI;
 import org.pushingpixels.substance.internal.utils.SubstanceInternalFrameTitlePane;
@@ -52,6 +51,12 @@ public class EzInternalFrame extends IcyInternalFrame
     public void doLayout()
     {
         if (isVisible()) super.doLayout();
+    }
+    
+    @Override
+    public boolean isOpaque()
+    {
+        return false;
     }
 
     @Override
@@ -109,6 +114,8 @@ public class EzInternalFrame extends IcyInternalFrame
 
             return null;
         }
+        
+        
     }
 
     /**
@@ -150,7 +157,7 @@ public class EzInternalFrame extends IcyInternalFrame
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.setFont(getFont().deriveFont(Font.BOLD + Font.ITALIC, EzGUI.FONT_SIZE));
             EzGUI.paintTitlePane(g2d, getWidth(), getHeight(), EzInternalFrame.this.getTitle(), true);
-
+            g2d.dispose();
             // paint the icon manually, as it is not the default for internal frames
             // icon.paintIcon(frame, g, iconLocation.x, iconLocation.y);
         }
@@ -214,10 +221,10 @@ public class EzInternalFrame extends IcyInternalFrame
     }
 
     @Override
-    public void paint(Graphics g)
+    public void paintComponent(Graphics g)
     {
         if (shadow != null) ((Graphics2D) g).drawImage(shadow, 0, 0, null);
-        super.paint(g);
+        super.paintComponent(g);
     }
 
     @Override
@@ -225,7 +232,7 @@ public class EzInternalFrame extends IcyInternalFrame
     {
         if (width != getWidth() || height != getHeight())
         {
-            shadow = GraphicsUtilities.createCompatibleTranslucentImage(width, height);
+            shadow = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = shadow.createGraphics();
             g2.setColor(Color.WHITE);
             g2.fillRoundRect(SHADOW_SIZE / 2, SHADOW_SIZE, 2 + width - SHADOW_SIZE * 3, height - SHADOW_SIZE * 3, ARC_SIZE, ARC_SIZE);
