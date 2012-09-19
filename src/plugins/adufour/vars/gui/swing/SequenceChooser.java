@@ -128,7 +128,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
                     return label;
                 }
                 
-                return new JLabel(""); // should never happen
+                throw new IllegalArgumentException(value.toString());
             }
         });
         
