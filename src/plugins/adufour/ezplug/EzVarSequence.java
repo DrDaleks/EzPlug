@@ -29,6 +29,12 @@ public class EzVarSequence extends EzVar<Sequence>
      */
     public void setNoSequenceSelection()
     {
+        // set the variable to null
+        // NB: this line is in principle not necessary as the variable listens to the combo box
+        // but if the listener is not yet activated, the variable won't change
+        getVariable().setValue(null);
+        
+        // set the active combo box item to "no sequence"
         ((SequenceChooser) getVarEditor()).getEditorComponent().setSelectedIndex(0);
     }
     
