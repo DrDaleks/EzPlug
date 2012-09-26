@@ -299,7 +299,7 @@ public class ConnectedComponents extends EzPlug implements Block
 
             try
             {
-                xlsManager = new XlsManager(exportExcelFile.getValue());
+                xlsManager = new XlsManager(exportExcelFile.getValue(true));
                 xlsManager.createNewPage("Page " + page);
             }
             catch (Exception e)
