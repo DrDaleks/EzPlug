@@ -3,17 +3,14 @@ package plugins.adufour.ezplug;
 import icy.common.Version;
 import icy.file.FileUtil;
 import icy.main.Icy;
-import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import icy.plugin.abstract_.PluginActionable;
 import icy.plugin.interface_.PluginLibrary;
-import icy.system.IcyExceptionHandler;
 import icy.system.IcyHandledException;
 import icy.type.value.IntegerValue;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 
@@ -70,13 +67,9 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
             try
             {
                 FileUtil.delete(new File(path), true);
-                IcyExceptionHandler.report(PluginLoader.getPlugin("plugins.adufour.ezplug.EzPlug"), "Vars uninstalled.");
             }
             catch (Throwable t)
             {
-                StringWriter sw = new StringWriter();
-                t.printStackTrace(new PrintWriter(sw));
-                IcyExceptionHandler.report(PluginLoader.getPlugin("plugins.adufour.ezplug.EzPlug"), "couldn't uninstall Vars:\n" + sw.toString());
             }
         }
     }
