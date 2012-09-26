@@ -4,6 +4,8 @@ import icy.file.xml.XMLPersistent;
 import icy.util.XMLUtil;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.List;
 
 import org.w3c.dom.Element;
@@ -76,7 +78,15 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     
     private T                          value;
     
+    /**
+     * The variable referenced by this variable
+     */
     private Var<? extends T>           reference;
+    
+    /**
+     * The list of variables referencing this variable
+     */
+    private final List<Var<? super T>> referrers     = new ArrayList<Var<? super T>>();
     
     private VarEditorModel<T>          defaultEditorModel;
     
@@ -141,6 +151,17 @@ public class Var<T> implements XMLPersistent, VarListener<T>
         {
             if (!listeners.contains(listener)) listeners.add(listener);
         }
+    }
+    
+    /**
+     * Adds the specified referrer to the list of variables pointing to this variable
+     * 
+     * @param referrer
+     *            the variable referencing this variable
+     */
+    private void addReferrer(Var<? super T> referrer)
+    {
+        referrers.add(referrer);
     }
     
     /**
@@ -211,6 +232,23 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     public Var<? extends T> getReference()
     {
         return reference;
+    }
+    
+    /**
+     * @return A list of all the variables currently pointing to this variable
+     */
+    public Iterator<Var<? super T>> getReferrers()
+    {
+        return referrers.iterator();
+    }
+    
+    /**
+     * @return <code>true</code> if at least one variable is referencing this variable,
+     *         <code>false</code> otherwise
+     */
+    public boolean isReferenced()
+    {
+        return referrers.size() > 0;
     }
     
     /**
@@ -369,6 +407,20 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     }
     
     /**
+     * Removes the specified referrer from the list of variables pointing to this variable
+     * 
+     * @param referrer
+     *            the variable referencing this variable
+     */
+    private void removeReferrer(Var<? super T> referrer) throws ConcurrentModificationException
+    {
+        synchronized (referrers)
+        {
+            referrers.remove(referrer);
+        }
+    }
+    
+    /**
      * Saves the current variable to the specified node
      * 
      * @throws UnsupportedOperationException
@@ -422,9 +474,19 @@ public class Var<T> implements XMLPersistent, VarListener<T>
             @SuppressWarnings("unchecked")
             Var<T> oldRef = (Var<T>) this.reference;
             
-            if (oldRef != null) oldRef.removeListener(this);
+            if (oldRef != null)
+            {
+                oldRef.removeListener(this);
+                oldRef.removeReferrer(this);
+            }
+            
             this.reference = variable;
-            if (this.reference != null) variable.addListener(this);
+            
+            if (variable != null)
+            {
+                variable.addListener(this);
+                variable.addReferrer(this);
+            }
             
             fireVariableChanged(oldRef, reference);
         }
