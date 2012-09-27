@@ -111,8 +111,6 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         
         final JComboBox jComboSequences = new JComboBox(new SequenceChooserModel());
         
-        jComboSequences.setFocusable(false);
-        
         jComboSequences.setRenderer(new ListCellRenderer()
         {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
