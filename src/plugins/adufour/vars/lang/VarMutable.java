@@ -115,8 +115,11 @@ public class VarMutable extends Var implements MutableType
     @Override
     public void setValue(Object newValue)
     {
-        // TODO in case of type mismatch: change type or throw exception ?
-        super.setValue(newValue);
+        if (newValue == null || type.isAssignableFrom(newValue.getClass()))
+        {
+            super.setValue(newValue);
+        }
+        else throw new ClassCastException("Type mismatch for variable " + getName() + ": cannot convert " + newValue + " into type " + getTypeAsString());
     }
     
     @SuppressWarnings("unchecked")
