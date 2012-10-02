@@ -3,11 +3,15 @@ package plugins.adufour.vars.lang;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+import plugins.adufour.vars.gui.VarEditor;
+import plugins.adufour.vars.gui.model.TypeSelectionModel;
+import plugins.adufour.vars.gui.model.VarEditorModel;
+import plugins.adufour.vars.gui.swing.TypeChooser;
 import plugins.adufour.vars.util.MutableType;
 import plugins.adufour.vars.util.TypeChangeListener;
 
 /**
- * Variable holding a transient value (i.e. its type may during during runtime)
+ * Variable holding a value with mutable type, i.e. its type may be changed at runtime
  * 
  * @author Alexandre Dufour
  * 
@@ -30,6 +34,14 @@ public class VarMutable extends Var implements MutableType
     public VarMutable(String name, Class<?> initialType)
     {
         super(name, initialType, null);
+    }
+    
+    @Override
+    public VarEditor createVarEditor()
+    {
+        if (getDefaultEditorModel() instanceof TypeSelectionModel) return new TypeChooser(this);
+        
+        return super.createVarEditor();
     }
     
     public void addTypeChangeListener(TypeChangeListener listener)
@@ -77,6 +89,14 @@ public class VarMutable extends Var implements MutableType
     }
     
     @SuppressWarnings("unchecked")
+    @Override
+    public void setDefaultEditorModel(VarEditorModel model)
+    {
+        // this is just to avoid the warning in client code
+        super.setDefaultEditorModel(model);
+    }
+    
+    @SuppressWarnings("unchecked")
     public void setType(Class<?> newType)
     {
         Class<?> oldType = this.getType();
@@ -103,6 +123,7 @@ public class VarMutable extends Var implements MutableType
     @Override
     public void setReference(Var variable) throws ClassCastException
     {
+        // change the type just in time before setting the reference
         if (variable != null) setType(variable.getType());
         super.setReference(variable);
     }
