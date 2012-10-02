@@ -20,6 +20,8 @@ import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
+import org.jdesktop.swingx.JXComboBox;
+
 import plugins.adufour.vars.gui.model.ValueSelectionModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
 import plugins.adufour.vars.lang.Var;
@@ -73,21 +75,30 @@ public class ComboBox<T> extends SwingVarEditor<T>
             else throw new IllegalArgumentException("Variable " + variable.getName() + " must have a value-type constraint");
         }
         
-        final JComboBox jComboBox = (defaultValues == null) ? new JComboBox() : new JComboBox(defaultValues.toArray());
+        final JXComboBox jComboBox = (defaultValues == null) ? new JXComboBox() : new JXComboBox(defaultValues.toArray());
         jComboBox.setEditable(freeInput);
         jComboBox.setSelectedItem(defaultValue);
         
         actionListener = new ActionListener()
         {
-            @SuppressWarnings("unchecked")
             public void actionPerformed(ActionEvent e)
             {
-                if (variable.getReference() == null) variable.setValue((T) jComboBox.getSelectedItem());
+                if (variable.getReference() == null) updateVariableValue();
             }
         };
         
         // Override the default renderer to support array-type items
-        jComboBox.setRenderer(new ListCellRenderer()
+        jComboBox.setRenderer(createRenderer());
+        
+        // if the combo box allows user input, override the editor to support array-type items
+        if (jComboBox.isEditable()) jComboBox.setEditor(createEditor());
+        
+        return jComboBox;
+    }
+    
+    protected ListCellRenderer createRenderer()
+    {
+        return new ListCellRenderer()
         {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
@@ -101,83 +112,79 @@ public class ComboBox<T> extends SwingVarEditor<T>
                 }
                 return new JLabel(s);
             }
-        });
-        
-        // if the combo box is editable by the user, override the editor to support array-type
-        // items
-        if (jComboBox.isEditable())
+        };
+    }
+    
+    protected ComboBoxEditor createEditor()
+    {
+        return new ComboBoxEditor()
         {
-            jComboBox.setEditor(new ComboBoxEditor()
+            final JTextField jTextField   = new JTextField();
+            final Color      defaultColor = jTextField.getForeground();
+            final Color      errorColor   = Color.red;
+            
+            @Override
+            public void addActionListener(ActionListener l)
             {
-                final JTextField jTextField   = new JTextField();
-                final Color      defaultColor = jTextField.getForeground();
-                final Color      errorColor   = Color.red;
                 
-                @Override
-                public void addActionListener(ActionListener l)
+            }
+            
+            @Override
+            public Component getEditorComponent()
+            {
+                jTextField.setFocusable(true);
+                Dimension dim = jTextField.getPreferredSize();
+                dim.height = 20;
+                jTextField.setPreferredSize(dim);
+                return jTextField;
+            }
+            
+            @Override
+            public T getItem()
+            {
+                T item = null;
+                
+                try
                 {
-                    
+                    item = variable.parse(jTextField.getText());
+                    jTextField.setForeground(defaultColor);
+                    jTextField.setToolTipText(null);
+                }
+                catch (NumberFormatException nfE)
+                {
+                    item = null;
+                    jTextField.setForeground(errorColor);
+                    jTextField.setToolTipText("Cannot parse input into a " + getVariable().getClass().getSimpleName());
                 }
                 
-                @Override
-                public Component getEditorComponent()
-                {
-                    jTextField.setFocusable(true);
-                    Dimension dim = jTextField.getPreferredSize();
-                    dim.height = 20;
-                    jTextField.setPreferredSize(dim);
-                    return jTextField;
-                }
+                return item;
+            }
+            
+            @Override
+            public void removeActionListener(ActionListener l)
+            {
                 
-                @Override
-                public T getItem()
+            }
+            
+            @Override
+            public void selectAll()
+            {
+                jTextField.selectAll();
+            }
+            
+            @Override
+            public void setItem(Object item)
+            {
+                if (item == null)
                 {
-                    T item = null;
-                    
-                    try
-                    {
-                        item = variable.parse(jTextField.getText());
-                        jTextField.setForeground(defaultColor);
-                        jTextField.setToolTipText(null);
-                    }
-                    catch (NumberFormatException nfE)
-                    {
-                        item = null;
-                        jTextField.setForeground(errorColor);
-                        jTextField.setToolTipText("Cannot parse input into a " + getVariable().getClass().getSimpleName());
-                    }
-                    
-                    return item;
+                    jTextField.setText("");
                 }
-                
-                @Override
-                public void removeActionListener(ActionListener l)
+                else
                 {
-                    
+                    jTextField.setText(item.getClass().isArray() ? arrayToString(item) : item.toString());
                 }
-                
-                @Override
-                public void selectAll()
-                {
-                    jTextField.selectAll();
-                }
-                
-                @Override
-                public void setItem(Object item)
-                {
-                    if (item == null)
-                    {
-                        jTextField.setText("");
-                    }
-                    else
-                    {
-                        jTextField.setText(item.getClass().isArray() ? arrayToString(item) : item.toString());
-                    }
-                }
-            });
-        }
-        
-        return jComboBox;
+            }
+        };
     }
     
     /**
@@ -205,6 +212,12 @@ public class ComboBox<T> extends SwingVarEditor<T>
                 jComboBox.setEditable(allowUserInput);
             }
         });
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected void updateVariableValue()
+    {
+        variable.setValue((T) getEditorComponent().getSelectedItem());
     }
     
     @Override
