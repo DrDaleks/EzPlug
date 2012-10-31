@@ -45,6 +45,22 @@ public class ValueSelectionModel<T> implements VarEditorModel<T>
         this.freeInput = freeInput;
     }
 
+    /**
+     * 
+     * @param validValues
+     *            a list of valid values
+     * @param defaultValueIndex
+     *            the index of the default selected value
+     * @param freeInput
+     *            set to true if any valid outside the list is valid (no check will be performed)
+     */
+    public ValueSelectionModel(T[] validValues, T defaultValue, boolean freeInput)
+    {
+        this.validValues = (validValues == null) ? new ArrayList<T>() : Arrays.asList(validValues);
+        this.defaultValue = (this.validValues.contains(defaultValue) ? defaultValue : null);
+        this.freeInput = freeInput;
+    }
+
     @Override
     public boolean isValid(T value)
     {

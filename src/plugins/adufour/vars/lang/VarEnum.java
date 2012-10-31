@@ -15,7 +15,7 @@ public class VarEnum<T extends Enum<T>> extends Var<T>
     public VarEnum(String name, T defaultValue) throws NullPointerException
     {
         super(name, (Class<T>) defaultValue.getClass(), defaultValue);
-        setDefaultEditorModel(new ValueSelectionModel<T>((T[]) defaultValue.getClass().getEnumConstants(), 0, false));
+        setDefaultEditorModel(new ValueSelectionModel<T>((T[]) defaultValue.getClass().getEnumConstants(), defaultValue, false));
     }
 
     @Override
