@@ -5,6 +5,7 @@ import icy.file.xls.XlsManager;
 import icy.image.IcyBufferedImage;
 import icy.image.colormap.FireColorMap;
 import icy.main.Icy;
+import icy.roi.ROI;
 import icy.roi.ROI2D;
 import icy.roi.ROI2DArea;
 import icy.sequence.Sequence;
@@ -38,6 +39,7 @@ import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.adufour.vars.lang.VarGenericArray;
+import plugins.adufour.vars.lang.VarROIArray;
 import plugins.adufour.vars.lang.VarSequence;
 import plugins.adufour.vars.util.VarException;
 import plugins.nchenouard.spot.DetectionResult;
@@ -142,6 +144,7 @@ public class ConnectedComponents extends EzPlug implements Block
     
     protected VarSequence                           outputSequence         = new VarSequence("output", null);
     protected VarGenericArray<ConnectedComponent[]> outputCCs              = new VarGenericArray<ConnectedComponent[]>("components", ConnectedComponent[].class, null);
+    protected VarROIArray                           outputROIs             = new VarROIArray("list of ROI");
     
     @Override
     protected void initialize()
@@ -220,6 +223,7 @@ public class ConnectedComponents extends EzPlug implements Block
     {
         outputMap.add("labeled sequence", outputSequence);
         outputMap.add("objects", outputCCs);
+        outputMap.add("list of extracted ROI", outputROIs);
     }
     
     @Override
@@ -268,15 +272,11 @@ public class ConnectedComponents extends EzPlug implements Block
                 Icy.getMainInterface().getSwimmingPool().add(object);
             }
             
-            if (exportROI.getValue() && output.getSizeZ() == 1)
+            if (exportROI.getValue() || outputROIs.isReferenced())
             {
-                Sequence in = input.getValue();
+                if (output.getSizeZ() > 1) throw new RuntimeException("ROI export is not supported in 3D yet.");
                 
-                in.beginUpdate();
-                
-                for (ROI2D roi : input.getValue().getROI2Ds())
-                    if (roi instanceof ROI2DArea) in.removeROI(roi);
-                
+                ArrayList<ROI2DArea> rois = new ArrayList<ROI2DArea>(componentsMap.size());
                 for (List<ConnectedComponent> ccs : componentsMap.values())
                     for (ConnectedComponent cc : ccs)
                     {
@@ -286,10 +286,25 @@ public class ConnectedComponents extends EzPlug implements Block
                             area.addPoint(pt.x, pt.y);
                         area.setT(cc.getT());
                         area.endUpdate();
-                        in.addROI(area);
+                        rois.add(area);
                     }
                 
-                in.endUpdate();
+                outputROIs.setValue(rois.toArray(new ROI2DArea[rois.size()]));
+                
+                if (exportROI.getValue())
+                {
+                    Sequence in = input.getValue();
+                    
+                    in.beginUpdate();
+                    
+                    for (ROI2D roi : input.getValue().getROI2Ds())
+                        if (roi instanceof ROI2DArea) in.removeROI(roi);
+                    
+                    for (ROI roi : outputROIs.getValue())
+                        in.addROI(roi);
+                    
+                    in.endUpdate();
+                }
             }
         }
         
