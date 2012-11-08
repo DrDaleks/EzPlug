@@ -1,11 +1,11 @@
 package plugins.adufour.vars.lang;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.model.TypeSelectionModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
+import plugins.adufour.vars.gui.swing.MutableVarEditor;
 import plugins.adufour.vars.gui.swing.TypeChooser;
 import plugins.adufour.vars.util.MutableType;
 import plugins.adufour.vars.util.TypeChangeListener;
@@ -41,7 +41,7 @@ public class VarMutable extends Var implements MutableType
     {
         if (getDefaultEditorModel() instanceof TypeSelectionModel) return new TypeChooser(this);
         
-        return super.createVarEditor();
+        else return new MutableVarEditor(this);
     }
     
     public void addTypeChangeListener(TypeChangeListener listener)
@@ -52,31 +52,6 @@ public class VarMutable extends Var implements MutableType
     public void removeTypeChangeListener(TypeChangeListener listener)
     {
         listeners.remove(listener);
-    }
-    
-    @Override
-    public String getValueAsString()
-    {
-        Object value = getValue();
-        
-        if (value == null) return "null";
-        
-        if (value.getClass().isArray())
-        {
-            int length = Array.getLength(value);
-            
-            if (length == 0) return "";
-            
-            StringBuilder sb = new StringBuilder();
-            
-            sb.append(Array.get(value, 0).toString());
-            for (int i = 1; i < length; i++)
-                sb.append(" " + Array.get(value, i).toString());
-            
-            return sb.toString();
-        }
-        
-        return value.toString();
     }
     
     @SuppressWarnings("unchecked")
