@@ -3,6 +3,7 @@ package plugins.adufour.vars.lang;
 import icy.file.xml.XMLPersistent;
 import icy.util.XMLUtil;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
@@ -66,6 +67,11 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * mechanism to save/load the variable value to/from XML files.
      */
     static final String                XML_KEY_VALUE = "value";
+    
+    /**
+     * User-friendly representation of the Java <code>null</code> keyword
+     */
+    public static final String         NO_VALUE      = "No value";
     
     private final String               name;
     
@@ -267,7 +273,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     public String getTypeAsString()
     {
         Class<?> type = getType();
-        return type == null ? "null" : getType().getSimpleName();
+        return type == null ? "No type" : getType().getSimpleName();
     }
     
     /**
@@ -320,7 +326,26 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     public String getValueAsString()
     {
-        return value == null ? "null" : value.toString();
+        Object value = getValue();
+        
+        if (value == null) return "";
+        
+        if (value.getClass().isArray())
+        {
+            int length = Array.getLength(value);
+            
+            if (length == 0) return "";
+            
+            StringBuilder sb = new StringBuilder();
+            
+            sb.append(Array.get(value, 0).toString());
+            for (int i = 1; i < length; i++)
+                sb.append(" " + Array.get(value, i).toString());
+            
+            return sb.toString();
+        }
+        
+        return value.toString();
     }
     
     /**
@@ -379,6 +404,34 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     public T parse(String text)
     {
         throw new UnsupportedOperationException("Parsing operation not supported for type " + getClass().getSimpleName());
+    }
+    
+    /**
+     * @param value
+     *            the value to pretty-print
+     * @param separator
+     *            Separator character used if <code>value</code> is an array
+     * @return A user-friendly representation of the specified <code>value</code>.
+     */
+    public String prettyPrint(String separator)
+    {
+        T value = getValue();
+        
+        if (value == null) return NO_VALUE;
+        
+        if (!value.getClass().isArray()) return value.toString();
+        
+        int length = Array.getLength(value);
+        
+        if (length == 0) return "Empty list";
+        
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(Array.get(value, 0).toString());
+        for (int i = 1; i < length; i++)
+            sb.append(separator + Array.get(value, i).toString());
+        
+        return sb.toString();
     }
     
     /**
@@ -512,9 +565,9 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     @Override
     public String toString()
     {
-        String s = getName() + " (" + getClass().getSimpleName() + ")";
+        String s = "[" + getName() + ", type=" + getClass().getSimpleName();
         
-        s += (reference == null ? " = " + getValueAsString() : " => " + reference.toString());
+        s += (reference == null ? ", value=" + getValueAsString() + "]" : "] points to " + reference.toString());
         
         return s;
     }

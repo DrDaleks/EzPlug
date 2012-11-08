@@ -29,26 +29,6 @@ public class VarGenericArray<A> extends Var<A> implements ArrayType
     }
     
     @Override
-    public String getValueAsString()
-    {
-        Object array = getValue();
-        
-        if (array == null) return "null";
-        
-        int length = Array.getLength(array);
-        
-        if (length == 0) return "";
-        
-        StringBuilder sb = new StringBuilder();
-        
-        sb.append(Array.get(array, 0).toString());
-        for (int i = 1; i < length; i++)
-            sb.append(getSeparator(0) + Array.get(array, i).toString());
-        
-        return sb.toString();
-    }
-    
-    @Override
     public boolean isAssignableFrom(Var<?> source)
     {
         Class<?> componentType = getInnerType();
