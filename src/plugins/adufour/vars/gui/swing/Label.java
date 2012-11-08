@@ -51,4 +51,14 @@ public class Label<T> extends SwingVarEditor<T>
     {
         getEditorComponent().setText(variable.getValueAsString(true));
     }
+    
+    public boolean isComponentResizeable()
+    {
+        return true;
+    }
+    
+    public double getComponentVerticalResizeFactor()
+    {
+        return 0.5;
+    }
 }
