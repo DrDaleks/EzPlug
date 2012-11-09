@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarMutable;
-import plugins.adufour.vars.lang.VarSequence;
 
 public class SequenceViewer extends SwingVarEditor<Sequence>
 {
@@ -22,18 +21,20 @@ public class SequenceViewer extends SwingVarEditor<Sequence>
         super(variable);
     }
     
+    /**
+     * Constructs a new SequenceViewer using a mutable variable of type sequence.
+     * 
+     * @param variable
+     *            the mutable variable containing the {@link Sequence} to display
+     * @throws ClassCastException
+     *             if the given variable is not of type {@link Sequence}
+     * @see Var#getType()
+     */
+    @SuppressWarnings("unchecked")
     public SequenceViewer(final VarMutable variable)
     {
-        super(new VarSequence("sequence", (Sequence) variable.getValue())
-        {
-            @Override
-            public Sequence getValue()
-            {
-                if (isAssignableFrom(variable)) return (Sequence) variable.getValue();
-                
-                throw new ClassCastException("variable " + variable.getName() + " is not a Sequence");
-            }
-        });
+        super(variable);
+        if (!variable.getType().isAssignableFrom(Sequence.class)) throw new ClassCastException("Variable " + variable.getName() + " is not a Sequence");
     }
     
     @Override
@@ -87,7 +88,8 @@ public class SequenceViewer extends SwingVarEditor<Sequence>
     @Override
     protected void updateInterfaceValue()
     {
-        getEditorComponent().setModel(variable.getValue());
+        Sequence s = variable.getValue();
+        getEditorComponent().setModel(s);
     }
     
     @Override
