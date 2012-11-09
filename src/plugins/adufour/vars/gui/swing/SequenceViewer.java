@@ -3,6 +3,8 @@ package plugins.adufour.vars.gui.swing;
 import icy.gui.component.sequence.SequencePreviewPanel;
 import icy.main.Icy;
 import icy.sequence.Sequence;
+import icy.sequence.SequenceEvent;
+import icy.sequence.SequenceListener;
 
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -14,7 +16,7 @@ import javax.swing.JPanel;
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarMutable;
 
-public class SequenceViewer extends SwingVarEditor<Sequence>
+public class SequenceViewer extends SwingVarEditor<Sequence> implements SequenceListener
 {
     public SequenceViewer(Var<Sequence> variable)
     {
@@ -102,5 +104,32 @@ public class SequenceViewer extends SwingVarEditor<Sequence>
     public double getComponentVerticalResizeFactor()
     {
         return 1.0;
+    }
+    
+    @Override
+    public void valueChanged(Var<Sequence> source, Sequence oldValue, Sequence newValue)
+    {
+        if (oldValue != null) oldValue.removeListener(this);
+        if (newValue != null) newValue.addListener(this);
+        super.valueChanged(source, oldValue, newValue);
+    }
+    
+    @Override
+    public void referenceChanged(Var<Sequence> source, Var<? extends Sequence> oldReference, Var<? extends Sequence> newReference)
+    {
+        if (oldReference != null && oldReference.getValue() != null) oldReference.getValue().removeListener(this);
+        super.referenceChanged(source, oldReference, newReference);
+    }
+    
+    @Override
+    public void sequenceClosed(Sequence sequence)
+    {
+    }
+    
+    @Override
+    public void sequenceChanged(SequenceEvent sequenceEvent)
+    {
+        getEditorComponent().dimensionChanged();
+        getEditorComponent().imageChanged();
     }
 }
