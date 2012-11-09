@@ -46,6 +46,24 @@ public class MutableVarEditor extends SwingVarEditor<Object>
         return null;
     }
     
+    @Override
+    public void dispose()
+    {
+        if (label != null)
+        {
+            label.dispose();
+            label = null;
+        }
+        if (sequenceViewer != null)
+        {
+            sequenceViewer.dispose();
+            sequenceViewer = null;
+        }
+        varEditor = null;
+        
+        super.dispose();
+    }
+    
     public JComponent getEditorComponent()
     {
         // deactivate the current editor (if any)
