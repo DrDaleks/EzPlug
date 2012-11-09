@@ -3,7 +3,6 @@ package plugins.adufour.vars.gui.swing;
 import icy.sequence.Sequence;
 
 import java.awt.Dimension;
-import java.lang.reflect.Method;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -43,14 +42,14 @@ public class MutableVarEditor extends SwingVarEditor<Object>
     @Override
     protected JComponent createEditorComponent()
     {
-        return getEditorComponent();
+        // bypass accesses via getEditorComponent()
+        return null;
     }
     
     public JComponent getEditorComponent()
     {
         // deactivate the current editor (if any)
         if (varEditor != null) varEditor.setEnabled(false);
-        
         
         if (variable.getType() != null && variable.getType().isAssignableFrom(Sequence.class))
         {
@@ -83,14 +82,21 @@ public class MutableVarEditor extends SwingVarEditor<Object>
     }
     
     @Override
+    public boolean isComponentOpaque()
+    {
+        return false;
+    }
+    
+    @Override
+    public boolean isComponentEnabled()
+    {
+        return true;
+    }
+    
+    @Override
     public void setComponentToolTipText(String s)
     {
         varEditor.setComponentToolTipText(s);
-    }
-    
-    public void setEnabled(boolean enabled)
-    {
-        // handle this ourselves
     }
     
     @Override
@@ -116,17 +122,20 @@ public class MutableVarEditor extends SwingVarEditor<Object>
     }
     
     @Override
+    public void setEnabled(boolean enabled)
+    {
+        
+    }
+    
+    @Override
+    protected void setEditorEnabled(boolean enabled)
+    {
+        
+    }
+    
+    @Override
     protected void updateInterfaceValue()
     {
-        try
-        {
-            Method m = varEditor.getClass().getMethod("updateInterfaceValue");
-            m.setAccessible(true);
-            m.invoke(varEditor);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        // this is done internally by each custom editor
     }
 }
