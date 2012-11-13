@@ -17,6 +17,8 @@ import javax.vecmath.Vector3d;
 
 import plugins.adufour.blocks.lang.Block;
 import plugins.adufour.blocks.util.VarList;
+import plugins.adufour.quickhull.QuickHull2D;
+import plugins.adufour.quickhull.QuickHull3D;
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarDouble;
 import Jama.EigenvalueDecomposition;
@@ -36,6 +38,8 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
     
     VarDouble               shortAxis    = new VarDouble("short diameter", 0.0);
     
+    VarDouble               shortAxisZ   = new VarDouble("short diameter (Z)", 0.0);
+    
     @Override
     public String getMainPluginClassName()
     {
@@ -54,6 +58,7 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
         outputMap.add(perimeter);
         outputMap.add(longAxis);
         outputMap.add(shortAxis);
+        outputMap.add(shortAxisZ);
         outputMap.add(eccentricity);
         outputMap.add(sphericity);
     }
@@ -67,7 +72,23 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
         
         perimeter.setValue(computePerimeter(cc, null, null));
         
-        double a = 0.0, b = 0.0;
+        double[] ellipseDimensions = computeEllipseDimensions(cc);
+        
+        longAxis.setValue(ellipseDimensions[0] * 2);
+        shortAxis.setValue(ellipseDimensions[1] * 2);
+        eccentricity.setValue(ellipseDimensions[0] == 0.0 ? 0.0 : ellipseDimensions[1] / ellipseDimensions[0]);
+        
+        sphericity.setValue(computeSphericity(cc));
+    }
+    
+    /**
+     * @param cc
+     * @return a triplet representing the radiuses of the best fitting ellipse (the third value is 0
+     *         for 2D objects)
+     */
+    public double[] computeEllipseDimensions(ConnectedComponent cc)
+    {
+        double[] axes = new double[3];
         
         try
         {
@@ -75,29 +96,23 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
             {
                 Point2d radii = new Point2d();
                 computeEllipse(cc, null, radii, null, null);
-                a = radii.x;
-                b = radii.y;
+                axes[0] = radii.x;
+                axes[1] = radii.y;
             }
             else
             {
                 Point3d radii = new Point3d();
                 computeEllipse(cc, null, radii, null, null);
-                a = radii.x;
-                b = radii.y;
+                axes[0] = radii.x;
+                axes[1] = radii.y;
+                axes[2] = radii.z;
             }
         }
         catch (Exception e)
         {
         }
-        finally
-        {
-            longAxis.setValue(a * 2);
-            shortAxis.setValue(b * 2);
-            eccentricity.setValue(a == 0.0 ? 0.0 : b / a);
-        }
         
-        sphericity.setValue(computeSphericity(cc));
-        
+        return axes;
     }
     
     /**
@@ -355,6 +370,79 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
                 return Double.NaN;
             }
         }
+    }
+    
+    /**
+     * 
+     * @param cc
+     * @return The hull ratio, measured as the ratio between the object volume and its convex hull
+     *         (envelope)
+     */
+    public double computeHullRatio(ConnectedComponent cc)
+    {
+        double hull = 0.0;
+        
+        if (is2D(cc))
+        {
+            int i = 0, n = cc.getSize();
+            int[] xPoints = new int[n];
+            int[] yPoints = new int[n];
+            for (Point3i p : cc)
+            {
+                xPoints[i] = p.x;
+                yPoints[i] = p.y;
+                i++;
+            }
+            
+            if (n == 1)
+                hull = 1.0;
+            else
+            {
+                QuickHull2D qhull = new QuickHull2D(xPoints, yPoints, n);
+                
+                // formula: hull = 0.5 * sum( (x[i-1] * y[i]) - (y[i-1] * x[i]) )
+                
+                hull = (qhull.xPoints2[qhull.num - 1] * qhull.yPoints2[0]) - (qhull.xPoints2[0] * qhull.yPoints2[qhull.num - 1]);
+                for (i = 1; i < qhull.num; i++)
+                    hull += (qhull.xPoints2[i - 1] * qhull.yPoints2[i]) - (qhull.xPoints2[i] * qhull.yPoints2[i - 1]);
+                
+                hull *= 0.5;
+            }
+        }
+        else
+        {
+            Point3d[] points = new Point3d[cc.getSize()];
+            int i = 0;
+            for (Point3i p : cc)
+                points[i++] = new Point3d(p.x, p.y, p.z);
+            
+            QuickHull3D qhull = new QuickHull3D(points);
+            int[][] hullFaces = qhull.getFaces();
+            Point3d[] hullPoints = qhull.getVertices();
+            
+            Vector3d v12 = new Vector3d();
+            Vector3d v13 = new Vector3d();
+            Vector3d cross = new Vector3d();
+            
+            for (int[] face : hullFaces)
+            {
+                Point3d p1 = hullPoints[face[0]];
+                Point3d p2 = hullPoints[face[1]];
+                Point3d p3 = hullPoints[face[2]];
+                
+                v12.sub(p2, p1);
+                v13.sub(p3, p1);
+                cross.cross(v12, v13);
+                
+                double surf = cross.length() * 0.5;
+                
+                cross.normalize();
+                hull += surf * cross.x * (p1.x + p2.x + p3.x);
+            }
+            
+        }
+        
+        return hull == 0.0 ? 0.0 : Math.min(1.0, cc.getSize() / hull);
     }
     
     /**

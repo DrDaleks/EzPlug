@@ -13,6 +13,7 @@ import icy.sequence.VolumetricImage;
 import icy.swimmingPool.SwimmingObject;
 import icy.type.DataType;
 import icy.type.collection.array.Array1DUtil;
+import icy.util.StringUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.TreeMap;
 
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
+import javax.vecmath.Point4d;
 
 import plugins.adufour.blocks.lang.Block;
 import plugins.adufour.blocks.util.VarList;
@@ -264,47 +266,47 @@ public class ConnectedComponents extends EzPlug implements Block
                 
                 addSequence(output);
             }
+        }
+        
+        if (exportSwPool.getValue())
+        {
+            DetectionResult result = convertToDetectionResult(componentsMap, input.getValue());
+            SwimmingObject object = new SwimmingObject(result, "Set of " + nbObjects + " connected components");
+            Icy.getMainInterface().getSwimmingPool().add(object);
+        }
+        
+        if (exportROI.getValue() || outputROIs.isReferenced())
+        {
+            if (output.getSizeZ() > 1) throw new RuntimeException("ROI export is not supported in 3D yet.");
             
-            if (exportSwPool.getValue())
-            {
-                DetectionResult result = convertToDetectionResult(componentsMap, input.getValue());
-                SwimmingObject object = new SwimmingObject(result, "Set of " + nbObjects + " connected components");
-                Icy.getMainInterface().getSwimmingPool().add(object);
-            }
-            
-            if (exportROI.getValue() || outputROIs.isReferenced())
-            {
-                if (output.getSizeZ() > 1) throw new RuntimeException("ROI export is not supported in 3D yet.");
-                
-                ArrayList<ROI2DArea> rois = new ArrayList<ROI2DArea>(componentsMap.size());
-                for (List<ConnectedComponent> ccs : componentsMap.values())
-                    for (ConnectedComponent cc : ccs)
-                    {
-                        ROI2DArea area = new ROI2DArea();
-                        area.beginUpdate();
-                        for (Point3i pt : cc)
-                            area.addPoint(pt.x, pt.y);
-                        area.setT(cc.getT());
-                        area.endUpdate();
-                        rois.add(area);
-                    }
-                
-                outputROIs.setValue(rois.toArray(new ROI2DArea[rois.size()]));
-                
-                if (exportROI.getValue())
+            ArrayList<ROI2DArea> rois = new ArrayList<ROI2DArea>(componentsMap.size());
+            for (List<ConnectedComponent> ccs : componentsMap.values())
+                for (ConnectedComponent cc : ccs)
                 {
-                    Sequence in = input.getValue();
-                    
-                    in.beginUpdate();
-                    
-                    for (ROI2D roi : input.getValue().getROI2Ds())
-                        if (roi instanceof ROI2DArea) in.removeROI(roi);
-                    
-                    for (ROI roi : outputROIs.getValue())
-                        in.addROI(roi);
-                    
-                    in.endUpdate();
+                    ROI2DArea area = new ROI2DArea();
+                    area.beginUpdate();
+                    for (Point3i pt : cc)
+                        area.addPoint(pt.x, pt.y);
+                    area.setT(cc.getT());
+                    area.endUpdate();
+                    rois.add(area);
                 }
+            
+            outputROIs.setValue(rois.toArray(new ROI2DArea[rois.size()]));
+            
+            if (exportROI.getValue())
+            {
+                Sequence in = input.getValue();
+                
+                in.beginUpdate();
+                
+                for (ROI2D roi : input.getValue().getROI2Ds())
+                    if (roi instanceof ROI2DArea) in.removeROI(roi);
+                
+                for (ROI roi : outputROIs.getValue())
+                    in.addROI(roi);
+                
+                in.endUpdate();
             }
         }
         
@@ -327,29 +329,44 @@ public class ConnectedComponents extends EzPlug implements Block
                 return;
             }
             
-            xlsManager.setLabel(0, 0, input.getValue().getName());
+            Sequence s = input.getValue();
+            Point4d resolution = new Point4d(s.getPixelSizeX(), s.getPixelSizeY(), s.getPixelSizeZ(), s.getTimeInterval());
+            double voxelSize = resolution.x * resolution.y * resolution.z;
+            String res = "Sequence resolution:";
+            res += " X=" + StringUtil.toStringEx(resolution.x, 5);
+            res += ", Y=" + StringUtil.toStringEx(resolution.y, 5);
+            res += ", Z=" + StringUtil.toStringEx(resolution.z, 5);
+            res += ", T=" + StringUtil.toStringEx(resolution.w, 5);
+            
+            xlsManager.setLabel(0, 0, s.getName());
+            xlsManager.setLabel(6, 0, res);
             xlsManager.setLabel(0, 1, "#");
             xlsManager.setLabel(1, 1, "t");
             xlsManager.setLabel(2, 1, "x");
             xlsManager.setLabel(3, 1, "y");
             xlsManager.setLabel(4, 1, "z");
-            xlsManager.setLabel(5, 1, "area");
-            xlsManager.setLabel(6, 1, "sphericity");
-            xlsManager.setLabel(7, 1, "eccentricity");
-            xlsManager.setLabel(8, 1, "M100");
-            xlsManager.setLabel(9, 1, "M010");
-            xlsManager.setLabel(10, 1, "M001");
-            xlsManager.setLabel(11, 1, "M110");
-            xlsManager.setLabel(12, 1, "M101");
-            xlsManager.setLabel(13, 1, "M011");
-            xlsManager.setLabel(14, 1, "M111");
-            xlsManager.setLabel(15, 1, "M200");
-            xlsManager.setLabel(16, 1, "M020");
-            xlsManager.setLabel(17, 1, "M002");
-            xlsManager.setLabel(18, 1, "M220");
-            xlsManager.setLabel(19, 1, "M202");
-            xlsManager.setLabel(20, 1, "M022");
-            xlsManager.setLabel(21, 1, "M222");
+            xlsManager.setLabel(5, 1, "perimeter");
+            xlsManager.setLabel(6, 1, "area");
+            xlsManager.setLabel(7, 1, "sphericity");
+            xlsManager.setLabel(8, 1, "major axis");
+            xlsManager.setLabel(9, 1, "minor axis");
+            xlsManager.setLabel(10, 1, "minor Z axis");
+            xlsManager.setLabel(11, 1, "eccentricity");
+            xlsManager.setLabel(12, 1, "hull fill ratio");
+            xlsManager.setLabel(13, 1, "M100");
+            xlsManager.setLabel(14, 1, "M010");
+            xlsManager.setLabel(15, 1, "M001");
+            xlsManager.setLabel(16, 1, "M110");
+            xlsManager.setLabel(17, 1, "M101");
+            xlsManager.setLabel(18, 1, "M011");
+            xlsManager.setLabel(19, 1, "M111");
+            xlsManager.setLabel(20, 1, "M200");
+            xlsManager.setLabel(21, 1, "M020");
+            xlsManager.setLabel(22, 1, "M002");
+            xlsManager.setLabel(23, 1, "M220");
+            xlsManager.setLabel(24, 1, "M202");
+            xlsManager.setLabel(25, 1, "M022");
+            xlsManager.setLabel(26, 1, "M222");
             
             ConnectedComponentDescriptor shapeDescriptor = new ConnectedComponentDescriptor();
             int cpt = 2;
@@ -358,28 +375,37 @@ public class ConnectedComponents extends EzPlug implements Block
                 {
                     boolean is2D = shapeDescriptor.is2D(cc);
                     Point3d center = cc.getMassCenter();
+                    center.x *= resolution.x;
+                    center.y *= resolution.y;
+                    center.z *= resolution.z;
                     xlsManager.setNumber(0, cpt, cpt - 1);
-                    xlsManager.setNumber(1, cpt, time);
+                    xlsManager.setNumber(1, cpt, time * resolution.w);
                     xlsManager.setNumber(2, cpt, center.x);
                     xlsManager.setNumber(3, cpt, center.y);
                     xlsManager.setNumber(4, cpt, center.z);
-                    xlsManager.setNumber(5, cpt, cc.getSize());
-                    xlsManager.setNumber(6, cpt, shapeDescriptor.computeSphericity(cc));
-                    xlsManager.setNumber(7, cpt, shapeDescriptor.computeEccentricity(cc));
-                    xlsManager.setNumber(8, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 0));
-                    xlsManager.setNumber(9, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 0));
-                    if (!is2D) xlsManager.setNumber(10, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 1));
-                    xlsManager.setNumber(11, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 0));
-                    if (!is2D) xlsManager.setNumber(12, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 1));
-                    if (!is2D) xlsManager.setNumber(13, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 1));
-                    if (!is2D) xlsManager.setNumber(14, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 1));
-                    xlsManager.setNumber(15, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 0));
-                    xlsManager.setNumber(16, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 0));
-                    if (!is2D) xlsManager.setNumber(17, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 2));
-                    xlsManager.setNumber(18, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 0));
-                    if (!is2D) xlsManager.setNumber(19, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 2));
-                    if (!is2D) xlsManager.setNumber(20, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 2));
-                    if (!is2D) xlsManager.setNumber(21, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 2));
+                    xlsManager.setNumber(5, cpt, shapeDescriptor.computePerimeter(cc, null, null));
+                    xlsManager.setNumber(6, cpt, cc.getSize() * voxelSize);
+                    xlsManager.setNumber(7, cpt, shapeDescriptor.computeSphericity(cc));
+                    double[] radiuses = shapeDescriptor.computeEllipseDimensions(cc);
+                    xlsManager.setNumber(8, cpt, radiuses[0]);
+                    xlsManager.setNumber(9, cpt, radiuses[1]);
+                    xlsManager.setNumber(10, cpt, radiuses[2]);
+                    xlsManager.setNumber(11, cpt, shapeDescriptor.computeEccentricity(cc));
+                    xlsManager.setNumber(12, cpt, shapeDescriptor.computeHullRatio(cc));
+                    xlsManager.setNumber(13, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 0));
+                    xlsManager.setNumber(14, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 0));
+                    if (!is2D) xlsManager.setNumber(15, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 1));
+                    xlsManager.setNumber(16, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 0));
+                    if (!is2D) xlsManager.setNumber(17, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 1));
+                    if (!is2D) xlsManager.setNumber(18, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 1));
+                    if (!is2D) xlsManager.setNumber(19, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 1));
+                    xlsManager.setNumber(20, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 0));
+                    xlsManager.setNumber(21, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 0));
+                    if (!is2D) xlsManager.setNumber(22, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 2));
+                    xlsManager.setNumber(23, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 0));
+                    if (!is2D) xlsManager.setNumber(24, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 2));
+                    if (!is2D) xlsManager.setNumber(25, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 2));
+                    if (!is2D) xlsManager.setNumber(26, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 2));
                     cpt++;
                     if (cpt == Short.MAX_VALUE)
                     {
