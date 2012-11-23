@@ -112,6 +112,12 @@ public class TableEditor<T> extends SwingVarEditor<T>
     }
     
     @Override
+    protected void setEditorEnabled(boolean enabled)
+    {
+        getTable().setEnabled(enabled);
+    }
+    
+    @Override
     protected void updateInterfaceValue()
     {
         tableUpdating = true;

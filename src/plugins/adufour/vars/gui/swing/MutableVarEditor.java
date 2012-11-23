@@ -7,8 +7,12 @@ import java.awt.Dimension;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
+import org.apache.poi.ss.usermodel.Workbook;
+
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.lang.VarMutable;
+import plugins.adufour.vars.lang.VarSequence;
+import plugins.adufour.vars.lang.VarWorkbook;
 
 /**
  * Special editor that changes type according to the underlying variable
@@ -30,9 +34,14 @@ public class MutableVarEditor extends SwingVarEditor<Object>
     private VarEditor      varEditor;
     
     /**
-     * Editor used if the inner type of the variable is compatible with {@link Sequence}
+     * Editor used if the inner type of the variable is compatible with {@link VarSequence}
      */
     private SequenceViewer sequenceViewer;
+    
+    /**
+     * Editor used if the inner type of the variable is compatible with {@link VarWorkbook}
+     */
+    private WorkbookEditor workbookEditor;
     
     /**
      * Editor used for any type that misses a dedicted editor
@@ -76,6 +85,10 @@ public class MutableVarEditor extends SwingVarEditor<Object>
                 sequenceViewer = new SequenceViewer((VarMutable) variable);
             }
             varEditor = sequenceViewer;
+        }
+        else if (variable.getType() != null && variable.getType().isAssignableFrom(Workbook.class))
+        {
+            if (workbookEditor == null) workbookEditor = new WorkbookEditor((VarMutable) variable);
         }
         else
         {
