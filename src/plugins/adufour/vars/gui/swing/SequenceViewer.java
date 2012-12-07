@@ -5,8 +5,11 @@ import icy.main.Icy;
 import icy.sequence.Sequence;
 import icy.sequence.SequenceEvent;
 import icy.sequence.SequenceListener;
+import icy.util.GraphicsUtil;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -42,7 +45,20 @@ public class SequenceViewer extends SwingVarEditor<Sequence> implements Sequence
     @Override
     protected JComponent createEditorComponent()
     {
-        SequencePreviewPanel editor = new SequencePreviewPanel(true);
+        @SuppressWarnings("serial")
+        SequencePreviewPanel editor = new SequencePreviewPanel(true)
+        {
+            @Override
+            protected void paintChildren(Graphics g)
+            {
+                super.paintChildren(g);
+                if (mouseOver && getVariable().getValue() != null)
+                {
+                    g.setColor(Color.white);
+                    GraphicsUtil.drawCenteredString(g, "(double-click to open)", getWidth() / 2, getHeight() - 20, true);
+                }
+            }
+        };
         
         // make every component opaque
         for (JPanel panel : new JPanel[] { editor.getMainPanel(), editor.getTPanel(), editor.getZPanel() })
@@ -56,6 +72,8 @@ public class SequenceViewer extends SwingVarEditor<Sequence> implements Sequence
         return editor;
     }
     
+    private boolean mouseOver = false;
+    
     private final MouseAdapter mouseAdapter = new MouseAdapter()
                                             {
                                                 @Override
@@ -67,6 +85,18 @@ public class SequenceViewer extends SwingVarEditor<Sequence> implements Sequence
                                                         if (s != null) Icy.getMainInterface().addSequence(s);
                                                     }
                                                 }
+                                                
+                                                public void mouseEntered(MouseEvent e)
+                                                {
+                                                    mouseOver = true;
+                                                    getEditorComponent().repaint();
+                                                };
+                                                
+                                                public void mouseExited(MouseEvent e)
+                                                {
+                                                    mouseOver = false;
+                                                    getEditorComponent().repaint();
+                                                };
                                             };
     
     @Override
