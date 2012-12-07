@@ -74,11 +74,11 @@ public class VarMutable extends Var implements MutableType
     @SuppressWarnings("unchecked")
     public void setType(Class<?> newType)
     {
-        if (isReferenced()) throw new IllegalAccessError("Cannot change the type of a linked mutable variable");
-        
         Class<?> oldType = this.getType();
         
         if (oldType == newType) return;
+        
+        if (isReferenced()) throw new IllegalAccessError("Cannot change the type of a linked mutable variable");
         
         setValue(null);
         
