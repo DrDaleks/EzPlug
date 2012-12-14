@@ -246,6 +246,12 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             getEditorComponent().setSelectedItem(variable.getValue());
             getEditorComponent().repaint();
         }
+        else if (variable.getValue() == null)
+        {
+            getEditorComponent().setSelectedItem(null);
+            getEditorComponent().repaint();
+        }
+            
         
         getEditorComponent().setToolTipText("<html><pre><font size=3>" + variable.getValueAsString(true) + "</font></pre></html>");
     }
