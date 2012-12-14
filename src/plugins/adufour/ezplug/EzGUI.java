@@ -92,7 +92,8 @@ public class EzGUI extends IcyFrame implements EzGUIManager, ActionListener, Fol
                                                                 {
                                                                     @Override
                                                                     public void valueChanged(Var<Double> source, Double oldValue, final Double newValue)
-                                                                    {
+                                                                    { // TODO replace inner class by
+                                                                      // local private class
                                                                         ThreadUtil.invokeLater(new Runnable()
                                                                         {
                                                                             public void run()
