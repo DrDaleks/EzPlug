@@ -9,6 +9,8 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JLabel;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -173,7 +175,9 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     /**
      * Creates a new {@link VarEditor} object that allows the user to graphically adjust the value
      * of this variable. By default this editor is an empty label for generic types, but this method
-     * can be overridden to provide a custom editor
+     * can be overridden to provide a custom editor.<br/>
+     * Note: although overriding this method is allowed, direct call should be redirected to
+     * {@link #createVarEditor(boolean)} as much as possible
      * 
      * @return the variable editor embarking the graphical component
      */
@@ -184,6 +188,25 @@ public class Var<T> implements XMLPersistent, VarListener<T>
         if (getDefaultEditorModel() == null) return new Label<T>(this);
         
         throw new UnsupportedOperationException(getClass().getSimpleName() + " does not support editor models of type " + getDefaultEditorModel().getClass().getSimpleName());
+    }
+    
+    /**
+     * Creates a new {@link VarEditor} object that allows the user to view the value of this
+     * variable (but not necessarily modify it). By default this editor is an empty label for
+     * generic types, but this method can be overridden to provide a custom editor
+     * 
+     * @param preferReadOnly
+     *            <code>true</code> if a simple viewer (a label by default) should be given instead
+     *            of an editor with user-input
+     * @return the variable editor embarking the graphical component
+     */
+    public VarEditor<T> createVarEditor(boolean preferReadOnly)
+    {
+        if (!preferReadOnly) return createVarEditor();
+        
+        Label<T> label = new Label<T>(this);
+        label.getEditorComponent().setHorizontalAlignment(JLabel.CENTER);
+        return label;
     }
     
     protected void fireVariableChanged(Var<? extends T> oldRef, Var<? extends T> newRef)
