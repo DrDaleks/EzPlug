@@ -1,15 +1,13 @@
 package plugins.adufour.vars.gui.swing;
 
-import icy.sequence.Sequence;
-
 import java.awt.Dimension;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import plugins.adufour.vars.gui.VarEditor;
+import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarMutable;
-import plugins.adufour.vars.lang.VarSequence;
 
 /**
  * Special editor that changes type according to the underlying variable
@@ -30,16 +28,6 @@ public class MutableVarEditor extends SwingVarEditor<Object>
      */
     private VarEditor      varEditor;
     
-    /**
-     * Editor used if the inner type of the variable is compatible with {@link VarSequence}
-     */
-    private SequenceViewer sequenceViewer;
-    
-    /**
-     * Editor used for any type that misses a dedicted editor
-     */
-    private Label          label;
-    
     @Override
     protected JComponent createEditorComponent()
     {
@@ -50,16 +38,6 @@ public class MutableVarEditor extends SwingVarEditor<Object>
     @Override
     public void dispose()
     {
-        if (label != null)
-        {
-            label.dispose();
-            label = null;
-        }
-        if (sequenceViewer != null)
-        {
-            sequenceViewer.dispose();
-            sequenceViewer = null;
-        }
         varEditor = null;
         
         super.dispose();
@@ -70,22 +48,16 @@ public class MutableVarEditor extends SwingVarEditor<Object>
         // deactivate the current editor (if any)
         if (varEditor != null) varEditor.setEnabled(false);
         
-        if (variable.getType() != null && variable.getType().isAssignableFrom(Sequence.class))
+        Var ref = variable.getReference();
+        
+        if (ref != null)
         {
-            if (sequenceViewer == null)
-            {
-                sequenceViewer = new SequenceViewer((VarMutable) variable);
-            }
-            varEditor = sequenceViewer;
+            varEditor = ref.createVarEditor(true);
         }
         else
         {
-            if (label == null)
-            {
-                label = new Label(variable);
-                label.getEditorComponent().setHorizontalAlignment(JLabel.CENTER);
-            }
-            varEditor = label;
+            varEditor = variable.createVarEditor(true);
+            ((Label) varEditor).getEditorComponent().setHorizontalAlignment(JLabel.CENTER);
         }
         
         // activate the new listener
