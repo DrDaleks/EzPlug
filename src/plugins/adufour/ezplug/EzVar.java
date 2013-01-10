@@ -65,7 +65,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         variable.setDefaultEditorModel(constraint);
 
         jLabelName = new JLabel(variable.getName());
-        varEditor = variable.createVarEditor(false);
+        varEditor = variable.createVarEditor();
     }
 
     /**

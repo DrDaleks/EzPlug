@@ -35,6 +35,6 @@ public abstract class VarNumber<T extends Number> extends Var<T> implements Comp
 
         if (getDefaultEditorModel() == null) return new TextField<T>(this);
 
-        return super.createVarEditor(false);
+        return super.createVarEditor();
     }
 }

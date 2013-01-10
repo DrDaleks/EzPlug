@@ -52,11 +52,11 @@ public class MutableVarEditor extends SwingVarEditor<Object>
         
         if (ref != null)
         {
-            varEditor = ref.createVarEditor(true);
+            varEditor = ref.createVarViewer();
         }
         else
         {
-            varEditor = variable.createVarEditor(true);
+            varEditor = variable.createVarViewer();
             ((Label) varEditor).getEditorComponent().setHorizontalAlignment(JLabel.CENTER);
         }
         

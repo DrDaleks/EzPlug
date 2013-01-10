@@ -44,11 +44,15 @@ public class VarSequence extends Var<Sequence>
     }
     
     @Override
-    public VarEditor<Sequence> createVarEditor(boolean preferReadOnly)
+    public VarEditor<Sequence> createVarEditor()
     {
-        if (preferReadOnly) return new SequenceViewer(this);
-        
         return new SequenceChooser(this);
+    }
+    
+    @Override
+    public VarEditor<Sequence> createVarViewer()
+    {
+        return new SequenceViewer(this);
     }
     
     @Override

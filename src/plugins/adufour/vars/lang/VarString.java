@@ -44,6 +44,6 @@ public class VarString extends Var<String>
     {
         if (getDefaultEditorModel() == null) return nbLines > 1 ? new TextArea<String>(this, nbLines) : new TextField<String>(this);
         
-        return super.createVarEditor(false);
+        return super.createVarEditor();
     }
 }

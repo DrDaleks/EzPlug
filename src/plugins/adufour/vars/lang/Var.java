@@ -180,8 +180,6 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * {@link #createVarEditor(boolean)} as much as possible
      * 
      * @return the variable editor embarking the graphical component
-     * @deprecated although overriding this method is authorized, direct calls should be redirected
-     *             to {@link #createVarEditor(boolean)}
      */
     public VarEditor<T> createVarEditor()
     {
@@ -195,18 +193,12 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     /**
      * Creates a new {@link VarEditor} object that allows the user to view the value of this
      * variable (but not necessarily modify it). By default this editor is an empty label for
-     * generic types, but this method can be overridden to provide a custom editor
+     * generic types, but this method can be overridden to provide a custom viewer
      * 
-     * @param preferReadOnly
-     *            <code>true</code> if a simple viewer (a label by default) should be given instead
-     *            of an editor with user-input
      * @return the variable editor embarking the graphical component
      */
-    @SuppressWarnings("deprecation")
-    public VarEditor<T> createVarEditor(boolean preferReadOnly)
+    public VarEditor<T> createVarViewer()
     {
-        if (!preferReadOnly) return createVarEditor();
-        
         Label<T> label = new Label<T>(this);
         label.getEditorComponent().setHorizontalAlignment(JLabel.CENTER);
         return label;
