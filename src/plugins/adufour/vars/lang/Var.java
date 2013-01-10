@@ -180,6 +180,8 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * {@link #createVarEditor(boolean)} as much as possible
      * 
      * @return the variable editor embarking the graphical component
+     * @deprecated although overriding this method is authorized, direct calls should be redirected
+     *             to {@link #createVarEditor(boolean)}
      */
     public VarEditor<T> createVarEditor()
     {
@@ -200,6 +202,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      *            of an editor with user-input
      * @return the variable editor embarking the graphical component
      */
+    @SuppressWarnings("deprecation")
     public VarEditor<T> createVarEditor(boolean preferReadOnly)
     {
         if (!preferReadOnly) return createVarEditor();
@@ -269,6 +272,21 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     public Iterator<Var<? super T>> getReferrers()
     {
         return referrers.iterator();
+    }
+    
+    /**
+     * @return An iterable list of all the variables currently pointing to this variable
+     */
+    public Iterable<Var<? super T>> getIterableReferrers()
+    {
+        return new Iterable<Var<? super T>>()
+        {
+            @Override
+            public Iterator<Var<? super T>> iterator()
+            {
+                return getReferrers();
+            }
+        };
     }
     
     /**
