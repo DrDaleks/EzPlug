@@ -228,11 +228,11 @@ public abstract class VarEditor<V> implements VarListener<V>
         
         if (enabled && editorComponent != null)
         {
-            updateInterfaceValue();
-            
             // activate listeners if necessary
             variable.addListener(this);
             activateListeners();
+            
+            updateInterfaceValue();
         }
     }
     
