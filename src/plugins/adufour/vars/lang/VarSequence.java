@@ -1,5 +1,6 @@
 package plugins.adufour.vars.lang;
 
+import icy.main.Icy;
 import icy.sequence.Sequence;
 import icy.util.XMLUtil;
 
@@ -12,7 +13,9 @@ import plugins.adufour.vars.gui.swing.SequenceViewer;
 
 public class VarSequence extends Var<Sequence>
 {
-    static final String NO_SEQUENCE = "No Sequence";
+    public static final String NO_SEQUENCE     = "No Sequence";
+    
+    public static final String ACTIVE_SEQUENCE = "Active Sequence";
     
     public VarSequence(String name, Sequence defaultValue)
     {
@@ -39,6 +42,8 @@ public class VarSequence extends Var<Sequence>
         String string = XMLUtil.getAttributeValue((Element) node, XML_KEY_VALUE, null);
         
         if (NO_SEQUENCE.equalsIgnoreCase(string)) setValue(null);
+        
+        else if (ACTIVE_SEQUENCE.equalsIgnoreCase(string)) setValue(Icy.getMainInterface().getFocusedSequence());
         
         return true;
     }

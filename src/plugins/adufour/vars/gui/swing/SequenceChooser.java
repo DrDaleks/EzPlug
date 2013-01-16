@@ -22,6 +22,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataListener;
 
 import plugins.adufour.vars.lang.Var;
+import plugins.adufour.vars.lang.VarSequence;
 
 public class SequenceChooser extends SwingVarEditor<Sequence>
 {
@@ -49,7 +50,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             {
                 variable.setValue(null);
             }
-            else if (o.toString().equals("active"))
+            else if (o.toString().equals(VarSequence.ACTIVE_SEQUENCE))
             {
                 variable.setValue(Icy.getMainInterface().getFocusedSequence());
             }
@@ -70,7 +71,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         
         public SequenceChooserModel()
         {
-            setSelectedItem("active");
+            setSelectedItem(VarSequence.ACTIVE_SEQUENCE);
         }
         
         @Override
@@ -86,7 +87,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         {
             if (index <= 0) return null;
             
-            if (index == 1) return "active";
+            if (index == 1) return VarSequence.ACTIVE_SEQUENCE;
             
             return Icy.getMainInterface().getSequences().get(index - 2);
         }
@@ -115,9 +116,9 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
             {
-                if (value == "active") return new JLabel("Active sequence");
+                if (value == VarSequence.ACTIVE_SEQUENCE) return new JLabel(VarSequence.ACTIVE_SEQUENCE);
                 
-                if (value == null) return new JLabel("No sequence");
+                if (value == null) return new JLabel(VarSequence.NO_SEQUENCE);
                 
                 if (value instanceof Sequence)
                 {
@@ -246,12 +247,11 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             getEditorComponent().setSelectedItem(variable.getValue());
             getEditorComponent().repaint();
         }
-        else if (variable.getValue() == null)
+        else if (variable.getValue() == null && getEditorComponent().getSelectedItem() != VarSequence.ACTIVE_SEQUENCE)
         {
             getEditorComponent().setSelectedItem(null);
             getEditorComponent().repaint();
         }
-            
         
         getEditorComponent().setToolTipText("<html><pre><font size=3>" + variable.getValueAsString(true) + "</font></pre></html>");
     }
