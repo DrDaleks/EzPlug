@@ -2,6 +2,7 @@ package plugins.adufour.vars.lang;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Convenience class defining a generic array of elements based on the specified inner type.<br/>
@@ -16,7 +17,7 @@ import java.util.Arrays;
  * @param <T>
  *            the inner type of the array
  */
-public class VarArray<T> extends VarGenericArray<T[]>
+public class VarArray<T> extends VarGenericArray<T[]> implements Iterable<T>
 {
     /**
      * Creates a new array variable
@@ -51,5 +52,11 @@ public class VarArray<T> extends VarGenericArray<T[]>
         newArray.addAll(Arrays.asList(elements));
         
         setValue(newArray.toArray(oldArray));
+    }
+
+    @Override
+    public Iterator<T> iterator()
+    {
+        return Arrays.asList(getValue()).iterator();
     }
 }
