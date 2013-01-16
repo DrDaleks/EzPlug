@@ -59,6 +59,6 @@ public class Label<T> extends SwingVarEditor<T>
     
     public double getComponentVerticalResizeFactor()
     {
-        return 0.5;
+        return 0;
     }
 }
