@@ -14,7 +14,7 @@ public class VarDouble extends VarNumber<Double>
     
     public VarDouble(String name, double defaultValue)
     {
-        super(name, Double.class, defaultValue);
+        super(name, Double.TYPE, defaultValue);
     }
     
     @Override

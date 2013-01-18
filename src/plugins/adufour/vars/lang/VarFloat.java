@@ -9,7 +9,7 @@ public class VarFloat extends VarNumber<Float>
     
     public VarFloat(String name, float defaultValue)
     {
-        super(name, Float.class, defaultValue);
+        super(name, Float.TYPE, defaultValue);
     }
     
 	@Override

@@ -13,7 +13,7 @@ public class VarBoolean extends Var<Boolean>
 {
 	public VarBoolean(String name, Boolean defaultValue)
 	{
-		super(name, Boolean.class, defaultValue);
+		super(name, Boolean.TYPE, defaultValue);
 	}
 	
 	@Override

@@ -14,7 +14,7 @@ public class VarInteger extends VarNumber<Integer>
     
     public VarInteger(String name, int defaultValue)
     {
-        super(name, Integer.class, defaultValue);
+        super(name, Integer.TYPE, defaultValue);
     }
     
 	@Override
