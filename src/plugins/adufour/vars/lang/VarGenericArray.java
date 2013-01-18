@@ -43,6 +43,10 @@ public class VarGenericArray<A> extends Var<A> implements ArrayType
             if (sourceComponentType == null) return false;
             return componentType.isAssignableFrom(sourceComponentType);
         }
+        else if (componentType.isAssignableFrom(source.getType()))
+        {
+            return true;
+        }
         else return super.isAssignableFrom(source);
     }
     
