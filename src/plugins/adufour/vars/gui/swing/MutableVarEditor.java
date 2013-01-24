@@ -26,7 +26,7 @@ public class MutableVarEditor extends SwingVarEditor<Object>
     /**
      * Abstract pointer to the active editor
      */
-    private VarEditor      varEditor;
+    private VarEditor varEditor;
     
     @Override
     protected JComponent createEditorComponent()
@@ -57,7 +57,7 @@ public class MutableVarEditor extends SwingVarEditor<Object>
         else
         {
             varEditor = variable.createVarViewer();
-            ((Label) varEditor).getEditorComponent().setHorizontalAlignment(JLabel.CENTER);
+            if (varEditor instanceof Label) ((Label) varEditor).getEditorComponent().setHorizontalAlignment(JLabel.CENTER);
         }
         
         // activate the new listener

@@ -1,11 +1,14 @@
 package plugins.adufour.vars.lang;
 
+import icy.sequence.Sequence;
+
 import java.util.ArrayList;
 
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.model.TypeSelectionModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
 import plugins.adufour.vars.gui.swing.MutableVarEditor;
+import plugins.adufour.vars.gui.swing.SequenceViewer;
 import plugins.adufour.vars.gui.swing.TypeChooser;
 import plugins.adufour.vars.util.MutableType;
 import plugins.adufour.vars.util.TypeChangeListener;
@@ -39,9 +42,18 @@ public class VarMutable extends Var implements MutableType
     @Override
     public VarEditor createVarEditor()
     {
-        if (getDefaultEditorModel() instanceof TypeSelectionModel) return new TypeChooser(this);
+        if (getDefaultEditorModel() instanceof TypeSelectionModel)
+            return new TypeChooser(this);
         
         else return new MutableVarEditor(this);
+    }
+    
+    @Override
+    public VarEditor createVarViewer()
+    {
+        if (Sequence.class.equals(type)) return new SequenceViewer(this);
+        
+        return super.createVarViewer();
     }
     
     public void addTypeChangeListener(TypeChangeListener listener)
@@ -60,7 +72,19 @@ public class VarMutable extends Var implements MutableType
     {
         Class<?> sourceType = source.getType();
         
-        return sourceType != null && (this.getType() == null || this.getType().isAssignableFrom(sourceType));
+        // cannot point to null
+        if (sourceType == null) return false;
+        
+        // null can point to anything (type will change after linking)
+        if (type == null) return true;
+        
+        // special case for primitive numbers
+        if (Number.class.isAssignableFrom(type) && sourceType.isPrimitive()) return true;
+        // and the other way round
+        if (Number.class.isAssignableFrom(sourceType) && type.isPrimitive()) return true;
+        
+        // last (default) case
+        return type.isAssignableFrom(sourceType);
     }
     
     @SuppressWarnings("unchecked")
