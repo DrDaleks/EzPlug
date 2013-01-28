@@ -12,17 +12,22 @@ public class EzVarDimensionPicker extends EzVarInteger
         @Override
         public void valueChanged(Var<Sequence> source, Sequence oldValue, Sequence newValue)
         {
-            setValue(0);
 
             if (newValue == null)
             {
                 setVisible(false);
+                setValue(0);
             }
             else
             {
+                int currentValue = getValue();
+                // set an invalid value
+                setValue(-1);
                 int size = getSize(newValue, dim);
                 setVisible(size > 1);
                 setMaxValue(size - 1);
+                // (re)set the current value to force an interface refresh
+                setValue(currentValue >= size ? 0 : currentValue);
             }
         }
 
