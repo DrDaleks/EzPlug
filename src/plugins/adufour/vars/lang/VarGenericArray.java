@@ -17,15 +17,50 @@ import plugins.adufour.vars.util.ArrayType;
  */
 public class VarGenericArray<A> extends Var<A> implements ArrayType
 {
+    @SuppressWarnings("unchecked")
     public VarGenericArray(String name, Class<A> type, A defaultValue)
     {
-        super(name, type, defaultValue);
-        if (type != null && !type.isArray()) throw new IllegalArgumentException("Cannot create variable " + name + ": " + type.getSimpleName() + " is not an array type");
+        super(name, type, (defaultValue != null ? defaultValue : (A) Array.newInstance(type.getComponentType(), 0)));
+        //if (type != null && !type.isArray()) throw new IllegalArgumentException("Cannot create variable " + name + ": " + type.getSimpleName() + " is not an array type");
+    }
+    
+    @Override
+    public int getDimensions()
+    {
+        return 1;
     }
     
     public Class<?> getInnerType()
     {
         return getType() == null ? null : getType().getComponentType();
+    }
+    
+    @Override
+    public String getSeparator(int dimension)
+    {
+        if (dimension == 0) return " ";
+        
+        throw new ArrayIndexOutOfBoundsException(dimension);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public A getValue()
+    {
+        Object o = super.getValue();
+        if (o == null) return (A) Array.newInstance(getInnerType(), 0);
+        
+        if (type == null) return null;
+        
+        // convert single elements to singled-value arrays
+        if (getInnerType().isAssignableFrom(o.getClass()))
+        {
+            Object array = Array.newInstance(o.getClass(), 1);
+            Array.set(array, 0, o);
+            return (A) array;
+        }
+        
+        return (A) o;
     }
     
     @Override
@@ -43,7 +78,8 @@ public class VarGenericArray<A> extends Var<A> implements ArrayType
             if (sourceComponentType == null) return false;
             return componentType.isAssignableFrom(sourceComponentType);
         }
-        else if (componentType.isAssignableFrom(source.getType()))
+        else
+            if (componentType.isAssignableFrom(source.getType()))
         {
             return true;
         }
@@ -92,12 +128,6 @@ public class VarGenericArray<A> extends Var<A> implements ArrayType
     }
     
     @Override
-    public int getDimensions()
-    {
-        return 1;
-    }
-    
-    @Override
     public int size(int dimension) throws ArrayIndexOutOfBoundsException
     {
         if (dimension > 0) throw new ArrayIndexOutOfBoundsException(dimension);
@@ -105,13 +135,5 @@ public class VarGenericArray<A> extends Var<A> implements ArrayType
         Object array = getValue();
         
         return array == null ? -1 : Array.getLength(array);
-    }
-    
-    @Override
-    public String getSeparator(int dimension)
-    {
-        if (dimension == 0) return " ";
-        
-        throw new ArrayIndexOutOfBoundsException(dimension);
     }
 }
