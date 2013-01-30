@@ -1,5 +1,7 @@
 package plugins.adufour.vars.gui.swing;
 
+import java.util.Arrays;
+
 import icy.gui.main.MainEvent;
 import icy.gui.main.MainListener;
 import icy.main.Icy;
@@ -60,7 +62,11 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
             @Override
             public void valueChanged(ListSelectionEvent e)
             {
+                if (e.getValueIsAdjusting()) return;
+                
                 Object[] selection = list.getSelectedValues();
+                
+                if (Arrays.equals(selection, variable.getValue())) return;
                 
                 Sequence[] sequences = new Sequence[selection.length];
                 
@@ -150,6 +156,12 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
     }
     
     @Override
+    public double getComponentVerticalResizeFactor()
+    {
+        return 0.5;
+    }
+    
+    @Override
     public boolean isComponentOpaque()
     {
         return true;
@@ -177,13 +189,15 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
             @Override
             public void run()
             {
+                if (Arrays.equals(variable.getValue(), getEditorComponent().getSelectedValues())) return;
+                
                 Sequence[] seqs = variable.getValue();
                 int[] indices = new int[seqs.length];
                 
                 for (int i = 0; i < seqs.length; i++)
                     indices[i] = Icy.getMainInterface().getSequences().indexOf(seqs[i]);
                 
-                ((JList) getEditorComponent()).setSelectedIndices(indices);
+                getEditorComponent().setSelectedIndices(indices);
             }
         });
     }
