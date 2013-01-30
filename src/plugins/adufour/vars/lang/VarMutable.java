@@ -84,7 +84,7 @@ public class VarMutable extends Var implements MutableType
         if (Number.class.isAssignableFrom(sourceType) && type.isPrimitive()) return true;
         
         // last (default) case
-        return type.isAssignableFrom(sourceType);
+        return type.isAssignableFrom(sourceType) || (type.isArray() && type.getComponentType().isAssignableFrom(sourceType));
     }
     
     @SuppressWarnings("unchecked")
