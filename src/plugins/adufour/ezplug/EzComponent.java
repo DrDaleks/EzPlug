@@ -24,7 +24,7 @@ public abstract class EzComponent
 	
 	protected boolean	visible		= true;
 	
-	private EzGUI		gui;
+	private EzDialog		gui;
 	
 	/**
 	 * The group to which this component belongs, or null if this component is top-level
@@ -84,7 +84,7 @@ public abstract class EzComponent
 	 * 
 	 * @return
 	 */
-	final EzGUI getUI()
+	final EzDialog getUI()
 	{
 		return this.gui;
 	}
@@ -92,12 +92,12 @@ public abstract class EzComponent
 	/**
 	 * Assign the interface which owns this component
 	 * 
-	 * @param parent
+	 * @param ezDialog
 	 *            The parent frame of this component
 	 */
-	final void setUI(EzGUI parent)
+	final void setUI(EzDialog ezDialog)
 	{
-		this.gui = parent;
+		this.gui = ezDialog;
 	}
 	
 	/**

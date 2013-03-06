@@ -1,5 +1,7 @@
 package plugins.adufour.ezplug;
 
+import icy.system.thread.ThreadUtil;
+
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -40,15 +42,15 @@ import plugins.adufour.vars.util.VarListener;
 public abstract class EzVar<T> extends EzComponent implements VarListener<T>
 {
     final Var<T>                              variable;
-
-    private final JLabel                      jLabelName;
-
-    private final VarEditor<T>                varEditor;
-
+    
+    private JLabel                            jLabelName;
+    
+    private VarEditor<T>                      varEditor;
+    
     private final HashMap<EzComponent, T[]>   visibilityTriggers = new HashMap<EzComponent, T[]>();
-
+    
     private final ArrayList<EzVarListener<T>> listeners          = new ArrayList<EzVarListener<T>>();
-
+    
     /**
      * Constructs a new variable
      * 
@@ -63,11 +65,17 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         super(variable.getName());
         this.variable = variable;
         variable.setDefaultEditorModel(constraint);
-
-        jLabelName = new JLabel(variable.getName());
-        varEditor = variable.createVarEditor();
+        
+        ThreadUtil.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                jLabelName = new JLabel(variable.getName());
+                varEditor = variable.createVarEditor();
+            }
+        });
     }
-
+    
     /**
      * Creates a new variable with a JComboBox as default graphical component
      * 
@@ -84,7 +92,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         this(variable, new ValueSelectionModel<T>(defaultValues, defaultValueIndex, freeInput));
     }
-
+    
     /**
      * Adds a new listener that will be notified is this variable changes
      * 
@@ -95,7 +103,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         listeners.add(listener);
     }
-
+    
     /**
      * Sets a visibility trigger on the target EzComponent. The visibility state of the target
      * component is set to true whenever this variable is visible and takes any of the trigger
@@ -109,41 +117,41 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     public void addVisibilityTriggerTo(EzComponent targetComponent, T... values)
     {
         visibilityTriggers.put(targetComponent, values);
-
+        
         updateVisibilityChain();
     }
-
+    
     @Override
     protected void addTo(Container container)
     {
         GridBagConstraints gbc = new GridBagConstraints();
-
+        
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         // gbc.weighty = 0;
         container.add(jLabelName, gbc);
-
+        
         gbc.weightx = 1;
         // gbc.weighty = 0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         
         VarEditor<T> ed = getVarEditor();
         ed.setEnabled(true); // activates listeners
-        container.add((JComponent)ed.getEditorComponent(), gbc);
+        container.add((JComponent) ed.getEditorComponent(), gbc);
     }
-
+    
     protected void dispose()
     {
         visibilityTriggers.clear();
-
+        
         varEditor.dispose();
-
+        
         // unregister the internal listener
         variable.removeListener(this);
-
+        
         super.dispose();
     }
-
+    
     /**
      * Privileged access to fire listeners from inside the EzPlug package. This method is called
      * after the GUI was created in order to trigger listeners declared in the
@@ -153,19 +161,19 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         fireVariableChanged(variable.getValue());
     }
-
+    
     protected final void fireVariableChanged(T value)
     {
         for (EzVarListener<T> l : listeners)
             l.variableChanged(this, value);
-
+        
         if (getUI() != null && varEditor != null)
         {
             updateVisibilityChain();
             getUI().repack(true);
         }
     }
-
+    
     /**
      * Retrieves the default values into the destination array, or returns a new one if dest is not
      * big enough.
@@ -182,21 +190,21 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         if (getVarEditor() instanceof ComboBox)
         {
             JComboBox combo = ((ComboBox<T>) getVarEditor()).getEditorComponent();
-
+            
             ArrayList<T> items = new ArrayList<T>(combo.getItemCount());
             for (int i = 0; i < combo.getItemCount(); i++)
                 items.add((T) combo.getItemAt(i));
             return items.toArray(dest);
         }
-
+        
         throw new UnsupportedOperationException("The input component is not a list of values");
     }
-
+    
     protected VarEditor<T> getVarEditor()
     {
         return varEditor;
     }
-
+    
     /**
      * Returns an EzPlug-wide unique identifier for this variable (used to save/load parameters)
      * 
@@ -205,18 +213,18 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     String getID()
     {
         String id = variable.getName();
-
+        
         EzGroup group = getGroup();
-
+        
         while (group != null)
         {
             id = group.name + "." + id;
             group = group.getGroup();
         }
-
+        
         return id;
     }
-
+    
     /**
      * Returns the variable value. By default, null is considered a valid value. In order to show an
      * error message (or throw an exception in head-less mode), use the {@link #getValue(boolean)}
@@ -228,7 +236,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         return getValue(false);
     }
-
+    
     /**
      * Returns the variable value (or fails if the variable is null).
      * 
@@ -245,12 +253,12 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         if (val == null && forbidNull) throw new EzException("Variable " + variable.getName() + " has not been set", true);
         return val;
     }
-
+    
     public Var<T> getVariable()
     {
         return variable;
     }
-
+    
     /**
      * Removes the given listener from the list
      * 
@@ -261,7 +269,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         listeners.remove(listener);
     }
-
+    
     /**
      * Removes all change listeners for this variable
      */
@@ -269,7 +277,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         variable.removeListeners();
     }
-
+    
     /**
      * Replaces the list of values available in the combo box of this variable<br>
      * NOTE: this method has no effect if the user component is not already a combo box
@@ -285,7 +293,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
             ((ComboBox<T>) getVarEditor()).setDefaultValues(values, defaultValueIndex, allowUserInput);
         }
     }
-
+    
     /**
      * Sets whether the input component is enabled or not in the interface
      * 
@@ -297,7 +305,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         jLabelName.setEnabled(enabled);
         getVarEditor().setEnabled(enabled);
     }
-
+    
     /**
      * Sets the new value of this variable
      * 
@@ -311,14 +319,14 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         variable.setValue(value);
     }
-
+    
     @Override
     public void setToolTipText(String text)
     {
         jLabelName.setToolTipText(text);
         getVarEditor().setComponentToolTipText(text);
     }
-
+    
     /**
      * Sets the visibility state of this variable, and updates the chain of visibility states
      * (components hiding other components)
@@ -329,31 +337,31 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     public void setVisible(boolean newVisibleState)
     {
         super.setVisible(newVisibleState);
-
+        
         updateVisibilityChain();
     }
-
+    
     public String toString()
     {
         return variable.getName() + " = " + variable.toString();
     }
-
+    
     protected void updateVisibilityChain()
     {
         Set<EzComponent> componentsToUpdate = visibilityTriggers.keySet();
-
+        
         // first, hide everything in the chain
         for (EzComponent component : componentsToUpdate)
             component.setVisible(false);
-
+        
         // if "this" is not visible, do anything else
         if (!this.isVisible()) return;
-
+        
         // otherwise, one by one, show the components w.r.t. the triggers
         component: for (EzComponent component : componentsToUpdate)
         {
             T[] componentTriggerValues = visibilityTriggers.get(component);
-
+            
             for (T triggerValue : componentTriggerValues)
             {
                 if (triggerValue == getValue())
@@ -365,16 +373,16 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
             }
         }
     }
-
+    
     @Override
     public void valueChanged(Var<T> source, T oldValue, T newValue)
     {
         fireVariableChanged(newValue);
     }
-
+    
     @Override
     public void referenceChanged(Var<T> source, Var<? extends T> oldReference, Var<? extends T> newReference)
     {
-
+        
     }
 }

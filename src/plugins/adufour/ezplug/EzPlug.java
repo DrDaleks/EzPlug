@@ -374,8 +374,6 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
         if (ezVars.containsKey(varID)) throw new IllegalArgumentException("Variable " + varID + " already exists");
         
         ezVars.put(varID, var);
-        // activate the EzVar's internal listener
-        var.variable.addListener(var);
     }
     
     @Override
