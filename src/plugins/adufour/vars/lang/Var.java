@@ -1,6 +1,7 @@
 package plugins.adufour.vars.lang;
 
 import icy.file.xml.XMLPersistent;
+import icy.system.IcyHandledException;
 import icy.util.XMLUtil;
 
 import java.lang.reflect.Array;
@@ -85,6 +86,8 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     private final T                    defaultValue;
     
     private T                          value;
+    
+    private boolean                    referenceAllowed = true;
     
     /**
      * The variable referenced by this variable
@@ -548,6 +551,8 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     public void setReference(Var<T> variable) throws ClassCastException
     {
+        if (!referenceAllowed) throw new IcyHandledException("Error: variable '" + name + "' is not allowed to reference another one");
+        
         if (variable != null && !isAssignableFrom(variable) && !(variable instanceof VarObject))
         {
             throw new ClassCastException(this + " cannot point to " + variable);
@@ -576,6 +581,26 @@ public class Var<T> implements XMLPersistent, VarListener<T>
             
             fireVariableChanged(oldRef, reference);
         }
+    }
+    
+    /**
+     * Sets whether this variable may or may not reference another one. By default, this value is
+     * <code>true</code>
+     * 
+     * @param allowReference
+     *            true if this variable may reference another one, false otherwise
+     */
+    public void setReferenceAllowed(boolean referenceAllowed)
+    {
+        this.referenceAllowed = referenceAllowed;
+    }
+    
+    /**
+     * @return true if this variable may reference another one, false otherwise
+     */
+    public boolean isReferenceAllowed()
+    {
+        return referenceAllowed;
     }
     
     /**
