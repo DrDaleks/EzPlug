@@ -28,4 +28,20 @@ public class VarTrigger extends VarInteger
     {
         return new Button(this);
     }
+    
+    /**
+     * Resets the trigger count (equivalent to setting the value of this variable to 0)
+     */
+    public void reset()
+    {
+        setValue(0);
+    }
+    
+    /**
+     * Triggers the variable (equivalent to incrementing the value of this variable)
+     */
+    public void trigger()
+    {
+        super.setValue(getValue() + 1);
+    }
 }
