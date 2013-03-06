@@ -65,6 +65,12 @@ public abstract class VarEditor<V> implements VarListener<V>
      */
     private final Object   editorComponent;
     
+    private boolean        nameVisible         = true;
+    
+    private boolean        componentFocusable  = true;
+    
+    private boolean        componentResizeable = false;
+    
     /**
      * Constructs a new editor for the specified {@link Var}iable. <br>
      * Note that multiple editors be created for the same variable (see the
@@ -179,20 +185,29 @@ public abstract class VarEditor<V> implements VarListener<V>
     
     /**
      * @return true if the editor is focusable (i.e. the component may capture a mouse event and
-     *         become active). This method can be overridden to force the focus policy
+     *         become active).
      */
     public boolean isComponentFocusable()
     {
-        return true;
+        return componentFocusable;
     }
     
     /**
-     * @return true if the container panel should allow this component to be resized, or false
-     *         otherwise
+     * @return <code>true</code> if the container panel should allow this component to be resized,
+     *         <code>false</code> otherwise
      */
     public boolean isComponentResizeable()
     {
-        return false;
+        return componentResizeable;
+    }
+    
+    /**
+     * @return <code>true</code> if the name should appear alongside the editor component, false
+     *         otherwise
+     */
+    public boolean isNameVisible()
+    {
+        return nameVisible;
     }
     
     /**
@@ -210,6 +225,26 @@ public abstract class VarEditor<V> implements VarListener<V>
      * collection when the interface is destroyed.
      */
     protected abstract void deactivateListeners();
+    
+    /**
+     * @param componentFocusable
+     *            <code>true</code> if the editor is focusable (i.e. the component may capture a
+     *            mouse event and become active), <code>false</code> otherwise
+     */
+    public void setComponentFocusable(boolean componentFocusable)
+    {
+        this.componentFocusable = componentFocusable;
+    }
+    
+    /**
+     * @param componentResizeable
+     *            <code>true</code> if the container panel should allow this component to be
+     *            resized, <code>false</code> otherwise
+     */
+    public void setComponentResizeable(boolean componentResizeable)
+    {
+        this.componentResizeable = componentResizeable;
+    }
     
     /**
      * Enables (or disables) the graphical component associated with the {@link Var}iable object.
@@ -244,6 +279,16 @@ public abstract class VarEditor<V> implements VarListener<V>
             ((JComponent) component).setEnabled(enabled);
         
         else throw new UnsupportedOperationException("VarEditor.setEditorEnabled(boolean) is not implemented for the current toolkit");
+    }
+    
+    /**
+     * @param nameVisible
+     *            <code>true</code> if the name should appear alongside the editor component,
+     *            <code>false</code> otherwise
+     */
+    public void setNameVisible(boolean nameVisible)
+    {
+        this.nameVisible = nameVisible;
     }
     
     /**
