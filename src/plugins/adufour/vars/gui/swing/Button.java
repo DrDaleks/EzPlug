@@ -28,7 +28,7 @@ public class Button extends SwingVarEditor<Integer>
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                variable.setValue(variable.getValue() + 1);
+                ((VarTrigger)variable).trigger();
             }
         };
         
