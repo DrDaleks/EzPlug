@@ -22,6 +22,7 @@ import plugins.adufour.vars.gui.swing.ComboBox;
 import plugins.adufour.vars.gui.swing.Label;
 import plugins.adufour.vars.util.VarException;
 import plugins.adufour.vars.util.VarListener;
+import plugins.adufour.vars.util.VarReferencingPolicy;
 
 /**
  * <p>
@@ -63,45 +64,45 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * Attribute key defining the unique identifier of a variable. This key is used by the
      * {@link XMLPersistent} mechanism to save/load the variable value to/from XML files.
      */
-    public static final String         XML_KEY_ID    = "ID";
+    public static final String           XML_KEY_ID        = "ID";
     
     /**
      * Attribute key defining the value of a variable. This key is used by the {@link XMLPersistent}
      * mechanism to save/load the variable value to/from XML files.
      */
-    static final String                XML_KEY_VALUE = "value";
+    static final String                  XML_KEY_VALUE     = "value";
     
     /**
      * User-friendly representation of the Java <code>null</code> keyword
      */
-    public static final String         NO_VALUE      = "No value";
+    public static final String           NO_VALUE          = "No value";
     
-    private final String               name;
+    private final String                 name;
     
     /**
      * The {@link Class} definition describing the type of the variable value
      */
-    protected Class<T>                 type;
+    protected Class<T>                   type;
     
-    private final T                    defaultValue;
+    private final T                      defaultValue;
     
-    private T                          value;
+    private T                            value;
     
-    private boolean                    referenceAllowed = true;
+    private VarReferencingPolicy         referencingPolicy = VarReferencingPolicy.BOTH;
     
     /**
      * The variable referenced by this variable
      */
-    private Var<? extends T>           reference;
+    private Var<? extends T>             reference;
     
     /**
      * The list of variables referencing this variable
      */
-    private final List<Var<? super T>> referrers     = new ArrayList<Var<? super T>>();
+    private final List<Var<? super T>>   referrers         = new ArrayList<Var<? super T>>();
     
-    private VarEditorModel<T>          defaultEditorModel;
+    private VarEditorModel<T>            defaultEditorModel;
     
-    private final List<VarListener<T>> listeners     = new ArrayList<VarListener<T>>();
+    protected final List<VarListener<T>> listeners         = new ArrayList<VarListener<T>>();
     
     /**
      * Creates a new {@link Var}iable with given name and non-null default value.
@@ -551,7 +552,10 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     public void setReference(Var<T> variable) throws ClassCastException
     {
-        if (!referenceAllowed) throw new IcyHandledException("Error: variable '" + name + "' is not allowed to reference another one");
+        if (referencingPolicy == VarReferencingPolicy.OUT || referencingPolicy == VarReferencingPolicy.NONE)
+        {
+            throw new IcyHandledException("Error: variable '" + name + "' is not allowed to reference another one");
+        }
         
         if (variable != null && !isAssignableFrom(variable) && !(variable instanceof VarObject))
         {
@@ -587,20 +591,22 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * Sets whether this variable may or may not reference another one. By default, this value is
      * <code>true</code>
      * 
-     * @param allowReference
-     *            true if this variable may reference another one, false otherwise
+     * @param policy
+     *            the new referencing policy
+     * 
+     * @see VarReferencingPolicy
      */
-    public void setReferenceAllowed(boolean referenceAllowed)
+    public void setReferencingPolicy(VarReferencingPolicy policy)
     {
-        this.referenceAllowed = referenceAllowed;
+        this.referencingPolicy = policy;
     }
     
     /**
-     * @return true if this variable may reference another one, false otherwise
+     * @return the referencing policy for this variable
      */
-    public boolean isReferenceAllowed()
+    public VarReferencingPolicy getReferencingPolicy()
     {
-        return referenceAllowed;
+        return referencingPolicy;
     }
     
     /**
