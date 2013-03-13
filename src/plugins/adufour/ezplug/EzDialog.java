@@ -307,23 +307,58 @@ public class EzDialog extends IcyFrame implements FoldListener
     }
     
     /**
-     * Shows the dialog on the screen
-     * 
-     * @param wait
-     *            true if the dialog should be modal (i.e. the method will return only after the
-     *            dialog is closed).
+     * Shows the dialog on the screen and returns only when the dialog is closed (either via the
+     * close button, or by calling the {@link #hideDialog()} method). By default, the dialog is
+     * modal (other windows are blocked until this dialog is closed)
      */
     public void showDialog()
     {
+        showDialog(true);
+    }
+    
+    /**
+     * Shows the dialog on the screen and returns only when the dialog is closed (either via the
+     * close button, or by calling the {@link #hideDialog()} method)
+     * 
+     * @param modal
+     *            <code>true</code> if the dialog should block other windows until it is closed,
+     *            <code>false</code> otherwise
+     */
+    public void showDialog(final boolean modal)
+    {
         if (!isDialog) throw new IcyHandledException("Cannot show an IcyFrame as a Dialog. Use setVisible(true) instead.");
-        
-        repack(true);
         
         ThreadUtil.invokeNow(new Runnable()
         {
             public void run()
             {
+                repack(true);
+                dialog.setModal(modal);
                 dialog.setVisible(true);
+            }
+        });
+    }
+    
+    @Override
+    public void close()
+    {
+        if (isDialog)
+            hideDialog();
+        else super.close();
+    }
+    
+    /**
+     * Closes the dialog
+     */
+    public void hideDialog()
+    {
+        if (!isDialog) return;
+        
+        ThreadUtil.invokeNow(new Runnable()
+        {
+            public void run()
+            {
+                dialog.setVisible(false);
             }
         });
     }
