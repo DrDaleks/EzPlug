@@ -66,7 +66,7 @@ public class VarMutable extends Var implements MutableType
         listeners.remove(listener);
     }
     
-//    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     @Override
     public boolean isAssignableFrom(Var source)
     {
@@ -75,18 +75,16 @@ public class VarMutable extends Var implements MutableType
         // cannot point to null
         if (sourceType == null) return false;
         
-//        // null can point to anything (type will change after linking)
-//        if (type == null) return true;
-//        
-//        // special case for primitive numbers
-//        if (Number.class.isAssignableFrom(type) && sourceType.isPrimitive()) return true;
-//        // and the other way round
-//        if (Number.class.isAssignableFrom(sourceType) && type.isPrimitive()) return true;
-//        
-//        // last (default) case
-//        return type.isAssignableFrom(sourceType) || (type.isArray() && type.getComponentType().isAssignableFrom(sourceType));
+        // null can point to anything (type will change after linking)
+        if (type == null) return true;
         
-        return true;
+        // special case for primitive numbers
+        if (Number.class.isAssignableFrom(type) && sourceType.isPrimitive()) return true;
+        // and the other way round
+        if (Number.class.isAssignableFrom(sourceType) && type.isPrimitive()) return true;
+        
+        // last (default) case
+        return type.isAssignableFrom(sourceType) || (type.isArray() && type.getComponentType().isAssignableFrom(sourceType));
     }
     
     @SuppressWarnings("unchecked")
@@ -104,13 +102,7 @@ public class VarMutable extends Var implements MutableType
         
         if (oldType == newType) return;
         
-        if (isReferenced()){
-            //throw new IllegalAccessError("Cannot change the type of a linked mutable variable");
-            for(Object referrer : getIterableReferrers())
-                ((Var)referrer).setReference(null);                
-        }
-        
-        if (getReference() != null) setReference(null);
+        if (isReferenced()) throw new IllegalAccessError("Cannot change the type of a linked mutable variable");
         
         setValue(null);
         
