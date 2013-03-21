@@ -1,5 +1,7 @@
 package plugins.adufour.ezplug;
 
+import java.util.Arrays;
+
 import plugins.adufour.vars.lang.VarEnum;
 
 /**
@@ -40,7 +42,7 @@ public class EzVarEnum<E extends Enum<E>> extends EzVar<E>
      */
     public EzVarEnum(String varName, E[] values, E defaultValue)
     {
-        this(varName, values, defaultValue.ordinal());
+        this(varName, values, Arrays.asList(values).indexOf(defaultValue));
     }
 
     /**
