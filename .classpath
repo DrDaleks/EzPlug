@@ -4,7 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="ICY_HOME/icy.jar"/>
 	<classpathentry kind="var" path="ICY_HOME/plugins/nchenouard/spot/DetectionResult.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Protocols"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/EzPlug"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Blocks"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
