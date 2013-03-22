@@ -6,7 +6,6 @@ import icy.image.IcyBufferedImage;
 import icy.image.colormap.FireColorMap;
 import icy.main.Icy;
 import icy.roi.ROI;
-import icy.roi.ROI2D;
 import icy.roi.ROI2DArea;
 import icy.sequence.Sequence;
 import icy.sequence.VolumetricImage;
@@ -277,31 +276,52 @@ public class ConnectedComponents extends EzPlug implements Block
         
         if (exportROI.getValue() || outputROIs.isReferenced())
         {
-            if (output.getSizeZ() > 1) throw new RuntimeException("ROI export is not supported in 3D yet.");
-            
-            ArrayList<ROI2DArea> rois = new ArrayList<ROI2DArea>(componentsMap.size());
-            for (List<ConnectedComponent> ccs : componentsMap.values())
-                for (ConnectedComponent cc : ccs)
-                {
-                    ROI2DArea area = new ROI2DArea();
-                    area.beginUpdate();
-                    for (Point3i pt : cc)
-                        area.addPoint(pt.x, pt.y);
-                    area.setT(cc.getT());
-                    area.endUpdate();
-                    rois.add(area);
-                }
-            
-            outputROIs.setValue(rois.toArray(new ROI2DArea[rois.size()]));
+            if (output.getSizeZ() > 1)
+            {
+            	ArrayList<ROI3DArea> rois = new ArrayList<ROI3DArea>(componentsMap.size());
+            	
+            	for (List<ConnectedComponent> ccs : componentsMap.values())
+	                for (ConnectedComponent cc : ccs)
+	                {
+	                    ROI3DArea area = new ROI3DArea();
+	                    area.beginUpdate();
+	                    for (Point3i pt : cc)
+	                        area.addPoint(pt.x, pt.y, pt.z);
+	                    area.setT(cc.getT());
+	                    area.endUpdate();
+	                    rois.add(area);
+	                }
+	            
+            	outputROIs.setValue(rois.toArray(new ROI3DArea[rois.size()]));
+            }
+            else
+            {
+	            ArrayList<ROI2DArea> rois = new ArrayList<ROI2DArea>(componentsMap.size());
+	            
+	            for (List<ConnectedComponent> ccs : componentsMap.values())
+	                for (ConnectedComponent cc : ccs)
+	                {
+	                    ROI2DArea area = new ROI2DArea();
+	                    area.beginUpdate();
+	                    for (Point3i pt : cc)
+	                        area.addPoint(pt.x, pt.y);
+	                    area.setT(cc.getT());
+	                    area.endUpdate();
+	                    rois.add(area);
+	                }
+	            
+            	outputROIs.setValue(rois.toArray(new ROI2DArea[rois.size()]));
+            }
             
             if (exportROI.getValue())
             {
+            	// replace all ROI on the input by the new ones
                 Sequence in = input.getValue();
                 
                 in.beginUpdate();
                 
-                for (ROI2D roi : input.getValue().getROI2Ds())
-                    if (roi instanceof ROI2DArea) in.removeROI(roi);
+                for (ROI roi : input.getValue().getROIs())
+                    in.removeROI(roi);
                 
                 for (ROI roi : outputROIs.getValue())
                     in.addROI(roi);
