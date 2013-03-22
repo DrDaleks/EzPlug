@@ -454,7 +454,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
             
             if (outputSequence != null)
             {
-                outputSequence.removeAllImage();
+                outputSequence.removeAllImages();
                 for (int i = 0; i < d; i++)
                 {
                     outputSequence.setImage(0, i, new IcyBufferedImage(w, h, 1, DataType.UBYTE));
