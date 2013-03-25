@@ -1,6 +1,7 @@
 package plugins.adufour.vars.gui.model;
 
 import icy.sequence.Sequence;
+import icy.roi.ROI;
 
 import java.io.File;
 
@@ -11,7 +12,7 @@ public class TypeSelectionModel extends ValueSelectionModel<Class<?>>
 	 */
 	public TypeSelectionModel()
 	{
-		super(new Class<?>[] { Object.class, Sequence.class, Integer.class, Double.class, int[].class, double[].class, String.class, File.class, File[].class });
+		super(new Class<?>[] { Object.class, Sequence.class, Integer.class, Double.class, int[].class, double[].class, String.class, File.class, File[].class, ROI[].class });
 	}
 
 	/**
