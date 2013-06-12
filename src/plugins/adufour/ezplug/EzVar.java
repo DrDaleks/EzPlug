@@ -66,7 +66,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         this.variable = variable;
         variable.setDefaultEditorModel(constraint);
         
-        ThreadUtil.invokeLater(new Runnable()
+        ThreadUtil.invokeNow(new Runnable()
         {
             public void run()
             {
