@@ -28,4 +28,23 @@ public class VarDoubleArrayNative extends VarGenericArray<double[]>
     {
         return Double.parseDouble(s);
     }
+    
+    @Override
+    public double[] getValue(boolean forbidNull)
+    {
+        // handle the case where the reference is not an array
+        
+        @SuppressWarnings("rawtypes")
+        Var reference = getReference();
+        
+        if (reference == null) return super.getValue(forbidNull);
+        
+        Object value = reference.getValue();
+        
+        if (value == null) return super.getValue(forbidNull);
+        
+        if (value instanceof Number) return new double[] { ((Number) value).doubleValue() };
+        
+        return (double[]) value;
+    }
 }

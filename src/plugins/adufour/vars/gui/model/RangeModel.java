@@ -38,9 +38,24 @@ public abstract class RangeModel<N extends Number> implements VarEditorModel<N>
     {
         return min;
     }
-
+    
     public N getStepSize()
     {
         return step;
+    }
+    
+    public void setMaximum(Comparable<N> maximum)
+    {
+        this.max = maximum;
+    }
+    
+    public void setMinimum(Comparable<N> minimum)
+    {
+        this.min = minimum;
+    }    
+    
+    public void setStepSize(N step)
+    {
+        this.step = step;
     }
 }

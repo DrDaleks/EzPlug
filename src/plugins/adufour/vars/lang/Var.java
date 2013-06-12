@@ -418,7 +418,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
         {
             if (xmlValue != null)
             {
-                System.err.println("Warning: unable to parse " + xmlValue + " into a " + getClass().getSimpleName());
+                System.err.println("Warning: unable to read variable " + name + " (" + getClass().getSimpleName() + ")");
             }
             
             setValue(null);

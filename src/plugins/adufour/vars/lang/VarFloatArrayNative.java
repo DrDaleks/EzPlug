@@ -28,4 +28,23 @@ public class VarFloatArrayNative extends VarGenericArray<float[]>
     {
         return Float.parseFloat(s);
     }
+    
+    @Override
+    public float[] getValue(boolean forbidNull)
+    {
+        // handle the case where the reference is not an array
+        
+        @SuppressWarnings("rawtypes")
+        Var reference = getReference();
+        
+        if (reference == null) return super.getValue(forbidNull);
+        
+        Object value = reference.getValue();
+        
+        if (value == null) return super.getValue(forbidNull);
+        
+        if (value instanceof Number) return new float[] { ((Number) value).floatValue() };
+        
+        return (float[]) value;
+    }
 }

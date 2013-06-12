@@ -86,16 +86,19 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     public void setMaximum(Comparable<N> maxValue)
     {
         ((SpinnerNumberModel) getEditorComponent().getModel()).setMaximum(maxValue);
+        ((RangeModel<N>)variable.getDefaultEditorModel()).setMaximum(maxValue);
     }
     
     public void setMinimum(Comparable<N> minValue)
     {
         ((SpinnerNumberModel) getEditorComponent().getModel()).setMinimum(minValue);
+        ((RangeModel<N>)variable.getDefaultEditorModel()).setMinimum(minValue);
     }
     
     public void setStepSize(N stepSize)
     {
         ((SpinnerNumberModel) getEditorComponent().getModel()).setStepSize(stepSize);
+        ((RangeModel<N>)variable.getDefaultEditorModel()).setStepSize(stepSize);
     }
     
     @Override
