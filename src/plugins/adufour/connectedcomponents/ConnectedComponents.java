@@ -39,6 +39,7 @@ import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.adufour.roi.ROI3DArea;
 import plugins.adufour.vars.lang.VarGenericArray;
 import plugins.adufour.vars.lang.VarROIArray;
 import plugins.adufour.vars.lang.VarSequence;
@@ -139,7 +140,7 @@ public class ConnectedComponents extends EzPlug implements Block
     protected EzVarEnum<Sorting>                    labelSorting           = new EzVarEnum<ConnectedComponents.Sorting>("Sort components", Sorting.values(), Sorting.ARBITRARY);
     
     protected EzVarBoolean                          exportSwPool           = new EzVarBoolean("Swimming pool", false);
-    protected EzVarBoolean                          exportROI              = new EzVarBoolean("ROI (2D only)", false);
+    protected EzVarBoolean                          exportROI              = new EzVarBoolean("ROI", false);
     protected EzVarBoolean                          exportExcel            = new EzVarBoolean("Export to Excel", false);
     protected EzVarFile                             exportExcelFile        = new EzVarFile("Excel file", "");
     

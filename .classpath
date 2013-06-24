@@ -6,5 +6,6 @@
 	<classpathentry kind="var" path="ICY_HOME/plugins/nchenouard/spot/DetectionResult.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Protocols"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/EzPlug"/>
+	<classpathentry kind="src" path="/ROI3D"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
