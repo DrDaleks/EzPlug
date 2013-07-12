@@ -1,6 +1,7 @@
 package plugins.adufour.vars.lang;
 
 import icy.plugin.PluginDescriptor;
+import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.swing.PluginChooser;
@@ -32,7 +33,7 @@ public class VarPlugin<P extends Plugin> extends Var<PluginDescriptor>
     {
         try
         {
-            return ((Class<P>)getValue(true).getPluginClass()).newInstance();
+            return ((Class<P>) getValue(true).getPluginClass()).newInstance();
         }
         catch (InstantiationException e)
         {
@@ -44,5 +45,17 @@ public class VarPlugin<P extends Plugin> extends Var<PluginDescriptor>
         }
         
         return null;
+    }
+    
+    @Override
+    public String getValueAsString()
+    {
+        return getValue().getClassName();
+    }
+    
+    @Override
+    public PluginDescriptor parse(String text)
+    {
+        return PluginLoader.getPlugin(text);
     }
 }
