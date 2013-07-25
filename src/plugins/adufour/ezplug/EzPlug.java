@@ -16,6 +16,8 @@ import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 
+import plugins.adufour.vars.util.VarException;
+
 /**
  * Main component of the EzPlug framework. EzPlug provides numerous additional features to the
  * {@link Plugin} class to simplify the development of plug-ins for ICY. In a nut shell, it allows
@@ -388,6 +390,10 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
             execute();
             
             if (timeTrial) System.out.println(getName() + " executed in " + (System.nanoTime() - startTime) / 1000000 + " ms");
+        }
+        catch (final VarException e)
+        {
+            throw new IcyHandledException(e.getMessage(), e);
         }
         catch (final EzException e)
         {
