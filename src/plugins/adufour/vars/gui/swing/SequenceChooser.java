@@ -247,9 +247,9 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             getEditorComponent().setSelectedItem(variable.getValue());
             getEditorComponent().repaint();
         }
-        else if (variable.getValue() == null && getEditorComponent().getSelectedItem() != VarSequence.ACTIVE_SEQUENCE)
+        else if (variable.getValue() == null && ((VarSequence) variable).isNoSequenceSelected())
         {
-            getEditorComponent().setSelectedItem(null);
+            getEditorComponent().setSelectedIndex(0);
             getEditorComponent().repaint();
         }
         

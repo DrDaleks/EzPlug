@@ -13,9 +13,11 @@ import plugins.adufour.vars.gui.swing.SequenceViewer;
 
 public class VarSequence extends Var<Sequence>
 {
-    public static final String NO_SEQUENCE     = "No Sequence";
+    public static final String NO_SEQUENCE         = "No Sequence";
     
-    public static final String ACTIVE_SEQUENCE = "Active Sequence";
+    public static final String ACTIVE_SEQUENCE     = "Active Sequence";
+    
+    private boolean            noSequenceSelection = false;
     
     public VarSequence(String name, Sequence defaultValue)
     {
@@ -41,9 +43,14 @@ public class VarSequence extends Var<Sequence>
     {
         String string = XMLUtil.getAttributeValue((Element) node, XML_KEY_VALUE, null);
         
-        if (NO_SEQUENCE.equalsIgnoreCase(string)) setValue(null);
-        
-        else if (ACTIVE_SEQUENCE.equalsIgnoreCase(string)) setValue(Icy.getMainInterface().getFocusedSequence());
+        if (NO_SEQUENCE.equalsIgnoreCase(string))
+        {
+            setNoSequenceSelection();
+        }
+        else if (ACTIVE_SEQUENCE.equalsIgnoreCase(string))
+        {
+            setValue(Icy.getMainInterface().getFocusedSequence());
+        }
         
         return true;
     }
@@ -70,5 +77,25 @@ public class VarSequence extends Var<Sequence>
         if (s.getFilename() != null) return s.getFilename();
         
         return s.getName();
+    }
+    
+    public boolean isNoSequenceSelected()
+    {
+        return noSequenceSelection;
+    }
+    
+    public void setNoSequenceSelection()
+    {
+        noSequenceSelection = true;
+        Sequence oldValue = getValue();
+        setValue(null);
+        if (oldValue == null) fireVariableChanged(oldValue, null);
+    }
+    
+    @Override
+    public void setValue(Sequence newValue) throws IllegalAccessError
+    {
+        if (newValue != null) noSequenceSelection = false;
+        super.setValue(newValue);
     }
 }
