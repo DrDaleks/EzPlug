@@ -120,7 +120,7 @@ public abstract class EzComponent
 	 */
 	protected void setGroup(EzGroup group) throws IllegalArgumentException
 	{
-		if (parentGroup != null) throw new IllegalArgumentException("component " + name + " already belongs to group " + parentGroup.name);
+		if (parentGroup != null && group != null) throw new IllegalArgumentException("component " + name + " already belongs to group " + parentGroup.name);
 		this.parentGroup = group;
 	}
 	
