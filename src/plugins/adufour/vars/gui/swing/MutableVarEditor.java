@@ -109,7 +109,7 @@ public class MutableVarEditor extends SwingVarEditor<Object>
     
     public double getComponentVerticalResizeFactor()
     {
-        return 0.5;
+        return varEditor.getComponentVerticalResizeFactor();
     }
     
     @Override
