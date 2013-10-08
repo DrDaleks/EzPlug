@@ -59,7 +59,7 @@ public class EzGUI extends EzDialog implements ActionListener
                                                                         {
                                                                             public void run()
                                                                             {
-                                                                                boolean inderterminate = newValue < 0 && newValue > 1;
+                                                                                boolean inderterminate = newValue < 0 || newValue > 1;
                                                                                 jProgressBar.setIndeterminate(inderterminate);
                                                                                 
                                                                                 if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
