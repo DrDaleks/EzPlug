@@ -375,9 +375,13 @@ public class Var<T> implements XMLPersistent, VarListener<T>
             
             StringBuilder sb = new StringBuilder();
             
-            sb.append(Array.get(value, 0).toString());
+            Object arrayValue = Array.get(value, 0);
+            sb.append(arrayValue == null ? "null" : arrayValue.toString());
             for (int i = 1; i < length; i++)
-                sb.append(" " + Array.get(value, i).toString());
+            {
+                arrayValue = Array.get(value, i);
+                sb.append(" " + (arrayValue == null ? "null" : arrayValue.toString()));
+            }
             
             return sb.toString();
         }
