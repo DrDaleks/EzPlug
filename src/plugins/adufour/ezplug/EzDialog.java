@@ -62,6 +62,18 @@ public class EzDialog extends IcyFrame implements FoldListener
     
     private boolean              isDialog              = false;
     
+    /**
+     * Task that will pack the interface. This task must be invoked on the AWT Event dispatch thread
+     */
+    public final Runnable        fullPackingTask       = new Runnable()
+                                                       {
+                                                           @Override
+                                                           public void run()
+                                                           {
+                                                               repack(true);
+                                                           }
+                                                       };
+    
     public EzDialog(String title)
     {
         this(title, true);
@@ -222,7 +234,7 @@ public class EzDialog extends IcyFrame implements FoldListener
     
     /**
      * Re-packs the user interface. This method should be called if one of the components was
-     * changed either in size or visibility state
+     * changed either in size or visibility state.
      * 
      * @param updateParametersPanel
      *            Set to true if the visibility of some parameters has been changed and the panel

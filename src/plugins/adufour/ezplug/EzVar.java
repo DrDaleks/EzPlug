@@ -170,7 +170,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         if (getUI() != null && varEditor != null)
         {
             updateVisibilityChain();
-            getUI().repack(true);
+            ThreadUtil.invokeLater(getUI().fullPackingTask, true);
         }
     }
     
