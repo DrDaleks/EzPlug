@@ -96,8 +96,16 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
             {
                 Point2d radii = new Point2d();
                 computeEllipse(cc, null, radii, null, null);
-                axes[0] = radii.x;
-                axes[1] = radii.y;
+                if (radii.x > radii.y)
+                {
+                    axes[0] = radii.x;
+                    axes[1] = radii.y;
+                }
+                else
+                {
+                    axes[0] = radii.y;
+                    axes[1] = radii.x;
+                }
             }
             else
             {
@@ -380,11 +388,28 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
      */
     public double computeHullRatio(ConnectedComponent cc)
     {
-        double hull = 0.0;
+        double hull = computeConvexAreaAndVolume(cc)[1];
+        
+        return hull == 0.0 ? 0.0 : Math.min(1.0, cc.getSize() / hull);
+    }
+    
+    /**
+     * 
+     * @param cc
+     * @return An array containing [contour, area] of the smallest convex envelope surrounding the
+     *         object. The 2 values are returned together because their computation is simultaneous
+     *         (in the 3D case only)
+     */
+    public double[] computeConvexAreaAndVolume(ConnectedComponent cc)
+    {
+        int i = 0, n = cc.getSize();
+        if (n == 1) return new double[] { 0.0, 1.0 };
+        
+        double contour = 0.0;
+        double area = 0.0;
         
         if (is2D(cc))
         {
-            int i = 0, n = cc.getSize();
             int[] xPoints = new int[n];
             int[] yPoints = new int[n];
             for (Point3i p : cc)
@@ -394,25 +419,29 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
                 i++;
             }
             
-            if (n == 1)
-                hull = 1.0;
-            else
+            QuickHull2D qhull = new QuickHull2D(xPoints, yPoints, n);
+            
+            // volume = sum( sqrt[ (x[i] - x[i-1])^2 + (y[i] - y[i-1])^2 ] )
+            // area = 0.5 * sum( (x[i-1] * y[i]) - (y[i-1] * x[i]) )
+            
+            double a = qhull.xPoints2[0] - qhull.xPoints2[qhull.num - 1];
+            double b = qhull.yPoints2[0] - qhull.yPoints2[qhull.num - 1];
+            contour = Math.sqrt(a * a + b * b);
+            area = (qhull.xPoints2[qhull.num - 1] * qhull.yPoints2[0]) - (qhull.xPoints2[0] * qhull.yPoints2[qhull.num - 1]);
+            for (i = 1; i < qhull.num; i++)
             {
-                QuickHull2D qhull = new QuickHull2D(xPoints, yPoints, n);
-                
-                // formula: hull = 0.5 * sum( (x[i-1] * y[i]) - (y[i-1] * x[i]) )
-                
-                hull = (qhull.xPoints2[qhull.num - 1] * qhull.yPoints2[0]) - (qhull.xPoints2[0] * qhull.yPoints2[qhull.num - 1]);
-                for (i = 1; i < qhull.num; i++)
-                    hull += (qhull.xPoints2[i - 1] * qhull.yPoints2[i]) - (qhull.xPoints2[i] * qhull.yPoints2[i - 1]);
-                
-                hull *= 0.5;
+                a = qhull.xPoints2[i] - qhull.xPoints2[i - 1];
+                b = qhull.yPoints2[i] - qhull.yPoints2[i - 1];
+                contour += Math.sqrt(a * a + b * b);
+                area += (qhull.xPoints2[i - 1] * qhull.yPoints2[i]) - (qhull.xPoints2[i] * qhull.yPoints2[i - 1]);
             }
+            
+            area *= 0.5;
         }
         else
         {
-            Point3d[] points = new Point3d[cc.getSize()];
-            int i = 0;
+            Point3d[] points = new Point3d[n];
+            
             for (Point3i p : cc)
                 points[i++] = new Point3d(p.x, p.y, p.z);
             
@@ -434,15 +463,14 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
                 v13.sub(p3, p1);
                 cross.cross(v12, v13);
                 
-                double surf = cross.length() * 0.5;
+                contour = cross.length() * 0.5;
                 
                 cross.normalize();
-                hull += surf * cross.x * (p1.x + p2.x + p3.x);
+                area += contour * cross.x * (p1.x + p2.x + p3.x);
             }
-            
         }
         
-        return hull == 0.0 ? 0.0 : Math.min(1.0, cc.getSize() / hull);
+        return new double[] { contour, area };
     }
     
     /**
@@ -484,13 +512,14 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
      * @param cc
      *            the component to fit
      * @param center
-     *            (set to null if not wanted) the computed ellipsoid center
+     *            (set to null if not wanted) the calculated ellipsoid center
      * @param radii
-     *            (set to null if not wanted) the computed ellipsoid radius in each eigen-direction
+     *            (set to null if not wanted) the calculated ellipsoid radius in each
+     *            eigen-direction
      * @param eigenVectors
-     *            (set to null if not wanted) the computed ellipsoid eigen-vectors
+     *            (set to null if not wanted) the calculated ellipsoid eigen-vectors
      * @param equation
-     *            (set to null if not wanted) an array of size 9 containing the compute ellipsoid
+     *            (set to null if not wanted) an array of size 9 containing the calculated ellipsoid
      *            equation
      * @throws IllegalArgumentException
      *             if the number of points in the component is too low (minimum is 9)
@@ -572,16 +601,16 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
      * @param cc
      *            the component to fit
      * @param center
-     *            (set to null if not wanted) the computed ellipse center
+     *            (set to null if not wanted) the calculated ellipse center
      * @param radii
-     *            (set to null if not wanted) the computed ellipse radius in each eigen-direction
+     *            (set to null if not wanted) the calculated ellipse radius in each eigen-direction
      * @param angle
-     *            (set to null if not wanted) the computed ellipse orientation
+     *            (set to null if not wanted) the calculated ellipse orientation
      * @param equation
      *            (set to null if not wanted) a 6-element array, {a b c d f g}, which are the
-     *            algebraic parameters of the fitting ellipse: <i>ax</i><sup>2</sup> + 2<i>bxy</i> +
-     *            <i>cy</i><sup>2</sup> +2<i>dx</i> + 2<i>fy</i> + <i>g</i> = 0. The vector <b>A</b>
-     *            represented in the array is normed, so that ||<b>A</b>||=1.
+     *            calculated algebraic parameters of the fitting ellipse: <i>ax</i><sup>2</sup> +
+     *            2<i>bxy</i> + <i>cy</i><sup>2</sup> +2<i>dx</i> + 2<i>fy</i> + <i>g</i> = 0. The
+     *            vector <b>A</b> represented in the array is normed, so that ||<b>A</b>||=1.
      * @throws RuntimeException
      *             if the ellipse calculation fails (e.g. if a singular matrix is detected)
      */

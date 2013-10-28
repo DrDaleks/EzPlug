@@ -388,6 +388,8 @@ public class ConnectedComponents extends EzPlug implements Block
             xlsManager.setLabel(24, 1, "M202");
             xlsManager.setLabel(25, 1, "M022");
             xlsManager.setLabel(26, 1, "M222");
+            xlsManager.setLabel(27, 1, "convex perimeter");
+            xlsManager.setLabel(28, 1, "convex volume");
             
             ConnectedComponentDescriptor shapeDescriptor = new ConnectedComponentDescriptor();
             int cpt = 2;
@@ -412,7 +414,9 @@ public class ConnectedComponents extends EzPlug implements Block
                     xlsManager.setNumber(9, cpt, radiuses[1]);
                     xlsManager.setNumber(10, cpt, radiuses[2]);
                     xlsManager.setNumber(11, cpt, shapeDescriptor.computeEccentricity(cc));
-                    xlsManager.setNumber(12, cpt, shapeDescriptor.computeHullRatio(cc));
+                    
+                    double[] contour_area = shapeDescriptor.computeConvexAreaAndVolume(cc);
+                    xlsManager.setNumber(12, cpt, contour_area[1] == 0.0 ? 0.0 : Math.min(1.0, cc.getSize() / contour_area[1]));
                     xlsManager.setNumber(13, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 0));
                     xlsManager.setNumber(14, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 0));
                     if (!is2D) xlsManager.setNumber(15, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 1));
@@ -427,6 +431,8 @@ public class ConnectedComponents extends EzPlug implements Block
                     if (!is2D) xlsManager.setNumber(24, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 2));
                     if (!is2D) xlsManager.setNumber(25, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 2));
                     if (!is2D) xlsManager.setNumber(26, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 2));
+                    xlsManager.setNumber(27, cpt, contour_area[0]);
+                    xlsManager.setNumber(28, cpt, contour_area[1]);
                     cpt++;
                     if (cpt == Short.MAX_VALUE)
                     {
