@@ -18,42 +18,42 @@ import plugins.nchenouard.spot.Detection;
 
 public class ConnectedComponent extends Detection implements Iterable<Point3i>
 {
-    private int c = -1;
+    private int                                c               = -1;
     
     /**
      * True if the component is on the image edge along X
      */
-    boolean                          onEdgeX;
+    boolean                                    onEdgeX;
     
     /**
      * True if the component is on the image edge along Y
      */
-    boolean                          onEdgeY;
+    boolean                                    onEdgeY;
     
     /**
      * True if the component is on the image edge along Z
      */
-    boolean                          onEdgeZ;
+    boolean                                    onEdgeZ;
     
-    private boolean                  coordsDirty;
+    private boolean                            coordsDirty;
     
     /**
      * the array of points in this object
      */
-    private final ArrayList<Point3i> points;
+    private final ArrayList<Point3i>           points;
     
     /**
      * the array of contour points of this object
      */
-    private Point3i[]                contourPoints;
+    private Point3i[]                          contourPoints;
     
     /**
      * Sum of all points coordinates. The mass center is given by the ratio of each component by the
      * total component size
      */
-    private final Point3d            coordsSum;
+    private final Point3d                      coordsSum;
     
-    private final ConnectedComponentDescriptor    shapeDescriptor = new ConnectedComponentDescriptor();
+    private final ConnectedComponentDescriptor shapeDescriptor = new ConnectedComponentDescriptor();
     
     /**
      * Creates a new connected component with given initial capacity
@@ -568,9 +568,16 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
     {
         ConnectedComponent intersection = new ConnectedComponent(0);
         
+        // construct the intersection
         for (Point3i srcPt : this)
             for (Point3i dstPt : component)
-                if (srcPt.equals(dstPt)) intersection.addPointInternal(srcPt);
+            {
+                if (srcPt.equals(dstPt))
+                {
+                    intersection.addPointInternal(srcPt);
+                    break;
+                }
+            }
         
         return intersection;
     }
@@ -639,7 +646,7 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
     {
         return "[" + getX() + ", " + getY() + ", " + getZ() + "], " + getSize() + " points";
     }
-
+    
     public int getC()
     {
         return c;
