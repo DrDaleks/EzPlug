@@ -1,18 +1,18 @@
 package plugins.adufour.connectedcomponents;
 
 import icy.file.FileUtil;
-import icy.file.xls.XlsManager;
 import icy.image.IcyBufferedImage;
 import icy.image.colormap.FireColorMap;
 import icy.main.Icy;
 import icy.roi.ROI;
-import icy.roi.ROI2DArea;
 import icy.sequence.Sequence;
 import icy.sequence.VolumetricImage;
 import icy.swimmingPool.SwimmingObject;
+import icy.system.IcyHandledException;
 import icy.type.DataType;
 import icy.type.collection.array.Array1DUtil;
 import icy.util.StringUtil;
+import icy.util.XLSUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,6 +27,8 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 import javax.vecmath.Point4d;
 
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
 import plugins.adufour.blocks.lang.Block;
 import plugins.adufour.blocks.util.VarList;
 import plugins.adufour.ezplug.EzGroup;
@@ -39,11 +41,12 @@ import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
-import plugins.adufour.roi.ROI3DArea;
 import plugins.adufour.vars.lang.VarGenericArray;
 import plugins.adufour.vars.lang.VarROIArray;
 import plugins.adufour.vars.lang.VarSequence;
 import plugins.adufour.vars.util.VarException;
+import plugins.kernel.roi.roi2d.ROI2DArea;
+import plugins.kernel.roi.roi3d.ROI3DArea;
 import plugins.nchenouard.spot.DetectionResult;
 import plugins.nchenouard.spot.Spot;
 
@@ -279,44 +282,44 @@ public class ConnectedComponents extends EzPlug implements Block
         {
             if (output.getSizeZ() > 1)
             {
-            	ArrayList<ROI3DArea> rois = new ArrayList<ROI3DArea>(componentsMap.size());
-            	
-            	for (List<ConnectedComponent> ccs : componentsMap.values())
-	                for (ConnectedComponent cc : ccs)
-	                {
-	                    ROI3DArea area = new ROI3DArea();
-	                    area.beginUpdate();
-	                    for (Point3i pt : cc)
-	                        area.addPoint(pt.x, pt.y, pt.z);
-	                    area.setT(cc.getT());
-	                    area.endUpdate();
-	                    rois.add(area);
-	                }
-	            
-            	outputROIs.setValue(rois.toArray(new ROI3DArea[rois.size()]));
+                ArrayList<ROI3DArea> rois = new ArrayList<ROI3DArea>(componentsMap.size());
+                
+                for (List<ConnectedComponent> ccs : componentsMap.values())
+                    for (ConnectedComponent cc : ccs)
+                    {
+                        ROI3DArea area = new ROI3DArea();
+                        area.beginUpdate();
+                        for (Point3i pt : cc)
+                            area.addPoint(pt.x, pt.y, pt.z);
+                        area.setT(cc.getT());
+                        area.endUpdate();
+                        rois.add(area);
+                    }
+                
+                outputROIs.setValue(rois.toArray(new ROI3DArea[rois.size()]));
             }
             else
             {
-	            ArrayList<ROI2DArea> rois = new ArrayList<ROI2DArea>(componentsMap.size());
-	            
-	            for (List<ConnectedComponent> ccs : componentsMap.values())
-	                for (ConnectedComponent cc : ccs)
-	                {
-	                    ROI2DArea area = new ROI2DArea();
-	                    area.beginUpdate();
-	                    for (Point3i pt : cc)
-	                        area.addPoint(pt.x, pt.y);
-	                    area.setT(cc.getT());
-	                    area.endUpdate();
-	                    rois.add(area);
-	                }
-	            
-            	outputROIs.setValue(rois.toArray(new ROI2DArea[rois.size()]));
+                ArrayList<ROI2DArea> rois = new ArrayList<ROI2DArea>(componentsMap.size());
+                
+                for (List<ConnectedComponent> ccs : componentsMap.values())
+                    for (ConnectedComponent cc : ccs)
+                    {
+                        ROI2DArea area = new ROI2DArea();
+                        area.beginUpdate();
+                        for (Point3i pt : cc)
+                            area.addPoint(pt.x, pt.y);
+                        area.setT(cc.getT());
+                        area.endUpdate();
+                        rois.add(area);
+                    }
+                
+                outputROIs.setValue(rois.toArray(new ROI2DArea[rois.size()]));
             }
             
             if (exportROI.getValue())
             {
-            	// replace all ROI on the input by the new ones
+                // replace all ROI on the input by the new ones
                 Sequence in = input.getValue();
                 
                 in.beginUpdate();
@@ -333,21 +336,21 @@ public class ConnectedComponents extends EzPlug implements Block
         
         if (exportExcel.getValue())
         {
-            XlsManager xlsManager;
-            
             int page = 1;
+            
+            WritableSheet sheet = null;
+            WritableWorkbook workbook = null;
             
             try
             {
                 File f = exportExcelFile.getValue(true);
                 if (!FileUtil.getFileExtension(f.getPath(), false).equalsIgnoreCase("xls")) f = new File(f.getPath() + ".xls");
-                xlsManager = new XlsManager(f);
-                xlsManager.createNewPage("Page " + page);
+                workbook = XLSUtil.createWorkbook(f);
+                sheet = XLSUtil.createNewPage(workbook, "Page " + page);
             }
             catch (Exception e)
             {
-                e.printStackTrace();
-                return;
+                throw new IcyHandledException(e.getMessage());
             }
             
             Sequence s = input.getValue();
@@ -359,37 +362,37 @@ public class ConnectedComponents extends EzPlug implements Block
             res += ", Z=" + StringUtil.toStringEx(resolution.z, 5);
             res += ", T=" + StringUtil.toStringEx(resolution.w, 5);
             
-            xlsManager.setLabel(0, 0, s.getName());
-            xlsManager.setLabel(6, 0, res);
-            xlsManager.setLabel(0, 1, "#");
-            xlsManager.setLabel(1, 1, "t");
-            xlsManager.setLabel(2, 1, "x");
-            xlsManager.setLabel(3, 1, "y");
-            xlsManager.setLabel(4, 1, "z");
-            xlsManager.setLabel(5, 1, "perimeter");
-            xlsManager.setLabel(6, 1, "area");
-            xlsManager.setLabel(7, 1, "sphericity");
-            xlsManager.setLabel(8, 1, "major axis");
-            xlsManager.setLabel(9, 1, "minor axis");
-            xlsManager.setLabel(10, 1, "minor Z axis");
-            xlsManager.setLabel(11, 1, "eccentricity");
-            xlsManager.setLabel(12, 1, "hull fill ratio");
-            xlsManager.setLabel(13, 1, "M100");
-            xlsManager.setLabel(14, 1, "M010");
-            xlsManager.setLabel(15, 1, "M001");
-            xlsManager.setLabel(16, 1, "M110");
-            xlsManager.setLabel(17, 1, "M101");
-            xlsManager.setLabel(18, 1, "M011");
-            xlsManager.setLabel(19, 1, "M111");
-            xlsManager.setLabel(20, 1, "M200");
-            xlsManager.setLabel(21, 1, "M020");
-            xlsManager.setLabel(22, 1, "M002");
-            xlsManager.setLabel(23, 1, "M220");
-            xlsManager.setLabel(24, 1, "M202");
-            xlsManager.setLabel(25, 1, "M022");
-            xlsManager.setLabel(26, 1, "M222");
-            xlsManager.setLabel(27, 1, "convex perimeter");
-            xlsManager.setLabel(28, 1, "convex volume");
+            XLSUtil.setCellString(sheet, 0, 0, s.getName());
+            XLSUtil.setCellString(sheet, 6, 0, res);
+            XLSUtil.setCellString(sheet, 0, 1, "#");
+            XLSUtil.setCellString(sheet, 1, 1, "t");
+            XLSUtil.setCellString(sheet, 2, 1, "x");
+            XLSUtil.setCellString(sheet, 3, 1, "y");
+            XLSUtil.setCellString(sheet, 4, 1, "z");
+            XLSUtil.setCellString(sheet, 5, 1, "perimeter");
+            XLSUtil.setCellString(sheet, 6, 1, "area");
+            XLSUtil.setCellString(sheet, 7, 1, "sphericity");
+            XLSUtil.setCellString(sheet, 8, 1, "major axis");
+            XLSUtil.setCellString(sheet, 9, 1, "minor axis");
+            XLSUtil.setCellString(sheet, 10, 1, "minor Z axis");
+            XLSUtil.setCellString(sheet, 11, 1, "eccentricity");
+            XLSUtil.setCellString(sheet, 12, 1, "hull fill ratio");
+            XLSUtil.setCellString(sheet, 13, 1, "M100");
+            XLSUtil.setCellString(sheet, 14, 1, "M010");
+            XLSUtil.setCellString(sheet, 15, 1, "M001");
+            XLSUtil.setCellString(sheet, 16, 1, "M110");
+            XLSUtil.setCellString(sheet, 17, 1, "M101");
+            XLSUtil.setCellString(sheet, 18, 1, "M011");
+            XLSUtil.setCellString(sheet, 19, 1, "M111");
+            XLSUtil.setCellString(sheet, 20, 1, "M200");
+            XLSUtil.setCellString(sheet, 21, 1, "M020");
+            XLSUtil.setCellString(sheet, 22, 1, "M002");
+            XLSUtil.setCellString(sheet, 23, 1, "M220");
+            XLSUtil.setCellString(sheet, 24, 1, "M202");
+            XLSUtil.setCellString(sheet, 25, 1, "M022");
+            XLSUtil.setCellString(sheet, 26, 1, "M222");
+            XLSUtil.setCellString(sheet, 27, 1, "convex perimeter");
+            XLSUtil.setCellString(sheet, 28, 1, "convex volume");
             
             ConnectedComponentDescriptor shapeDescriptor = new ConnectedComponentDescriptor();
             int cpt = 2;
@@ -401,48 +404,55 @@ public class ConnectedComponents extends EzPlug implements Block
                     center.x *= resolution.x;
                     center.y *= resolution.y;
                     center.z *= resolution.z;
-                    xlsManager.setNumber(0, cpt, cpt - 1);
-                    xlsManager.setNumber(1, cpt, time * resolution.w);
-                    xlsManager.setNumber(2, cpt, center.x);
-                    xlsManager.setNumber(3, cpt, center.y);
-                    xlsManager.setNumber(4, cpt, center.z);
-                    xlsManager.setNumber(5, cpt, shapeDescriptor.computePerimeter(cc, null, null));
-                    xlsManager.setNumber(6, cpt, cc.getSize() * voxelSize);
-                    xlsManager.setNumber(7, cpt, shapeDescriptor.computeSphericity(cc));
+                    XLSUtil.setCellNumber(sheet, 0, cpt, cpt - 1);
+                    XLSUtil.setCellNumber(sheet, 1, cpt, time * resolution.w);
+                    XLSUtil.setCellNumber(sheet, 2, cpt, center.x);
+                    XLSUtil.setCellNumber(sheet, 3, cpt, center.y);
+                    XLSUtil.setCellNumber(sheet, 4, cpt, center.z);
+                    XLSUtil.setCellNumber(sheet, 5, cpt, shapeDescriptor.computePerimeter(cc, null, null));
+                    XLSUtil.setCellNumber(sheet, 6, cpt, cc.getSize() * voxelSize);
+                    XLSUtil.setCellNumber(sheet, 7, cpt, shapeDescriptor.computeSphericity(cc));
                     double[] radiuses = shapeDescriptor.computeEllipseDimensions(cc);
-                    xlsManager.setNumber(8, cpt, radiuses[0]);
-                    xlsManager.setNumber(9, cpt, radiuses[1]);
-                    xlsManager.setNumber(10, cpt, radiuses[2]);
-                    xlsManager.setNumber(11, cpt, shapeDescriptor.computeEccentricity(cc));
+                    XLSUtil.setCellNumber(sheet, 8, cpt, radiuses[0]);
+                    XLSUtil.setCellNumber(sheet, 9, cpt, radiuses[1]);
+                    XLSUtil.setCellNumber(sheet, 10, cpt, radiuses[2]);
+                    XLSUtil.setCellNumber(sheet, 11, cpt, shapeDescriptor.computeEccentricity(cc));
                     
                     double[] contour_area = shapeDescriptor.computeConvexAreaAndVolume(cc);
-                    xlsManager.setNumber(12, cpt, contour_area[1] == 0.0 ? 0.0 : Math.min(1.0, cc.getSize() / contour_area[1]));
-                    xlsManager.setNumber(13, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 0));
-                    xlsManager.setNumber(14, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 0));
-                    if (!is2D) xlsManager.setNumber(15, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 1));
-                    xlsManager.setNumber(16, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 0));
-                    if (!is2D) xlsManager.setNumber(17, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 1));
-                    if (!is2D) xlsManager.setNumber(18, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 1));
-                    if (!is2D) xlsManager.setNumber(19, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 1));
-                    xlsManager.setNumber(20, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 0));
-                    xlsManager.setNumber(21, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 0));
-                    if (!is2D) xlsManager.setNumber(22, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 2));
-                    xlsManager.setNumber(23, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 0));
-                    if (!is2D) xlsManager.setNumber(24, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 2));
-                    if (!is2D) xlsManager.setNumber(25, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 2));
-                    if (!is2D) xlsManager.setNumber(26, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 2));
-                    xlsManager.setNumber(27, cpt, contour_area[0]);
-                    xlsManager.setNumber(28, cpt, contour_area[1]);
+                    XLSUtil.setCellNumber(sheet, 12, cpt, contour_area[1] == 0.0 ? 0.0 : Math.min(1.0, cc.getSize() / contour_area[1]));
+                    XLSUtil.setCellNumber(sheet, 13, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 0));
+                    XLSUtil.setCellNumber(sheet, 14, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 0));
+                    if (!is2D) XLSUtil.setCellNumber(sheet, 15, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 1));
+                    XLSUtil.setCellNumber(sheet, 16, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 0));
+                    if (!is2D) XLSUtil.setCellNumber(sheet, 17, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 0, 1));
+                    if (!is2D) XLSUtil.setCellNumber(sheet, 18, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 1, 1));
+                    if (!is2D) XLSUtil.setCellNumber(sheet, 19, cpt, shapeDescriptor.computeGeometricMoment(cc, 1, 1, 1));
+                    XLSUtil.setCellNumber(sheet, 20, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 0));
+                    XLSUtil.setCellNumber(sheet, 21, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 0));
+                    if (!is2D) XLSUtil.setCellNumber(sheet, 22, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 0, 2));
+                    XLSUtil.setCellNumber(sheet, 23, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 0));
+                    if (!is2D) XLSUtil.setCellNumber(sheet, 24, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 0, 2));
+                    if (!is2D) XLSUtil.setCellNumber(sheet, 25, cpt, shapeDescriptor.computeGeometricMoment(cc, 0, 2, 2));
+                    if (!is2D) XLSUtil.setCellNumber(sheet, 26, cpt, shapeDescriptor.computeGeometricMoment(cc, 2, 2, 2));
+                    XLSUtil.setCellNumber(sheet, 27, cpt, contour_area[0]);
+                    XLSUtil.setCellNumber(sheet, 28, cpt, contour_area[1]);
                     cpt++;
                     if (cpt == Short.MAX_VALUE)
                     {
                         page++;
-                        xlsManager.createNewPage("Page " + page);
+                        sheet = XLSUtil.createNewPage(workbook, "Page " + page);
                         cpt = 1;
                     }
                 }
             
-            xlsManager.SaveAndClose();
+            try
+            {
+                XLSUtil.saveAndClose(workbook);
+            }
+            catch (Exception e)
+            {
+                throw new IcyHandledException(e.getMessage());
+            }
         }
     }
     
@@ -664,7 +674,7 @@ public class ConnectedComponents extends EzPlug implements Block
         }
         
         labeledSequence.updateChannelsBounds(true);
-        labeledSequence.getColorModel().setColormap(0, new FireColorMap());
+        labeledSequence.getColorModel().setColorMap(0, new FireColorMap(), false);
         
         return componentsMap;
     }
