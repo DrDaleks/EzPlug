@@ -21,7 +21,7 @@ public class EzVarSequence extends EzVar<Sequence>
      */
     public EzVarSequence(String varName)
     {
-        super(new VarSequence(varName, Icy.getMainInterface().getFocusedSequence()), null);
+        super(new VarSequence(varName, Icy.getMainInterface().getActiveSequence()), null);
     }
     
     /**

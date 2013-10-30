@@ -1,10 +1,11 @@
 package plugins.adufour.vars.gui.swing;
 
 import icy.file.FileUtil;
-import icy.gui.main.MainEvent;
-import icy.gui.main.MainListener;
+import icy.gui.main.ActiveSequenceListener;
+import icy.gui.main.GlobalSequenceListener;
 import icy.main.Icy;
 import icy.sequence.Sequence;
+import icy.sequence.SequenceEvent;
 import icy.util.StringUtil;
 
 import java.awt.Component;
@@ -26,9 +27,13 @@ import plugins.adufour.vars.lang.VarSequence;
 
 public class SequenceChooser extends SwingVarEditor<Sequence>
 {
-    private JComboSequenceBoxListener jComboSequenceBoxListener;
+    private abstract class SequenceListener implements GlobalSequenceListener, ActiveSequenceListener
+    {
+    };
     
-    private MainListener              mainListener;
+    private SequenceListener          listener;
+    
+    private JComboSequenceBoxListener jComboSequenceBoxListener;
     
     public SequenceChooser(Var<Sequence> variable)
     {
@@ -52,7 +57,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             }
             else if (o.toString().equals(VarSequence.ACTIVE_SEQUENCE))
             {
-                variable.setValue(Icy.getMainInterface().getFocusedSequence());
+                variable.setValue(Icy.getMainInterface().getActiveSequence());
             }
             else
             {
@@ -131,34 +136,14 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             }
         });
         
-        mainListener = new MainListener()
+        listener = new SequenceListener()
         {
             @Override
-            public void painterAdded(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void painterRemoved(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void roiAdded(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void roiRemoved(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void sequenceClosed(MainEvent event)
+            public void sequenceClosed(Sequence sequence)
             {
                 if (variable.getReference() != null) return;
                 
-                if (variable.getValue() == (Sequence) event.getSource())
+                if (variable.getValue() == sequence)
                 {
                     jComboSequences.setSelectedIndex(1);
                 }
@@ -173,47 +158,33 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             }
             
             @Override
-            public void sequenceFocused(MainEvent event)
-            {
-                if (variable.getReference() != null) return;
-                
-                if (jComboSequences.getSelectedIndex() == 1 && variable.getReference() == null) variable.setValue((Sequence) event.getSource());
-            }
-            
-            @Override
-            public void sequenceOpened(MainEvent event)
+            public void sequenceOpened(Sequence sequence)
             {
                 jComboSequences.repaint();
                 jComboSequences.updateUI();
             }
             
             @Override
-            public void viewerClosed(MainEvent event)
+            public void sequenceActivated(Sequence sequence)
+            {
+                if (variable.getReference() != null) return;
+                
+                // active sequence selection ?
+                if (jComboSequences.getSelectedIndex() == 1 && variable.getReference() == null) variable.setValue(sequence);
+            }
+            
+            @Override
+            public void sequenceDeactivated(Sequence sequence)
             {
             }
             
             @Override
-            public void viewerFocused(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void viewerOpened(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void pluginClosed(MainEvent arg0)
-            {
-            }
-            
-            @Override
-            public void pluginOpened(MainEvent arg0)
+            public void activeSequenceChanged(SequenceEvent event)
             {
             }
         };
         
-        if (variable.getReference() == null) variable.setValue(Icy.getMainInterface().getFocusedSequence());
+        if (variable.getReference() == null) variable.setValue(Icy.getMainInterface().getActiveSequence());
         
         return jComboSequences;
     }
@@ -265,14 +236,16 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
     @Override
     protected void activateListeners()
     {
-        Icy.getMainInterface().addListener(mainListener);
+        Icy.getMainInterface().addGlobalSequenceListener(listener);
+        Icy.getMainInterface().addActiveSequenceListener(listener);
         getEditorComponent().addActionListener(jComboSequenceBoxListener);
     }
     
     @Override
     protected void deactivateListeners()
     {
-        Icy.getMainInterface().removeListener(mainListener);
+        Icy.getMainInterface().removeGlobalSequenceListener(listener);
+        Icy.getMainInterface().removeActiveSequenceListener(listener);
         getEditorComponent().removeActionListener(jComboSequenceBoxListener);
     }
 }

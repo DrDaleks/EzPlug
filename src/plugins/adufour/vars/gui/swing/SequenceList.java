@@ -1,12 +1,11 @@
 package plugins.adufour.vars.gui.swing;
 
-import java.util.Arrays;
-
-import icy.gui.main.MainEvent;
-import icy.gui.main.MainListener;
+import icy.gui.main.GlobalSequenceListener;
 import icy.main.Icy;
 import icy.sequence.Sequence;
 import icy.system.thread.ThreadUtil;
+
+import java.util.Arrays;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -24,9 +23,9 @@ import plugins.adufour.vars.lang.Var;
  */
 public class SequenceList extends SwingVarEditor<Sequence[]>
 {
-    private ListSelectionListener listener;
+    private ListSelectionListener  listener;
     
-    private MainListener          mainListener;
+    private GlobalSequenceListener mainListener;
     
     public SequenceList(Var<Sequence[]> variable)
     {
@@ -79,70 +78,20 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
             }
         };
         
-        mainListener = new MainListener()
+        mainListener = new GlobalSequenceListener()
         {
             @Override
-            public void painterAdded(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void painterRemoved(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void roiAdded(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void roiRemoved(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void sequenceClosed(MainEvent event)
+            public void sequenceClosed(Sequence sequence)
             {
                 list.updateUI();
                 list.repaint();
             }
             
             @Override
-            public void sequenceFocused(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void sequenceOpened(MainEvent event)
+            public void sequenceOpened(Sequence sequence)
             {
                 list.updateUI();
                 list.repaint();
-            }
-            
-            @Override
-            public void viewerClosed(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void viewerFocused(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void viewerOpened(MainEvent event)
-            {
-            }
-            
-            @Override
-            public void pluginClosed(MainEvent arg0)
-            {
-            }
-            
-            @Override
-            public void pluginOpened(MainEvent arg0)
-            {
             }
         };
         
@@ -170,14 +119,14 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
     @Override
     protected void activateListeners()
     {
-        Icy.getMainInterface().addListener(mainListener);
+        Icy.getMainInterface().addGlobalSequenceListener(mainListener);
         getEditorComponent().addListSelectionListener(listener);
     }
     
     @Override
     protected void deactivateListeners()
     {
-        Icy.getMainInterface().removeListener(mainListener);
+        Icy.getMainInterface().removeGlobalSequenceListener(mainListener);
         getEditorComponent().removeListSelectionListener(listener);
     }
     

@@ -49,7 +49,7 @@ public class VarSequence extends Var<Sequence>
         }
         else if (ACTIVE_SEQUENCE.equalsIgnoreCase(string))
         {
-            setValue(Icy.getMainInterface().getFocusedSequence());
+            setValue(Icy.getMainInterface().getActiveSequence());
         }
         
         return true;

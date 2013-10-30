@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.model.ValueSelectionModel;
@@ -170,7 +171,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         if (getUI() != null && varEditor != null)
         {
             updateVisibilityChain();
-            ThreadUtil.invokeLater(getUI().fullPackingTask, true);
+            SwingUtilities.invokeLater(getUI().fullPackingTask);
         }
     }
     
