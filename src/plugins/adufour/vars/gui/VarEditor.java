@@ -4,10 +4,6 @@ import icy.system.thread.ThreadUtil;
 
 import java.awt.Dimension;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.text.JTextComponent;
-
 import plugins.adufour.vars.gui.swing.CheckBox;
 import plugins.adufour.vars.gui.swing.ComboBox;
 import plugins.adufour.vars.gui.swing.FileChooser;
@@ -43,9 +39,7 @@ import plugins.adufour.vars.util.VarListener;
  * @see Spinner
  * @see SwimmingObjectChooser
  * @see TextField
- * 
  * @author Alexandre Dufour
- * 
  * @param <V>
  *            the inner type of the variable controlled by this editor
  * @param <T>
@@ -100,10 +94,10 @@ public abstract class VarEditor<V> implements VarListener<V>
      * therefore all instance fields besides the final {@link #variable} field will be
      * <code>null</code> until this method returns.
      * 
-     * @return a Swing {@link JComponent} that is linked to the variable and can be used to view or
+     * @return a graphical input component that is linked to the variable and can be used to view or
      *         adjust the variable value
      */
-    protected abstract JComponent createEditorComponent();
+    protected abstract Object createEditorComponent();
     
     /**
      * @return the graphical component used to view or modify the variable's value. By default, the
@@ -169,19 +163,13 @@ public abstract class VarEditor<V> implements VarListener<V>
      *         receive user input. This method can be overridden to force the editor status to a
      *         given state
      */
-    public boolean isComponentEnabled()
-    {
-        return getEditorComponent() instanceof JLabel || variable.getReference() == null;
-    }
+    public abstract boolean isComponentEnabled();
     
     /**
      * @return true if the editor is opaque, or false if the component is transparent. This method
      *         can be overridden to force the opacity to a given state
      */
-    public boolean isComponentOpaque()
-    {
-        return getEditorComponent() instanceof JTextComponent;
-    }
+    public abstract boolean isComponentOpaque();
     
     /**
      * @return true if the editor is focusable (i.e. the component may capture a mouse event and
@@ -271,15 +259,7 @@ public abstract class VarEditor<V> implements VarListener<V>
         }
     }
     
-    protected void setEditorEnabled(boolean enabled)
-    {
-        Object component = getEditorComponent();
-        
-        if (component instanceof JComponent)
-            ((JComponent) component).setEnabled(enabled);
-        
-        else throw new UnsupportedOperationException("VarEditor.setEditorEnabled(boolean) is not implemented for the current toolkit");
-    }
+    protected abstract void setEditorEnabled(boolean enabled);
     
     /**
      * @param nameVisible
