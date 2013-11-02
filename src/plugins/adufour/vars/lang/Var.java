@@ -188,9 +188,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     /**
      * Creates a new {@link VarEditor} object that allows the user to graphically adjust the value
      * of this variable. By default this editor is an empty label for generic types, but this method
-     * can be overridden to provide a custom editor.<br/>
-     * Note: although overriding this method is allowed, direct call should be redirected to
-     * {@link #createVarEditor(boolean)} as much as possible
+     * can be overridden to provide a custom editor.
      * 
      * @return the variable editor embarking the graphical component
      */
