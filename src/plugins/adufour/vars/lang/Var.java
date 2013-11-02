@@ -52,9 +52,7 @@ import plugins.adufour.vars.util.VarReferencingPolicy;
  * </ul>
  * 
  * @see VarEditor
- * 
  * @author Alexandre Dufour
- * 
  * @param <T>
  *            The type of the inner (boxed) value
  */
@@ -78,6 +76,17 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     public static final String           NO_VALUE          = "No value";
     
     private final String                 name;
+    
+    /**
+     * A flag indicating that this variable is optional, i.e., it may be flagged as "not wanted"
+     * (via code of via GUI), such as optional parameters
+     */
+    private boolean                      optional          = false;
+    
+    /**
+     * If this variable is #optional, indicates whether the option is actively selected
+     */
+    private boolean                      enabled           = true;
     
     /**
      * The {@link Class} definition describing the type of the variable value
@@ -283,6 +292,24 @@ public class Var<T> implements XMLPersistent, VarListener<T>
                 return getReferrers();
             }
         };
+    }
+    
+    /**
+     * @return <code>true</code> if this variable should be used by plug-ins, or <code>false</code>
+     *         if it should not be used
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+    
+    /**
+     * @return <code>true</code> if this variable has been flagged as "optional" by the user, e.g.
+     *         optional parameters
+     */
+    public boolean isOptional()
+    {
+        return optional;
     }
     
     /**
@@ -545,6 +572,34 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     }
     
     /**
+     * Sets a flag indicating whether this variable should be considered "optional". This flag is
+     * typically used to mark a plug-in parameter as optional, allowing plug-ins to react
+     * accordingly and save potentially unnecessary computations. Setting a variable as optional
+     * will add a check-box next to the variable editor to provide visual feedback
+     * 
+     * @param optional
+     *            <code>true</code> to indicate that this variable is optional
+     */
+    public void setOptional(boolean optional)
+    {
+        this.optional = optional;
+    }
+    
+    /**
+     * Indicates whether this variable should be used or not by plug-ins. It is up to the
+     * responsibility of plug-ins to take this flag into account.
+     * 
+     * @see {@link #setOptional(boolean)}
+     * @param enabled
+     *            <code>true</code> if this variable can be used by plug-ins, and <code>false</code>
+     *            if the variable should not be used by plug-ins during computations
+     */
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+    
+    /**
      * Sets the current variable to reference the specified variable (or null to release the
      * reference). If the reference is non-null, the {@link #getValue()} method will disregard the
      * local value and return the value of the referenced variable
@@ -597,7 +652,6 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * 
      * @param policy
      *            the new referencing policy
-     * 
      * @see VarReferencingPolicy
      */
     public void setReferencingPolicy(VarReferencingPolicy policy)

@@ -2,16 +2,21 @@ package plugins.adufour.ezplug;
 
 import icy.system.thread.ThreadUtil;
 
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import plugins.adufour.vars.gui.VarEditor;
@@ -129,11 +134,38 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        // gbc.weighty = 0;
-        container.add(jLabelName, gbc);
+        
+        if (variable.isOptional())
+        {
+            JPanel optionPanel = new JPanel(new BorderLayout());
+            final JCheckBox option = new JCheckBox("");
+            option.setSelected(isEnabled());
+            option.setFocusable(false);
+            option.setToolTipText("Click here to disable this parameter");
+            option.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent arg0)
+                {
+                    setEnabled(option.isSelected());
+                    if (option.isSelected())
+                    {
+                        option.setToolTipText("Click here to disable this parameter");
+                    }
+                    else
+                    {
+                        option.setToolTipText("Click here to enable this parameter");
+                    }
+                }
+            });
+            optionPanel.add(option, BorderLayout.WEST);
+            optionPanel.add(jLabelName, BorderLayout.CENTER);
+            container.add(optionPanel, gbc);
+        }
+        else container.add(jLabelName, gbc);
         
         gbc.weightx = 1;
-        // gbc.weighty = 0;
+        
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         
         VarEditor<T> ed = getVarEditor();
@@ -261,6 +293,18 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     }
     
     /**
+     * Indicates whether this variable is enabled, and therefore may be used by plug-ins. Note that
+     * this method returns a simple flag, and it is up to the accessing plug-ins to behave
+     * accordingly (i.e. it is not guaranteed that a disabled variable will not be used by plug-ins)
+     * 
+     * @return <code>true</code> if this variable is enabled, <code>false</code> otherwise
+     */
+    public boolean isEnabled()
+    {
+        return variable.isEnabled();
+    }
+    
+    /**
      * Removes the given listener from the list
      * 
      * @param listener
@@ -296,15 +340,31 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     }
     
     /**
-     * Sets whether the input component is enabled or not in the interface
+     * Sets whether the variable is enabled, i.e. that it is usable by plug-ins, and accepts
+     * modifications via the graphical interface
      * 
      * @param enabled
      *            the enabled state
      */
     public void setEnabled(boolean enabled)
     {
+        variable.setEnabled(enabled);
         jLabelName.setEnabled(enabled);
         getVarEditor().setEnabled(enabled);
+    }
+    
+    /**
+     * Sets a flag indicating whether this variable should be considered "optional". This flag is
+     * typically used to mark a plug-in parameter as optional, allowing plug-ins to react
+     * accordingly and save potentially unnecessary computations. Setting a variable as optional
+     * will add a check-box next to the variable editor to provide visual feedback
+     * 
+     * @param optional
+     *            <code>true</code> if this parameter is optional, <code>false</code> otherwise
+     */
+    public void setOptional(boolean optional)
+    {
+        variable.setOptional(optional);
     }
     
     /**
@@ -359,7 +419,8 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         if (!this.isVisible()) return;
         
         // otherwise, one by one, show the components w.r.t. the triggers
-        component: for (EzComponent component : componentsToUpdate)
+        component:
+        for (EzComponent component : componentsToUpdate)
         {
             T[] componentTriggerValues = visibilityTriggers.get(component);
             
