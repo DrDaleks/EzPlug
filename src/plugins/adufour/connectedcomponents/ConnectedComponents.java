@@ -6,11 +6,14 @@ import icy.image.colormap.FireColorMap;
 import icy.main.Icy;
 import icy.roi.ROI;
 import icy.sequence.Sequence;
+import icy.sequence.SequenceDataIterator;
 import icy.sequence.VolumetricImage;
 import icy.swimmingPool.SwimmingObject;
 import icy.system.IcyHandledException;
+import icy.type.DataIteratorUtil;
 import icy.type.DataType;
 import icy.type.collection.array.Array1DUtil;
+import icy.type.point.Point5D;
 import icy.util.StringUtil;
 import icy.util.XLSUtil;
 
@@ -56,7 +59,6 @@ public class ConnectedComponents extends EzPlug implements Block
      * List of extraction methods suitable for the Connected Components plugin
      * 
      * @author Alexandre Dufour
-     * 
      */
     public enum ExtractionType
     {
@@ -74,7 +76,11 @@ public class ConnectedComponents extends EzPlug implements Block
         /**
          * Extracts components with pixel intensities matching the user defined value
          */
-        VALUE
+        VALUE,
+        /**
+         * Extracts ROI from the input sequence
+         */
+        ROI
     }
     
     public enum Sorting
@@ -177,19 +183,25 @@ public class ConnectedComponents extends EzPlug implements Block
             {
                 switch (newValue)
                 {
-                    case BACKGROUND:
-                        extractionMethodDetail.setText("Standard mode: extracts all pixels different than the given background value, regardless of their intensity");
+                case BACKGROUND:
+                    extractionMethodDetail.setText("Standard mode: extracts all pixels different than the given background value, regardless of their intensity");
                     break;
-                    case BACKGROUND_LABELED:
-                        extractionMethodDetail.setText("Standard labeled mode: extracts all pixels different than the background, however different intensities are seen as different objects");
+                case BACKGROUND_LABELED:
+                    extractionMethodDetail
+                            .setText("Standard labeled mode: extracts all pixels different than the background, however different intensities are seen as different objects");
                     break;
-                    case VALUE:
-                        extractionMethodDetail.setText("Value-extraction mode: extracts all pixels with the specified value");
+                case VALUE:
+                    extractionMethodDetail.setText("Value-extraction mode: extracts all pixels with the specified value");
+                    break;
+                case ROI:
+                    extractionMethodDetail.setText("ROI mode: extracts all ROI in the input sequence");
+                    break;
                 }
             }
         });
         
         addEzComponent(extractionMethodDetail);
+        extractionMethod.addVisibilityTriggerTo(background, ExtractionType.BACKGROUND, ExtractionType.BACKGROUND_LABELED, ExtractionType.VALUE);
         addEzComponent(background);
         
         addEzComponent(new EzGroup("Discard edges", discardEdgesX, discardEdgesY, discardEdgesZ));
@@ -245,8 +257,31 @@ public class ConnectedComponents extends EzPlug implements Block
         Sequence inputSequence = input.getValue(true);
         if (inputSequence.getSizeT() == 0) throw new VarException("Cannot extract connected components from an emtpy sequence !");
         
-        componentsMap = extractConnectedComponents(inputSequence, background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesZ.getValue(),
-                min, max, output);
+        if (extractionMethod.getValue() == ExtractionType.ROI)
+        {
+            int width = inputSequence.getWidth();
+            int height = inputSequence.getHeight();
+            
+            Sequence labeledSequence = new Sequence(inputSequence.getMetadata());
+            for (int t = 0; t < inputSequence.getSizeT(); t++)
+                for (int z = 0; z < inputSequence.getSizeZ(); z++)
+                    labeledSequence.setImage(t, z, new IcyBufferedImage(width, height, 1, DataType.USHORT));
+            
+            short cpt = 1;
+            for (ROI roi : inputSequence.getROIs())
+            {
+                Point5D pos = roi.getPosition5D();
+                DataIteratorUtil.set(new SequenceDataIterator(labeledSequence, roi, true, -1, (int) pos.getT(), -1), cpt & 0xffff);
+                cpt++;
+            }
+            componentsMap = extractConnectedComponents(labeledSequence, 0, ExtractionType.BACKGROUND_LABELED, discardEdgesX.getValue(), discardEdgesY.getValue(),
+                    discardEdgesZ.getValue(), min, max, output);
+        }
+        else
+        {
+            componentsMap = extractConnectedComponents(inputSequence, background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(),
+                    discardEdgesZ.getValue(), min, max, output);
+        }
         
         outputSequence.setValue(output);
         
@@ -577,7 +612,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, boolean isInputLabeled, int minSize, int maxSize, Sequence labeledSequence)
+    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, boolean isInputLabeled, int minSize, int maxSize,
+            Sequence labeledSequence)
     {
         return extractConnectedComponents(inputSequence, 0, isInputLabeled ? ExtractionType.BACKGROUND_LABELED : ExtractionType.BACKGROUND, minSize, maxSize, labeledSequence);
     }
@@ -604,7 +640,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, int minSize, int maxSize, Sequence labeledSequence)
+    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, int minSize, int maxSize,
+            Sequence labeledSequence)
     {
         return extractConnectedComponents(inputSequence, value, type, false, false, false, minSize, maxSize, labeledSequence);
     }
@@ -640,8 +677,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ,
-            int minSize, int maxSize, Sequence labeledSequence)
+    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY,
+            boolean noEdgeZ, int minSize, int maxSize, Sequence labeledSequence)
     {
         if (inputSequence == null || inputSequence.getSizeT() == 0) throw new IllegalArgumentException("Cannot extract connected components from an emtpy sequence !");
         
@@ -708,8 +745,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize,
-            int maxSize)
+    public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ,
+            int minSize, int maxSize)
     {
         return extractConnectedComponents(stack, value, type, noEdgeX, noEdgeY, noEdgeZ, minSize, maxSize, new VolumetricImage());
     }
@@ -749,8 +786,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize,
-            int maxSize, final VolumetricImage labeledStack) throws NullPointerException
+    public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ,
+            int minSize, int maxSize, final VolumetricImage labeledStack) throws NullPointerException
     {
         int width = stack.getFirstImage().getSizeX();
         int height = stack.getFirstImage().getSizeY();
