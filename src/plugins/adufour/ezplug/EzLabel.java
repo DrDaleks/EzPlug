@@ -5,7 +5,6 @@ import icy.system.thread.ThreadUtil;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.JTextArea;
@@ -55,6 +54,7 @@ public class EzLabel extends EzComponent
                 jTextArea.setWrapStyleWord(true);
                 jTextArea.setForeground(textColor);
                 jTextArea.setMargin(new Insets(0, 2, 0, 2));
+                jTextArea.setColumns(20);
             }
         }, !SwingUtilities.isEventDispatchThread());
     }
@@ -84,16 +84,17 @@ public class EzLabel extends EzComponent
     @Override
     protected void addTo(Container container)
     {
-        GridBagLayout gridbag = (GridBagLayout) container.getLayout();
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 5, 2, 5);
         
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.weightx = 1;
         
-        jTextArea.setFocusable(false);
-        gridbag.setConstraints(jTextArea, gbc);
-        container.add(jTextArea);
+        jTextArea.setEditable(false);
+        jTextArea.setOpaque(false);
+        
+        container.add(jTextArea, gbc);
     }
     
     @Override
