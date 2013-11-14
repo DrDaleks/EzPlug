@@ -24,4 +24,10 @@ public class VarROIArray extends VarArray<ROI>
         
         return value.length + " ROI";
     }
+    
+    @Override
+    public ROI[] parse(String input)
+    {
+        return null;
+    }
 }
