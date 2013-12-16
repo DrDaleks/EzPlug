@@ -81,7 +81,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
             }
         });
     }
-    
+        
     /**
      * Creates a new variable with a JComboBox as default graphical component
      * 
@@ -112,13 +112,16 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     
     /**
      * Sets a visibility trigger on the target EzComponent. The visibility state of the target
-     * component is set to true whenever this variable is visible and takes any of the trigger
-     * values, and false otherwise.
+     * component is set to true whenever this variable is visible, and takes any of the trigger
+     * values, and false otherwise. If no trigger value is indicated, the target component will
+     * always be visible as long as the source component is both visible and enabled
      * 
      * @param targetComponent
      *            the component to hide or show
      * @param values
-     *            the list of values which will set the visibility of the target component to true
+     *            the list of values which will set the visibility of the target component to true.
+     *            If no value is indicated, the target component will be visible as long as the
+     *            source component is both visible and enabled
      */
     public void addVisibilityTriggerTo(EzComponent targetComponent, T... values)
     {
@@ -137,7 +140,9 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         
         if (variable.isOptional())
         {
-            JPanel optionPanel = new JPanel(new BorderLayout());
+            gbc.insets.left = 5;
+            JPanel optionPanel = new JPanel(new BorderLayout(0, 0));
+            
             final JCheckBox option = new JCheckBox("");
             option.setSelected(isEnabled());
             option.setFocusable(false);
@@ -161,6 +166,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
             optionPanel.add(option, BorderLayout.WEST);
             optionPanel.add(jLabelName, BorderLayout.CENTER);
             container.add(optionPanel, gbc);
+            gbc.insets.left = 10;
         }
         else container.add(jLabelName, gbc);
         
@@ -351,6 +357,8 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         variable.setEnabled(enabled);
         jLabelName.setEnabled(enabled);
         getVarEditor().setEnabled(enabled);
+        updateVisibilityChain();
+        SwingUtilities.invokeLater(getUI().fullPackingTask);
     }
     
     /**
@@ -419,18 +427,21 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         if (!this.isVisible()) return;
         
         // otherwise, one by one, show the components w.r.t. the triggers
-        component:
         for (EzComponent component : componentsToUpdate)
         {
             T[] componentTriggerValues = visibilityTriggers.get(component);
             
-            for (T triggerValue : componentTriggerValues)
+            if (componentTriggerValues.length == 0 && isEnabled())
+            {
+                component.setVisible(true);
+            }
+            else for (T triggerValue : componentTriggerValues)
             {
                 if (triggerValue == getValue())
                 {
                     // this call will be recursive in case of a EzVar object
                     component.setVisible(true);
-                    continue component;
+                    break;
                 }
             }
         }

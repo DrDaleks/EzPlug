@@ -1,23 +1,28 @@
 package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
+import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.gui.model.RangeModel;
-import plugins.adufour.vars.gui.swing.Spinner;
-import plugins.adufour.vars.gui.swing.TextField;
+import plugins.adufour.vars.gui.model.RangeModel.RangeEditorType;
+import plugins.adufour.vars.gui.model.VarEditorModel;
 
 /**
  * Class bringing support for variables handling comparable types
  * 
  * @author Alexandre Dufour
- * 
  */
-public abstract class VarNumber<T extends Number> extends Var<T> implements Comparable<T>
+public abstract class VarNumber<N extends Number> extends Var<N> implements Comparable<N>
 {
-    public VarNumber(String name, Class<T> type, T defaultValue)
+    public VarNumber(String name, Class<N> type, N defaultValue)
     {
         super(name, type, defaultValue);
     }
-
+    
+    public VarNumber(String name, VarEditorModel<N> model)
+    {
+        super(name, model);
+    }
+    
     @Override
     public boolean isAssignableFrom(Var<?> source)
     {
@@ -27,14 +32,28 @@ public abstract class VarNumber<T extends Number> extends Var<T> implements Comp
         
         return sourceType == Double.TYPE || sourceType == Float.TYPE || sourceType == Integer.TYPE || Number.class.isAssignableFrom(source.getType());
     }
-
+    
     @Override
-    public VarEditor<T> createVarEditor()
+    public VarEditor<N> createVarEditor()
     {
-        if (getDefaultEditorModel() instanceof RangeModel) return new Spinner<T>(this);
-
-        if (getDefaultEditorModel() == null) return new TextField<T>(this);
-
+        VarEditorFactory factory = VarEditorFactory.getDefaultFactory();
+        
+        if (getDefaultEditorModel() instanceof RangeModel)
+        {
+            RangeEditorType editorType = ((RangeModel<N>) getDefaultEditorModel()).getEditorType();
+            switch (editorType)
+            {
+            case SLIDER:
+                return factory.createSlider(this);
+            case SPINNER:
+                return factory.createSpinner(this);
+            default:
+                throw new UnsupportedOperationException("Editor not yet implemented: " + editorType);
+            }
+        }
+        
+        if (getDefaultEditorModel() == null) return factory.createTextField(this);
+        
         return super.createVarEditor();
     }
 }

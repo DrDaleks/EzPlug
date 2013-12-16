@@ -30,7 +30,6 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     @Override
     public JComponent createEditorComponent()
     {
-        
         VarEditorModel<N> model = variable.getDefaultEditorModel();
         
         if (model == null || !(model instanceof RangeModel))

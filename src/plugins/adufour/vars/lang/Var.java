@@ -144,6 +144,22 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     }
     
     /**
+     * Creates a new {@link Var}iable with the specified name and editor model.
+     * 
+     * @param name
+     *            the name of this variable
+     * @param editorModel
+     *            the default editor model of this variable (can be changed later via the
+     *            {@link #setDefaultEditorModel(VarEditorModel)} method
+     */
+    @SuppressWarnings("unchecked")
+    public Var(String name, VarEditorModel<T> editorModel)
+    {
+        this(name, (Class<T>) editorModel.getDefaultValue().getClass(), editorModel.getDefaultValue());
+        this.defaultEditorModel = editorModel;
+    }
+    
+    /**
      * Creates a new {@link Var}iable with the specified name, and inner value type and default
      * value (may be null).
      * 
@@ -194,11 +210,12 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     public VarEditor<T> createVarEditor()
     {
+        // cover the basic case of a list of values
         if (getDefaultEditorModel() instanceof ValueSelectionModel) return new ComboBox<T>(this);
         
         if (getDefaultEditorModel() == null) return new Label<T>(this);
         
-        throw new UnsupportedOperationException(getClass().getSimpleName() + " does not support editor models of type " + getDefaultEditorModel().getClass().getSimpleName());
+        throw new UnsupportedOperationException("A " + getClass().getSimpleName() + " cannot be edited with a " + getDefaultEditorModel().getClass().getSimpleName());
     }
     
     /**
@@ -666,15 +683,21 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     }
     
     /**
-     * Sets the value of this variable and notify the listeners
+     * Sets the value of this variable and notify the listeners. This method can only be called if
+     * this variable is not referencing another one.
      * 
      * @param newValue
      * @throws IllegalAccessError
      *             if this variable is already linked to another one
+     * @throws IllegalArgumentException
+     *             if this variable has a non-null editor model and the specified value is not valid
+     *             for this model
      */
-    public void setValue(T newValue) throws IllegalAccessError
+    public void setValue(T newValue) throws IllegalAccessError, IllegalArgumentException
     {
         if (this.reference != null) throw new IllegalAccessError("Cannot assign the value of a linked variable.");
+        
+        if (defaultEditorModel != null && !defaultEditorModel.isValid(newValue)) throw new IllegalArgumentException(name + ": value " + newValue + " is not valid for this variable");
         
         T oldValue = this.value;
         this.value = newValue;

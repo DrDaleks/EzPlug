@@ -1,13 +1,14 @@
 package plugins.adufour.ezplug;
 
 import plugins.adufour.vars.gui.model.IntegerRangeModel;
+import plugins.adufour.vars.gui.model.RangeModel.RangeEditorType;
 import plugins.adufour.vars.lang.VarInteger;
 
 /**
- * Specialized implementation of {@link plugins.adufour.ezplug.EzVarNumeric} for variables of type integer
+ * Specialized implementation of {@link plugins.adufour.ezplug.EzVarNumeric} for variables of type
+ * integer
  * 
  * @author Alexandre Dufour
- * 
  */
 public class EzVarInteger extends EzVarNumeric<Integer>
 {
@@ -18,7 +19,7 @@ public class EzVarInteger extends EzVarNumeric<Integer>
     {
         this(varName, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
     }
-
+    
     /**
      * Creates a new integer variable with specified minimum and maximum values
      * 
@@ -35,7 +36,7 @@ public class EzVarInteger extends EzVarNumeric<Integer>
     {
         this(varName, min, min, max, step);
     }
-
+    
     /**
      * Creates a new integer variable with specified default, minimum and maximum values
      * 
@@ -52,9 +53,30 @@ public class EzVarInteger extends EzVarNumeric<Integer>
      */
     public EzVarInteger(String varName, int value, int min, int max, int step)
     {
+        this(varName, value, min, max, step, RangeEditorType.SPINNER);
+    }
+    
+    /**
+     * Creates a new integer variable with specified default, minimum and maximum values
+     * 
+     * @param varName
+     *            the name of the variable (as it will appear on the interface)
+     * @param value
+     *            the default value
+     * @param min
+     *            the minimum allowed value
+     * @param max
+     *            the maximum allowed value
+     * @param step
+     *            the step between consecutive values
+     * @param editorType
+     *            the type of editor to use
+     */
+    public EzVarInteger(String varName, int value, int min, int max, int step, RangeEditorType editorType)
+    {
         super(new VarInteger(varName, value), new IntegerRangeModel(value, min, max, step));
     }
-
+    
     /**
      * Creates a new integer variable with a given array of possible values
      * 
@@ -71,7 +93,7 @@ public class EzVarInteger extends EzVarNumeric<Integer>
     {
         this(varName, defaultValues, 0, allowUserInput);
     }
-
+    
     /**
      * Creates a new integer variable with a given array of possible values
      * 

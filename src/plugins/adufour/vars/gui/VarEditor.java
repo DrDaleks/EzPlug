@@ -4,41 +4,29 @@ import icy.system.thread.ThreadUtil;
 
 import java.awt.Dimension;
 
-import plugins.adufour.vars.gui.swing.CheckBox;
-import plugins.adufour.vars.gui.swing.ComboBox;
-import plugins.adufour.vars.gui.swing.FileChooser;
-import plugins.adufour.vars.gui.swing.FilesChooser;
-import plugins.adufour.vars.gui.swing.SequenceChooser;
-import plugins.adufour.vars.gui.swing.Spinner;
-import plugins.adufour.vars.gui.swing.SwimmingObjectChooser;
-import plugins.adufour.vars.gui.swing.TextField;
+import javax.swing.JComponent;
+
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.util.VarListener;
 
 /**
  * Class handling the graphical component used to view or modify the value of a {@link Var}iable.
  * This class provides an abstraction layer between a {@link Var}iable object (i.e. the model in the
- * MVC sense) and its associated graphical user interface (i.e. the view/controller, represented by
- * a {@link JComponent} object). This abstraction has two main purposes:
+ * MVC sense) and its associated graphical user interface. This abstraction has a number of
+ * purposes:
  * <ul>
  * <li>MVC-like behavior: {@link Var}iables are detached from their graphical interface counterpart
  * (allowing any scenario from headless manipulation to multiple synchronized editors handling the
  * same {@link Var}iable).</li>
  * <li>Facilitate the integration of the graphical component within a larger user interface, by
  * avoiding the container to handle interface updates and user input events.</li>
+ * <li>Sub-packages may provide bindings with one (or more) toolkits, while others can be adapted
+ * with minimal effort (in theory).</li>
  * </ul>
  * A number of default editors are available for the most common {@link Var}iable types (see links
  * below). However, these editors can be extended or replaced by more advanced ones to support
  * custom {@link Var}iable types.
  * 
- * @see CheckBox
- * @see ComboBox
- * @see FileChooser
- * @see FilesChooser
- * @see SequenceChooser
- * @see Spinner
- * @see SwimmingObjectChooser
- * @see TextField
  * @author Alexandre Dufour
  * @param <V>
  *            the inner type of the variable controlled by this editor
@@ -247,7 +235,7 @@ public abstract class VarEditor<V> implements VarListener<V>
         deactivateListeners();
         
         // enable or disable the component
-        if (editorComponent != null) setEditorEnabled(enabled);
+        if (editorComponent != null) setEditorEnabled(enabled && variable.isEnabled());
         
         if (enabled && editorComponent != null)
         {
