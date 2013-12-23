@@ -19,7 +19,7 @@ public class Label<T> extends SwingVarEditor<T>
     @Override
     protected JComponent createEditorComponent()
     {
-        return new JLabel("");
+        return new JLabel(variable.getValueAsString(true));
     }
     
     @Override
