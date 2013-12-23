@@ -26,6 +26,8 @@ public class FileTypeModel implements VarEditorModel<File>
 	@Override
 	public boolean isValid(File value)
 	{
+	    if (value == null) return false;
+	            
 		if (filter != null && !filter.accept(value)) return false;
 		
 		if (value.isFile() && mode != FileMode.FILES) return false;

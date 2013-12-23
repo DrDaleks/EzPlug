@@ -697,8 +697,6 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     {
         if (this.reference != null) throw new IllegalAccessError("Cannot assign the value of a linked variable.");
         
-        if (defaultEditorModel != null && !defaultEditorModel.isValid(newValue)) throw new IllegalArgumentException(name + ": value " + newValue + " is not valid for this variable");
-        
         T oldValue = this.value;
         this.value = newValue;
         
