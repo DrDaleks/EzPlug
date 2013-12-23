@@ -4,7 +4,6 @@ import icy.system.thread.ThreadUtil;
 
 import java.awt.Container;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 
@@ -49,16 +48,14 @@ public class EzButton extends EzComponent
 	@Override
 	public void addTo(Container container)
 	{
-		GridBagLayout gridbag = (GridBagLayout) container.getLayout();
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(2, 5, 2, 5);
 		
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.gridheight = GridBagConstraints.RELATIVE;
 		
-		// jButton.setFocusable(false);
-		gridbag.setConstraints(jButton, gbc);
-		container.add(jButton);
+		container.add(jButton, gbc);
 	}
 	
 	@Override
