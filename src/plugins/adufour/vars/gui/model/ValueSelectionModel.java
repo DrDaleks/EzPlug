@@ -14,21 +14,21 @@ import java.util.List;
 public class ValueSelectionModel<T> implements VarEditorModel<T>
 {
     protected final List<T> validValues;
-
+    
     protected final T       defaultValue;
-
+    
     private final boolean   freeInput;
-
+    
     public ValueSelectionModel()
     {
         this(null);
     }
-
+    
     public ValueSelectionModel(T[] validValues)
     {
         this(validValues, 0, validValues == null || validValues.length == 0);
     }
-
+    
     /**
      * 
      * @param validValues
@@ -44,13 +44,13 @@ public class ValueSelectionModel<T> implements VarEditorModel<T>
         this.defaultValue = (this.validValues.size() > defaultValueIndex) ? this.validValues.get(defaultValueIndex) : null;
         this.freeInput = freeInput;
     }
-
+    
     /**
      * 
      * @param validValues
      *            a list of valid values
-     * @param defaultValueIndex
-     *            the index of the default selected value
+     * @param defaultValue
+     *            the default selected value
      * @param freeInput
      *            set to true if any valid outside the list is valid (no check will be performed)
      */
@@ -60,26 +60,26 @@ public class ValueSelectionModel<T> implements VarEditorModel<T>
         this.defaultValue = (this.validValues.contains(defaultValue) ? defaultValue : null);
         this.freeInput = freeInput;
     }
-
+    
     @Override
     public boolean isValid(T value)
     {
         return freeInput || validValues.contains(value);
     }
-
+    
     @Override
     public T getDefaultValue()
     {
         return defaultValue;
     }
-
+    
     public List<T> getValidValues()
-	{
-		return validValues;
-	}
+    {
+        return validValues;
+    }
     
     public boolean isFreeInput()
-	{
-		return freeInput;
-	}
+    {
+        return freeInput;
+    }
 }

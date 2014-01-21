@@ -30,8 +30,6 @@ import plugins.adufour.vars.util.VarListener;
  * @author Alexandre Dufour
  * @param <V>
  *            the inner type of the variable controlled by this editor
- * @param <T>
- *            the top-level class from the chosen graphics toolkit
  */
 public abstract class VarEditor<V> implements VarListener<V>
 {

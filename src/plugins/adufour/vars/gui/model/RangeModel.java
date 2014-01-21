@@ -99,7 +99,7 @@ public abstract class RangeModel<N extends Number> implements VarEditorModel<N>
      * minimum value and step
      * 
      * @param value
-     * @return
+     * @return the number of step from the minimum to the specified value
      */
     public abstract int indexOf(N value);
     

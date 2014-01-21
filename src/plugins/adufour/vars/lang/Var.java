@@ -370,7 +370,8 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * @return the value stored in this variable, or the value in the referenced variable if the
      *         reference is not null. Note that this method will throw a {@link VarException} if the
      *         {@code forbidNull} argument is true
-     * @param true to throw an exception if the underlying value is null
+     * @param forbidNull
+     *            true to throw an exception if the underlying value is null
      * @see #getReference()
      */
     public T getValue(boolean forbidNull) throws VarException
@@ -492,8 +493,6 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     }
     
     /**
-     * @param value
-     *            the value to pretty-print
      * @param separator
      *            Separator character used if <code>value</code> is an array
      * @return A user-friendly representation of the specified <code>value</code>.
@@ -604,9 +603,9 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     
     /**
      * Indicates whether this variable should be used or not by plug-ins. It is up to the
-     * responsibility of plug-ins to take this flag into account.
+     * responsibility of plug-ins to take this flag into account. See also
+     * {@link #setOptional(boolean)}
      * 
-     * @see {@link #setOptional(boolean)}
      * @param enabled
      *            <code>true</code> if this variable can be used by plug-ins, and <code>false</code>
      *            if the variable should not be used by plug-ins during computations

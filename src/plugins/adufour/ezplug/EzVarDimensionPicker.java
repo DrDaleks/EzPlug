@@ -68,10 +68,6 @@ public class EzVarDimensionPicker extends EzVarInteger
      *            the dimension to create a selector for
      * @param sequence
      *            the sequence variable to listen to
-     * @param allowAll
-     *            true if <code>-1</code> is a valid value, i.e. all values are selected (e.g. -1
-     *            for dimension C indicates that all channels should be processed). If false, the
-     *            minimum selector value will be <code>0</code>
      */
     public EzVarDimensionPicker(String varName, DimensionId dim, Var<Sequence> sequence)
     {
@@ -132,7 +128,7 @@ public class EzVarDimensionPicker extends EzVarInteger
     /**
      * Sets the active state of the picker (true by default). If the picker is not active, the
      * bounds will no longer depend on the attached sequence and may be modified, e.g. via the
-     * {@link #setValues(Integer, Comparable, Comparable, Integer)} method
+     * {@link EzVarNumeric#setValues(Number, Comparable, Comparable, Number)} method
      * 
      * @param active
      */

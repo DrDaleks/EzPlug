@@ -23,9 +23,11 @@ public class VarString extends Var<String>
      * Creates a new text variable with a default text field editor
      * 
      * @param name
+     *            the name of this variable (*not* the actual text to store and/or display)
      * @param defaultValue
-     * @param multiLine
-     *            allow multiple lines
+     *            the initial text to store and/or display
+     * @param nbLines
+     *            The number of lines (used only to create the graphical interface)
      */
     public VarString(String name, String defaultValue, int nbLines)
     {

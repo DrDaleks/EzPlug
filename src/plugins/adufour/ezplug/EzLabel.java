@@ -111,7 +111,8 @@ public class EzLabel extends EzComponent
      * does *not* indicate a limit in the number of characters per line, since the width of each
      * character is potentially different in many fonts.
      * 
-     * @param nbRows
+     * @param nbCols
+     *            the number of columns of this label
      */
     public void setNumberOfColumns(final int nbCols)
     {

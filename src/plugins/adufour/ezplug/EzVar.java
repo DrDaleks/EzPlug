@@ -85,8 +85,8 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     /**
      * Creates a new variable with a JComboBox as default graphical component
      * 
-     * @param varName
-     *            the variable name
+     * @param variable
+     *            the variable to attach to this EzVar
      * @param defaultValues
      *            the list of values to store in the combo box
      * @param defaultValueIndex

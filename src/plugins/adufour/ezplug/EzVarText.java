@@ -26,8 +26,8 @@ public class EzVarText extends EzVar<String>
      * 
      * @param varName
      *            the name of the variable (as it will appear on the interface)
-     * @param multiLine
-     *            allow multiple lines
+     * @param nbLines
+     *            the number of lines to display on the interface
      */
     public EzVarText(String varName, int nbLines)
     {
