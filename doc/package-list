@@ -1,0 +1,6 @@
+plugins.adufour.ezplug
+plugins.adufour.vars.gui
+plugins.adufour.vars.gui.model
+plugins.adufour.vars.gui.swing
+plugins.adufour.vars.lang
+plugins.adufour.vars.util
