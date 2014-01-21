@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="protected" author="true" classpath="/Users/adufour/Documents/Programming/Icy/Icy-App/icy.jar" destdir="doc" doctitle="EzPlug - Graphical Programming Toolkit for Icy" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" overview="/Users/adufour/Documents/Programming/Icy/Plug-ins/EzPlug/index.html" packagenames="plugins.adufour.vars.gui.swing,plugins.adufour.vars.gui.model,plugins.adufour.vars.lang,plugins.adufour.ezplug,plugins.adufour.vars.util,plugins.adufour.vars.gui" source="1.6" sourcepath="src" splitindex="true" use="true" version="true"/>
+    </target>
+</project>
