@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
     <jar path="Connected-Components/ConnectedComponents.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/Connected-Components/connectedcomponents.jardesc" exportErrors="false" exportWarnings="false" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
