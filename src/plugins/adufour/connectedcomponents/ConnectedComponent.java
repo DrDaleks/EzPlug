@@ -1,6 +1,7 @@
 package plugins.adufour.connectedcomponents;
 
 import icy.image.IcyBufferedImage;
+import icy.roi.ROI;
 import icy.sequence.Sequence;
 import icy.type.DataType;
 import icy.type.collection.array.Array1DUtil;
@@ -14,6 +15,7 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
+import plugins.kernel.roi.roi3d.ROI3DArea;
 import plugins.nchenouard.spot.Detection;
 
 public class ConnectedComponent extends Detection implements Iterable<Point3i>
@@ -359,6 +361,11 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
         coordsDirty = false;
     }
     
+    public int getC()
+    {
+        return c;
+    }
+    
     @Override
     public double getX()
     {
@@ -589,6 +596,50 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
     }
     
     /**
+     * Paints this component onto the given sequence with the specified value
+     * 
+     * @param s
+     * @param value
+     */
+    public void paintOnSequence(Sequence s, int t, int c, double value)
+    {
+        Object z_xy = s.getDataXYZ(t, c);
+        
+        int width = s.getSizeX();
+        
+        for (Point3i point : points)
+            Array1DUtil.setValue(Array.get(z_xy, point.z), point.y * width + point.x, s.getDataType_(), value);
+    }
+    
+    public void setC(int c)
+    {
+        this.c = c;
+    }
+    
+    /**
+     * @return a region of interest of type area representing this connected component
+     */
+    public ROI toROI()
+    {
+        int z = 0;
+        
+        ROI3DArea area = new ROI3DArea();
+        area.beginUpdate();
+        for (Point3i pt : this)
+        {
+            z = pt.z;
+            area.addPoint(pt.x, pt.y, pt.z);
+        }
+        area.setT(getT());
+        area.endUpdate();
+        
+        if (area.getSizeZ() > 1) return area;
+        
+        // if there is only a single slice, z will tell us
+        return area.getSlice(z);
+    }
+    
+    /**
      * Creates a new byte sequence filled with this component. The sequence has a unique time point,
      * and the image size is equal to the bounding box of this component.
      * 
@@ -625,35 +676,9 @@ public class ConnectedComponent extends Detection implements Iterable<Point3i>
         return seq;
     }
     
-    /**
-     * Paints this component onto the given sequence with the specified value
-     * 
-     * @param s
-     * @param value
-     */
-    public void paintOnSequence(Sequence s, int t, int c, double value)
-    {
-        Object z_xy = s.getDataXYZ(t, c);
-        
-        int width = s.getSizeX();
-        
-        for (Point3i point : points)
-            Array1DUtil.setValue(Array.get(z_xy, point.z), point.y * width + point.x, s.getDataType_(), value);
-    }
-    
     @Override
     public String toString()
     {
         return "[" + getX() + ", " + getY() + ", " + getZ() + "], " + getSize() + " points";
-    }
-    
-    public int getC()
-    {
-        return c;
-    }
-    
-    public void setC(int c)
-    {
-        this.c = c;
     }
 }
