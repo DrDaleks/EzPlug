@@ -222,85 +222,58 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
         
         Point3i localP = new Point3i();
         
-        if (min.z != max.z)
+        // count the edges and corners in 2D/3D
+        double a = 0, b = 0;
+        
+        for (Point3i p : cc)
         {
-            // TODO correct 3D bias w.r.t. digitization + depth resolution
-            mainLoop: for (Point3i p : cc)
-            {
-                localP.sub(p, min);
-                
-                int xy = localP.y * w + localP.x;
-                
-                if (localP.x == 0 || localP.y == 0 || localP.x == w - 1 || localP.y == h - 1 || localP.z == 0 || localP.z == d - 1)
-                {
-                    perimeter++;
-                    if (contourPoints != null) contourPoints.add(p);
-                    if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
-                    continue;
-                }
-                
-                byte[][] neighborhood = new byte[][] { mask_z_xy[localP.z - 1], mask_z_xy[localP.z], mask_z_xy[localP.z + 1] };
-                
-                for (byte[] z : neighborhood)
-                    if (z[xy - w] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w] == 0 || z[xy - w - 1] == 0 || z[xy - w + 1] == 0 || z[xy + w - 1] == 0 || z[xy + w + 1] == 0)
-                    {
-                        perimeter++;
-                        if (contourPoints != null) contourPoints.add(p);
-                        if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
-                        continue mainLoop;
-                    }
-                
-                // the top and bottom neighbors were forgotten in the previous loop
-                if (mask_z_xy[localP.z - 1][xy] == 0 || mask_z_xy[localP.z + 1][xy] == 0)
-                {
-                    perimeter++;
-                    if (contourPoints != null) contourPoints.add(p);
-                    if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
-                }
-            }
-        }
-        else
-        {
-            double _a = 0, _b = 0;
+            localP.sub(p, min);
             
-            for (Point3i p : cc)
-            {
-                localP.sub(p, min);
-                
-                int xy = localP.y * w + localP.x;
-                
-                if (localP.x == 0 || localP.y == 0 || localP.x == w - 1 || localP.y == h - 1)
-                {
-                    _a++;
-                    perimeter++;
-                    if (contourPoints != null) contourPoints.add(p);
-                    if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
-                    continue;
-                }
-                
-                byte[] z = mask_z_xy[localP.z];
-                
-                if (z[xy - w] == 0 || z[xy - 1] == 0 || z[xy + 1] == 0 || z[xy + w] == 0)
-                {
-                    _a++;
-                    perimeter++;
-                    if (contourPoints != null) contourPoints.add(p);
-                    if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
-                }
-                else if (z[xy - w - 1] == 0 || z[xy - w + 1] == 0 || z[xy + w - 1] == 0 || z[xy + w + 1] == 0)
-                {
-                    _b++;
-                    perimeter++;
-                    if (contourPoints != null) contourPoints.add(p);
-                    if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
-                }
+            int xy = localP.y * w + localP.x;
+            
+            byte[] z = mask_z_xy[localP.z];
+            
+            int nbEdges = 0;
+            
+            if (localP.x == 0 || z[xy - 1] == 0) nbEdges++;
+            if (localP.x == w - 1 || z[xy + 1] == 0) nbEdges++;
+            if (localP.y == 0 || z[xy - w] == 0) nbEdges++;
+            if (localP.y == h - 1 || z[xy + w] == 0) nbEdges++;
+            if (min.z != max.z)
+            { // 3D
+                if (localP.z == 0 || mask_z_xy[localP.z - 1][xy] == 0) nbEdges++;
+                if (localP.z == d - 1 || mask_z_xy[localP.z + 1][xy] == 0) nbEdges++;
             }
             
-            // adjust the perimeter empirically according to the edge pixel distribution
-            double err = Math.log10(_a + _b) - Math.E;
-            perimeter *= (1 - (_b / _a / 2));
-            if (err > 0) perimeter -= (err * 20);
+            switch (nbEdges)
+            {
+            case 0:
+                break;
+            case 1:
+                a++;
+                perimeter++;
+                break;
+            case 2:
+                b++;
+                perimeter += Math.sqrt(2);
+                break;
+            case 3:
+                b += 2;
+                perimeter += 2 * Math.sqrt(2);
+                break;
+            default:
+                perimeter += Math.sqrt(3);
+            }
+            
+            if (nbEdges > 0)
+            {
+                if (contourPoints != null) contourPoints.add(p);
+                if (outputMask != null) outputMask[localP.z][xy] = (byte) 1;
+            }
         }
+        
+        // adjust the perimeter empirically according to the edge/corner distribution
+        perimeter += Math.round(perimeter / cc.getSize()) - Math.min(a / 10, b);
         
         return perimeter;
     }
@@ -321,22 +294,27 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
         double dim = is2D(cc) ? 2.0 : 3.0;
         
         double area = cc.getSize();
-        double perimeter = computePerimeter(cc, null, null);
+        double peri = computePerimeter(cc, null, null);
         
         // some verification code
         //
-        // double peri_real = Math.PI * (maxBB.x - minBB.x + 1);
-        // System.out.println("p = " + perimeter + ", should be " + peri_real + " => " + (perimeter
-        // / peri_real));
+        // Point3i minBB = new Point3i(), maxBB = new Point3i();
+        // computeBoundingBox(cc, minBB, maxBB);
         //
-        // double surf = (perimeter * perimeter / (Math.PI * 4));
-        // double surf_real = (Math.PI * 0.25 * (maxBB.x - minBB.x + 1) * (maxBB.x - minBB.x + 1));
-        // System.out.println("surface = " + surf + ", should be " + surf_real + " => " + (surf_real
-        // / surf));
+        // double radius = (maxBB.x - minBB.x + 1) / 2;
+        // // 2D = 2.PI.R, 3D = 4.PI.R^2 <=> 2^(D-1).PI.R^(D-1)
+        // double p_real = Math.pow(2, dim - 1) * Math.PI * Math.pow(radius, dim - 1);
+        // System.out.println("p = " + peri + ", should be " + p_real + " => " + (peri / p_real));
+        // // 2D = PI.R^2, 3D = 4/3.PI.R^3 <=> (D+1)/3.PI.R^D
+        // double s_real = (dim + 1) * Math.PI * Math.pow(radius, dim) / 3;
+        // System.out.println("s = " + area + ", should be " + s_real + " => " + (area / s_real));
         //
         // end of the verification code
         
-        return (Math.pow(Math.PI, 1.0 / dim) / perimeter) * Math.pow(area * dim * 2, (dim - 1) / dim);
+        double sph = (Math.pow(Math.PI, 1.0 / dim) / peri) * Math.pow(area * dim * 2, (dim - 1) / dim);
+        
+        // adjust final rounding off errors (sphericity is always below 1)
+        return Math.min(1.0, sph);
     }
     
     /**
@@ -381,7 +359,6 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
     }
     
     /**
-     * 
      * @param cc
      * @return The hull ratio, measured as the ratio between the object volume and its convex hull
      *         (envelope)
@@ -394,7 +371,6 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
     }
     
     /**
-     * 
      * @param cc
      * @return An array containing [contour, area] of the smallest convex envelope surrounding the
      *         object. The 2 values are returned together because their computation is simultaneous
@@ -678,27 +654,27 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
         A.setMatrix(0, 2, 0, 0, A1);
         A.setMatrix(3, 5, 0, 0, T.times(A1));
         
-        double[] ellipse = A.getColumnPackedCopy();
-        double a4 = ellipse[3] - 2 * ellipse[0] * ccenter.x - ellipse[1] * ccenter.y;
-        double a5 = ellipse[4] - 2 * ellipse[2] * ccenter.y - ellipse[1] * ccenter.x;
-        double a6 = ellipse[5] + ellipse[0] * ccenter.x * ccenter.x + ellipse[2] * ccenter.y * ccenter.y + ellipse[1] * ccenter.x * ccenter.y - ellipse[3] * ccenter.x - ellipse[4] * ccenter.y;
+        double[] ell = A.getColumnPackedCopy();
+        double a4 = ell[3] - 2 * ell[0] * ccenter.x - ell[1] * ccenter.y;
+        double a5 = ell[4] - 2 * ell[2] * ccenter.y - ell[1] * ccenter.x;
+        double a6 = ell[5] + ell[0] * ccenter.x * ccenter.x + ell[2] * ccenter.y * ccenter.y + ell[1] * ccenter.x * ccenter.y - ell[3] * ccenter.x - ell[4] * ccenter.y;
         A.set(3, 0, a4);
         A.set(4, 0, a5);
         A.set(5, 0, a6);
         A = A.times(1 / A.normF());
         
-        ellipse = A.getColumnPackedCopy();
+        ell = A.getColumnPackedCopy();
         
-        if (equation != null && equation.length != 6) System.arraycopy(ellipse, 0, equation, 0, 6);
+        if (equation != null && equation.length != 6) System.arraycopy(ell, 0, equation, 0, 6);
         
         // Convert the general ellipse equation ax2 + bxy + cy2 +dx + fy + g = 0
         // into geometric parameters: center, radii and orientation.
-        final double a = ellipse[0];
-        final double b = ellipse[1] / 2;
-        final double c = ellipse[2];
-        final double d = ellipse[3] / 2;
-        final double f = ellipse[4] / 2;
-        final double g = ellipse[5];
+        final double a = ell[0];
+        final double b = ell[1] / 2;
+        final double c = ell[2];
+        final double d = ell[3] / 2;
+        final double f = ell[4] / 2;
+        final double g = ell[5];
         
         // centre
         final double cX = (c * d - b * f) / (b * b - a * c);
