@@ -14,8 +14,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataListener;
 
-import org.jdesktop.swingx.JXHeader;
-
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarPlugin;
 
@@ -81,7 +79,8 @@ public class PluginChooser<P extends Plugin> extends SwingVarEditor<PluginDescri
             {
                 if (value == null) return new JLabel("no selection");
                 PluginDescriptor desc = (PluginDescriptor) value;
-                JXHeader header = new JXHeader(desc.getName(), desc.getDescription());
+                JLabel header = new JLabel(desc.getName());
+                header.setToolTipText(desc.getDescription());
                 return header;
             }
         });
