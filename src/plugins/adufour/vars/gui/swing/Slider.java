@@ -11,15 +11,22 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.pushingpixels.substance.internal.ui.SubstanceSliderUI;
+
 import plugins.adufour.vars.gui.model.RangeModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
 import plugins.adufour.vars.lang.Var;
 
-public class Slider<N extends Number> extends SwingVarEditor<N>
+/**
+ * Class defining a slider to select a ranged-value. Not usable yet (package protected until it is
+ * ready)
+ * 
+ * @author Alexandre Dufour
+ * @param <N>
+ */
+class Slider<N extends Number> extends SwingVarEditor<N>
 {
-    private static final int MAX_SPINNER_WIDTH = 100;
-    
-    private ChangeListener   changeListener;
+    private ChangeListener changeListener;
     
     public Slider(Var<N> variable)
     {
@@ -44,19 +51,43 @@ public class Slider<N extends Number> extends SwingVarEditor<N>
         int currentTick = constraint.indexOf(constraint.getDefaultValue());
         
         final JSlider jSlider = new JSlider(JSlider.HORIZONTAL, 0, nbTicks, currentTick);
+        jSlider.setUI(new SubstanceSliderUI(jSlider)
+        {
+            @Override
+            protected void calculateTickRect()
+            {
+                if (this.slider.getOrientation() == JSlider.HORIZONTAL)
+                {
+                    this.tickRect.x = this.trackRect.x - 5;
+                    this.tickRect.y = this.trackRect.y + this.trackRect.height;
+                    this.tickRect.width = this.trackRect.width;
+                    this.tickRect.height = (this.slider.getPaintTicks()) ? this.getTickLength() : 0;
+                }
+                else super.calculateTickRect();
+            }
+        });
+        jSlider.setMajorTickSpacing(nbTicks);
         jSlider.setMinorTickSpacing(1);
+        jSlider.setPaintTicks(true);
         jSlider.setSnapToTicks(true);
         
         HashMap<N, String> labels = constraint.getLabels();
         
         Hashtable<Integer, JLabel> table = new Hashtable<Integer, JLabel>();
-        Font font = new Font("Serif", Font.ITALIC, 11);
+        Font font = new Font("Serif", Font.PLAIN, 11);
+        
+        // compute the sum of label widths
+        int maxWidth = 0;
+        
         for (N n : labels.keySet())
         {
             JLabel label = new JLabel(labels.get(n));
+            label.setOpaque(true);
             label.setFont(font);
             table.put(constraint.indexOf(n), label);
+            maxWidth += label.getPreferredSize().width;
         }
+        
         jSlider.setLabelTable(table);
         jSlider.setPaintLabels(true);
         
@@ -70,7 +101,8 @@ public class Slider<N extends Number> extends SwingVarEditor<N>
         
         // Assign a maximum size to the spinner to avoid huge-ass interfaces
         Dimension dim = jSlider.getPreferredSize();
-        dim.setSize(Math.min(dim.width, MAX_SPINNER_WIDTH), dim.height);
+        // dim.setSize(Math.min(dim.width, MAX_SPINNER_WIDTH), dim.height);
+        dim.width = Math.min(dim.width, maxWidth);
         jSlider.setPreferredSize(dim);
         
         return jSlider;
