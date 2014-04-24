@@ -1,7 +1,7 @@
 package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.Button;
+import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.util.VarListener;
 
 /**
@@ -9,7 +9,6 @@ import plugins.adufour.vars.util.VarListener;
  * it was triggered
  * 
  * @author Alexandre Dufour
- * 
  */
 public class VarTrigger extends VarInteger
 {
@@ -39,7 +38,7 @@ public class VarTrigger extends VarInteger
     @Override
     public VarEditor<Integer> createVarEditor()
     {
-        return new Button(this);
+        return VarEditorFactory.getDefaultFactory().createButton(this);
     }
     
     /**

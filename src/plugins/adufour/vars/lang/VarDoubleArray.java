@@ -1,16 +1,14 @@
 package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.TextField;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 /**
  * Class defining a variable holding an array of type {@link Double}.<br>
  * 
  * @deprecated For optimized performances on large arrays, consider using the
  *             {@link VarDoubleArrayNative} instead
- * 
  * @author Alexandre Dufour
- * 
  */
 public class VarDoubleArray extends VarArray<Double>
 {
@@ -22,7 +20,7 @@ public class VarDoubleArray extends VarArray<Double>
     @Override
     public VarEditor<Double[]> createVarEditor()
     {
-        return new TextField<Double[]>(this);
+        return VarEditorFactory.getDefaultFactory().createTextField(this);
     }
     
     @Override

@@ -1,7 +1,7 @@
 package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.CheckBox;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 /**
  * Boolean variable
@@ -44,6 +44,6 @@ public class VarBoolean extends Var<Boolean>
     @Override
     public VarEditor<Boolean> createVarEditor()
     {
-        return new CheckBox(this);
+        return VarEditorFactory.getDefaultFactory().createCheckBox(this);
     }
 }

@@ -16,7 +16,7 @@ import plugins.adufour.vars.lang.Var;
 
 public class Spinner<N extends Number> extends SwingVarEditor<N>
 {
-    private static final int   MAX_SPINNER_WIDTH = 100;
+    private static final int   MAX_SPINNER_WIDTH = 200;
     
     private MouseWheelListener mouseWheelListener;
     

@@ -2,6 +2,8 @@ package plugins.adufour.vars.lang;
 
 import java.lang.reflect.Array;
 
+import plugins.adufour.vars.gui.VarEditor;
+import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.util.ArrayType;
 
 /**
@@ -10,7 +12,6 @@ import plugins.adufour.vars.util.ArrayType;
  * order to optimize performances.
  * 
  * @author Alexandre Dufour
- * 
  * @param <A>
  *            the underlying array type (*not* the inner component type, e.g., <code>int[]</code>
  *            and not <code>int</code>)
@@ -21,7 +22,15 @@ public class VarGenericArray<A> extends Var<A> implements ArrayType
     public VarGenericArray(String name, Class<A> type, A defaultValue)
     {
         super(name, type, (defaultValue != null ? defaultValue : (A) Array.newInstance(type.getComponentType(), 0)));
-        //if (type != null && !type.isArray()) throw new IllegalArgumentException("Cannot create variable " + name + ": " + type.getSimpleName() + " is not an array type");
+        // if (type != null && !type.isArray()) throw new
+        // IllegalArgumentException("Cannot create variable " + name + ": " + type.getSimpleName() +
+        // " is not an array type");
+    }
+    
+    @Override
+    public VarEditor<A> createVarEditor()
+    {
+        return VarEditorFactory.getDefaultFactory().createTextField(this);
     }
     
     @Override
@@ -78,8 +87,7 @@ public class VarGenericArray<A> extends Var<A> implements ArrayType
             if (sourceComponentType == null) return false;
             return componentType.isAssignableFrom(sourceComponentType);
         }
-        else
-            if (componentType.isAssignableFrom(source.getType()))
+        else if (componentType.isAssignableFrom(source.getType()))
         {
             return true;
         }

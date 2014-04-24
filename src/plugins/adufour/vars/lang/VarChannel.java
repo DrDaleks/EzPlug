@@ -2,7 +2,7 @@ package plugins.adufour.vars.lang;
 
 import icy.sequence.Sequence;
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.ChannelSelector;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 public class VarChannel extends Var<Integer>
 {
@@ -21,6 +21,6 @@ public class VarChannel extends Var<Integer>
     @Override
     public VarEditor<Integer> createVarEditor()
     {
-        return new ChannelSelector(this, sequence, allowAllChannels);
+        return VarEditorFactory.getDefaultFactory().createChannelSelector(this, sequence, allowAllChannels);
     }
 }

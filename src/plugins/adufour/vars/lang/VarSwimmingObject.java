@@ -2,7 +2,7 @@ package plugins.adufour.vars.lang;
 
 import icy.swimmingPool.SwimmingObject;
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.SwimmingObjectChooser;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 public class VarSwimmingObject extends Var<SwimmingObject>
 {
@@ -14,7 +14,7 @@ public class VarSwimmingObject extends Var<SwimmingObject>
     @Override
     public VarEditor<SwimmingObject> createVarEditor()
     {
-        return new SwimmingObjectChooser(this);
+        return VarEditorFactory.getDefaultFactory().createSwimmingObjectChooser(this);
     }
     
     @Override

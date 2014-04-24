@@ -4,13 +4,12 @@ import icy.plugin.PluginDescriptor;
 import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.PluginChooser;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 /**
  * Variable that manipulates a plug-in definition
  * 
  * @author Alexandre Dufour
- * 
  */
 public class VarPlugin<P extends Plugin> extends Var<PluginDescriptor>
 {
@@ -25,7 +24,7 @@ public class VarPlugin<P extends Plugin> extends Var<PluginDescriptor>
     @Override
     public VarEditor<PluginDescriptor> createVarEditor()
     {
-        return new PluginChooser<P>(this);
+        return VarEditorFactory.getDefaultFactory().createPluginChooser(this);
     }
     
     @SuppressWarnings("unchecked")

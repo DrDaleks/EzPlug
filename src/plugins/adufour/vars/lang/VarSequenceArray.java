@@ -2,7 +2,7 @@ package plugins.adufour.vars.lang;
 
 import icy.sequence.Sequence;
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.SequenceList;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 public class VarSequenceArray extends VarGenericArray<Sequence[]>
 {
@@ -30,6 +30,6 @@ public class VarSequenceArray extends VarGenericArray<Sequence[]>
     @Override
     public VarEditor<Sequence[]> createVarEditor()
     {
-        return new SequenceList(this);
+        return VarEditorFactory.getDefaultFactory().createSequenceList(this);
     }
 }

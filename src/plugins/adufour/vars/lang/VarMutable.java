@@ -5,11 +5,9 @@ import icy.sequence.Sequence;
 import java.util.ArrayList;
 
 import plugins.adufour.vars.gui.VarEditor;
+import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.gui.model.TypeSelectionModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
-import plugins.adufour.vars.gui.swing.MutableVarEditor;
-import plugins.adufour.vars.gui.swing.SequenceViewer;
-import plugins.adufour.vars.gui.swing.TypeChooser;
 import plugins.adufour.vars.util.MutableType;
 import plugins.adufour.vars.util.TypeChangeListener;
 
@@ -17,7 +15,6 @@ import plugins.adufour.vars.util.TypeChangeListener;
  * Variable holding a value with mutable type, i.e. its type may be changed at runtime
  * 
  * @author Alexandre Dufour
- * 
  */
 @SuppressWarnings("rawtypes")
 public class VarMutable extends Var implements MutableType
@@ -43,15 +40,16 @@ public class VarMutable extends Var implements MutableType
     public VarEditor createVarEditor()
     {
         if (getDefaultEditorModel() instanceof TypeSelectionModel)
-            return new TypeChooser(this);
+            return VarEditorFactory.getDefaultFactory().createTypeChooser(this);
         
-        else return new MutableVarEditor(this);
+        else return VarEditorFactory.getDefaultFactory().createMutableVarEditor(this);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public VarEditor createVarViewer()
     {
-        if (Sequence.class.equals(type)) return new SequenceViewer(this);
+        if (Sequence.class.equals(type)) return VarEditorFactory.getDefaultFactory().createSequenceViewer(this);
         
         return super.createVarViewer();
     }

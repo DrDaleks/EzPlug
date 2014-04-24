@@ -8,8 +8,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.SequenceChooser;
-import plugins.adufour.vars.gui.swing.SequenceViewer;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 public class VarSequence extends Var<Sequence>
 {
@@ -58,13 +57,13 @@ public class VarSequence extends Var<Sequence>
     @Override
     public VarEditor<Sequence> createVarEditor()
     {
-        return new SequenceChooser(this);
+        return VarEditorFactory.getDefaultFactory().createSequenceChooser(this);
     }
     
     @Override
     public VarEditor<Sequence> createVarViewer()
     {
-        return new SequenceViewer(this);
+        return VarEditorFactory.getDefaultFactory().createSequenceViewer(this);
     }
     
     @Override

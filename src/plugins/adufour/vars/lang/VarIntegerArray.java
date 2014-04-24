@@ -1,16 +1,14 @@
 package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.TextField;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 /**
  * Class defining a variable holding an array of type {@link Integer}.<br>
  * 
  * @deprecated For optimized performances on large arrays, consider using the
  *             {@link VarIntegerArrayNative} instead
- * 
  * @author Alexandre Dufour
- * 
  */
 public class VarIntegerArray extends VarArray<Integer>
 {
@@ -22,7 +20,7 @@ public class VarIntegerArray extends VarArray<Integer>
     @Override
     public VarEditor<Integer[]> createVarEditor()
     {
-        return new TextField<Integer[]>(this);
+        return VarEditorFactory.getDefaultFactory().createTextField(this);
     }
     
     @Override

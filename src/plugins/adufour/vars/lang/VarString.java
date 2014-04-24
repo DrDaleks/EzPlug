@@ -1,8 +1,7 @@
 package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
-import plugins.adufour.vars.gui.swing.TextArea;
-import plugins.adufour.vars.gui.swing.TextField;
+import plugins.adufour.vars.gui.VarEditorFactory;
 
 public class VarString extends Var<String>
 {
@@ -44,7 +43,9 @@ public class VarString extends Var<String>
     @Override
     public VarEditor<String> createVarEditor()
     {
-        if (getDefaultEditorModel() == null) return nbLines > 1 ? new TextArea<String>(this, nbLines) : new TextField<String>(this);
+        VarEditorFactory factory = VarEditorFactory.getDefaultFactory();
+        
+        if (getDefaultEditorModel() == null) return nbLines > 1 ? factory.createTextArea(this, nbLines) : factory.createTextField(this);
         
         return super.createVarEditor();
     }
