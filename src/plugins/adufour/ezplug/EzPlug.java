@@ -23,7 +23,6 @@ import plugins.adufour.vars.util.VarException;
  * {@link Plugin} class to simplify the development of plug-ins for ICY. In a nut shell, it allows
  * to: a) design intuitive and homogeneous graphical interfaces; b) save/load parameters to/from
  * disk in a standardized way (e.g. XML).<br>
- * 
  * To create an EzPlug and benefit from these features, simply create a class that extends EzPlug
  * instead of {@link Plugin}. EzPlug is abstract and requires to implement the following methods:
  * <ul>
@@ -128,6 +127,11 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
             // the component was not initialized inside the plug-in code
             throw new EzException("Error in plugin \"" + getName() + "\": a plugin variable was not initialized", false);
         }
+        
+        // if the component is a variable, register it
+        if (component instanceof EzVar<?>) registerVariable((EzVar<?>) component);
+        
+        if (component instanceof EzGroup) registerVariables((EzGroup) component);
         
         EzGUI g = getUI();
         if (g != null) g.addEzComponent(component, true);
@@ -365,7 +369,15 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
         }
         catch (EzException e)
         {
-            JOptionPane.showMessageDialog(ezgui.getFrame(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            if (!Icy.isHeadLess())
+            {
+                JOptionPane.showMessageDialog(ezgui.getFrame(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            else
+            {
+                System.err.println("EzVarIO: " + e.getMessage());
+            }
+            
             if (!e.catchException) throw e;
         }
     }
@@ -373,9 +385,26 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
     <T> void registerVariable(EzVar<T> var)
     {
         String varID = var.getID();
+        
         if (ezVars.containsKey(varID)) throw new IllegalArgumentException("Variable " + varID + " already exists");
         
         ezVars.put(varID, var);
+    }
+    
+    void registerVariables(EzGroup ezGroup)
+    {
+        for (EzComponent groupComponent : ezGroup)
+        {
+            if (groupComponent instanceof EzVar<?>)
+            {
+                registerVariable((EzVar<?>) groupComponent);
+            }
+            else if (groupComponent instanceof EzGroup)
+            {
+                // add recursively
+                registerVariables((EzGroup) groupComponent);
+            }
+        }
     }
     
     @Override

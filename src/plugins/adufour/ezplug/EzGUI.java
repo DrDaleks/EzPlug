@@ -127,15 +127,6 @@ public class EzGUI extends EzDialog implements ActionListener
         setOptimalLocation();
     }
     
-    @Override
-    public void addEzComponent(EzComponent component, boolean isSingle)
-    {
-        // if the component is a variable, register it
-        if (component instanceof EzVar<?>) ezPlug.registerVariable((EzVar<?>) component);
-        
-        super.addEzComponent(component, isSingle);
-    }
-    
     /**
      * Sets the state of the "Run" button on the interface
      */
