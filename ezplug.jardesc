@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="US-ASCII" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
     <jar path="EzPlug/EzPlug.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/EzPlug/ezplug.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
@@ -11,6 +11,11 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
-        <javaElement handleIdentifier="=EzPlug/src"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.vars.gui"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.vars.lang"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.ezplug"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.vars.util"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.vars.gui.model"/>
+        <javaElement handleIdentifier="=EzPlug/src&lt;plugins.adufour.vars.gui.swing"/>
     </selectedElements>
 </jardesc>
