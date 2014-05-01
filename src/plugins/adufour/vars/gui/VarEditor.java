@@ -149,13 +149,19 @@ public abstract class VarEditor<V> implements VarListener<V>
      *         receive user input. This method can be overridden to force the editor status to a
      *         given state
      */
-    public abstract boolean isComponentEnabled();
+    public boolean isComponentEnabled()
+    {
+        return true;
+    }
     
     /**
      * @return true if the editor is opaque, or false if the component is transparent. This method
      *         can be overridden to force the opacity to a given state
      */
-    public abstract boolean isComponentOpaque();
+    public boolean isComponentOpaque()
+    {
+        return true;
+    }
     
     /**
      * @return true if the editor is focusable (i.e. the component may capture a mouse event and
