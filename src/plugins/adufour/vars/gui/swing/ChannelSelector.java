@@ -96,9 +96,9 @@ public class ChannelSelector extends SwingVarEditor<Integer>
             {
                 if (value == null) return new JLabel("No sequence");
                 
-                if (value == (Integer) 0) return new JLabel("All");
+                if (value == Integer.valueOf(-1)) return new JLabel("All");
                 
-                int channel = (Integer) value - 1;
+                int channel = (Integer) value;
                 
                 return new JLabel(sequence.getValue().getChannelName(channel));
             }
