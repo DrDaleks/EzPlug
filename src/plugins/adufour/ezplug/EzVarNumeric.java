@@ -17,9 +17,9 @@ import plugins.adufour.vars.lang.Var;
  */
 public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
 {
-    protected EzVarNumeric(Var<N> variable, VarEditorModel<N> constraint)
+    protected EzVarNumeric(Var<N> variable, VarEditorModel<N> model)
     {
-        super(variable, constraint);
+        super(variable, model);
     }
     
     protected EzVarNumeric(Var<N> variable, N[] defaultValues, int defaultValueIndex, boolean allowUserInput)
