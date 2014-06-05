@@ -6,8 +6,10 @@ import icy.plugin.interface_.PluginBundled;
 import icy.sequence.Sequence;
 import icy.type.DataType;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
@@ -386,30 +388,24 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
         
         if (is2D(cc))
         {
-            int[] xPoints = new int[n];
-            int[] yPoints = new int[n];
-            for (Point3i p : cc)
-            {
-                xPoints[i] = p.x;
-                yPoints[i] = p.y;
-                i++;
-            }
+            List<Point2D> points = new ArrayList<Point2D>();
             
-            QuickHull2D qhull = new QuickHull2D(xPoints, yPoints, n);
+            for (Point3i p : cc)
+                points.add(new Point2D.Double(p.x, p.y));
+            
+            points = QuickHull2D.computeConvexEnvelope(points);
             
             // volume = sum( sqrt[ (x[i] - x[i-1])^2 + (y[i] - y[i-1])^2 ] )
             // area = 0.5 * sum( (x[i-1] * y[i]) - (y[i-1] * x[i]) )
             
-            double a = qhull.xPoints2[0] - qhull.xPoints2[qhull.num - 1];
-            double b = qhull.yPoints2[0] - qhull.yPoints2[qhull.num - 1];
-            contour = Math.sqrt(a * a + b * b);
-            area = (qhull.xPoints2[qhull.num - 1] * qhull.yPoints2[0]) - (qhull.xPoints2[0] * qhull.yPoints2[qhull.num - 1]);
-            for (i = 1; i < qhull.num; i++)
+            Point2D p1 = points.get(points.size() - 1), p2 = null;
+            
+            for (i = 0; i < points.size(); i++)
             {
-                a = qhull.xPoints2[i] - qhull.xPoints2[i - 1];
-                b = qhull.yPoints2[i] - qhull.yPoints2[i - 1];
-                contour += Math.sqrt(a * a + b * b);
-                area += (qhull.xPoints2[i - 1] * qhull.yPoints2[i]) - (qhull.xPoints2[i] * qhull.yPoints2[i - 1]);
+                p2 = points.get(i);
+                contour += p1.distance(p2);
+                area += (p2.getX() * p1.getY()) - (p2.getY() * p1.getX());
+                p1 = p2;
             }
             
             area *= 0.5;
