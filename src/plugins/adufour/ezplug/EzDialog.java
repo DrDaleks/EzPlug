@@ -1,6 +1,5 @@
 package plugins.adufour.ezplug;
 
-import icy.gui.component.IcyLogo;
 import icy.gui.frame.IcyExternalFrame;
 import icy.gui.frame.IcyFrame;
 import icy.gui.frame.IcyInternalFrame;
@@ -287,37 +286,7 @@ public class EzDialog extends IcyFrame implements FoldListener
             pack();
         }
     }
-    
-    /**
-     * Highlights the plug's title bar
-     * 
-     * @param state
-     */
-    public void setHighlightedState(boolean state)
-    {
-        JPanel jPanel = (JPanel) getContentPane().getComponent(0);
         
-        for (Component component : jPanel.getComponents())
-        {
-            if (!(component instanceof IcyLogo)) continue;
-            
-            IcyLogo logo = (IcyLogo) component;
-            Component logoTitle = logo.getComponent(1);
-            
-            if (state)
-            {
-                logoTitleColor = logoTitle.getForeground();
-                logoTitle.setForeground(Color.cyan);
-            }
-            else
-            {
-                logoTitle.setForeground(logoTitleColor);
-                
-            }
-            logoTitle.repaint();
-        }
-    }
-    
     /**
      * Shows the dialog on the screen and returns only when the dialog is closed (either via the
      * close button, or by calling the {@link #hideDialog()} method). By default, the dialog is
