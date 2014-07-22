@@ -81,7 +81,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
             }
         });
     }
-        
+    
     /**
      * Creates a new variable with a JComboBox as default graphical component
      * 
@@ -286,13 +286,14 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
      * @throws EzException
      *             if the variable value is null and forbidNull is true
      */
-    public T getValue(boolean forbidNull) throws EzException
+    public T getValue(boolean forbidNull)
     {
-        T val = variable.getValue();
-        if (val == null && forbidNull) throw new EzException("Variable " + variable.getName() + " has not been set", true);
-        return val;
+        return variable.getValue(forbidNull);
     }
     
+    /**
+     * @return The underlying {@link Var} object that contains the value of this EzVar
+     */
     public Var<T> getVariable()
     {
         return variable;
