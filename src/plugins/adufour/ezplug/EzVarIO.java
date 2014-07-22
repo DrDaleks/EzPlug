@@ -25,7 +25,7 @@ class EzVarIO
      * @param ezVarMap
      * @param f
      */
-    static synchronized void save(HashMap<String, EzVar<?>> ezVarMap, File f)
+    static synchronized void save(EzPlug source, HashMap<String, EzVar<?>> ezVarMap, File f)
     {
         Document xml = XMLUtil.createDocument(false);
         Element root = XMLUtil.createRootElement(xml, "Parameters");
@@ -46,7 +46,7 @@ class EzVarIO
             }
         }
 
-        if (!XMLUtil.saveDocument(xml, f)) throw new EzException("unable to save parameters", true);
+        if (!XMLUtil.saveDocument(xml, f)) throw new EzException(source, "unable to save parameters", true);
     }
 
     /**
@@ -56,11 +56,11 @@ class EzVarIO
      * @param ezVarMap
      * @throws EzException
      */
-    static synchronized void load(File f, HashMap<String, EzVar<?>> ezVarMap) throws EzException
+    static synchronized void load(EzPlug source, File f, HashMap<String, EzVar<?>> ezVarMap) throws EzException
     {
         Document xml = XMLUtil.loadDocument(f);
 
-        if (xml == null) throw new EzException("unable to load parameter file", true);
+        if (xml == null) throw new EzException(source, "unable to load parameter file", true);
 
         Element root = XMLUtil.getRootElement(xml);
         ArrayList<Element> elements = XMLUtil.getElements(root);
