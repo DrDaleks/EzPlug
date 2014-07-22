@@ -2,80 +2,46 @@ package plugins.adufour.vars.gui.swing;
 
 import icy.sequence.Sequence;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.text.ParseException;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.ListDataListener;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 
 import plugins.adufour.vars.lang.Var;
+import plugins.adufour.vars.util.VarListener;
 
-public class ChannelSelector extends SwingVarEditor<Integer>
+public class ChannelSelector extends Spinner<Integer>
 {
-    private JComboListener jComboListener;
+    private Var<Sequence>               sequence;
     
-    private Var<Sequence>  sequence;
+    private boolean                     allowAllChannels;
     
-    private boolean        allowAllChannels;
+    private final VarListener<Sequence> sequenceListener = new VarListener<Sequence>()
+                                                         {
+                                                             @Override
+                                                             public void valueChanged(Var<Sequence> source, Sequence oldValue, Sequence newValue)
+                                                             {
+                                                                 updateInterfaceValue();
+                                                             }
+                                                             
+                                                             @Override
+                                                             public void referenceChanged(Var<Sequence> source, Var<? extends Sequence> oldReference,
+                                                                     Var<? extends Sequence> newReference)
+                                                             {
+                                                                 updateInterfaceValue();
+                                                             }
+                                                         };
     
     public ChannelSelector(Var<Integer> variable, Var<Sequence> sequence, boolean allowAllChannels)
     {
         super(variable);
         this.sequence = sequence;
         this.allowAllChannels = allowAllChannels;
-    }
-    
-    private final class JComboListener implements ActionListener
-    {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-            int index = getEditorComponent().getSelectedIndex();
-            if (allowAllChannels) index--;
-            variable.setValue(index);
-        }
-    }
-    
-    private final class ChannelSelectorModel extends DefaultComboBoxModel
-    {
-        private static final long serialVersionUID = 1L;
-        
-        public ChannelSelectorModel()
-        {
-            
-        }
-        
-        @Override
-        public int getSize()
-        {
-            if (sequence == null || sequence.getValue() == null) return 0;
-            
-            int size = sequence.getValue().getSizeC();
-            
-            return allowAllChannels ? size + 1 : size;
-        }
-        
-        @Override
-        public Integer getElementAt(int index)
-        {
-            if (allowAllChannels) index--;
-            
-            return index;
-        }
-        
-        @Override
-        public void addListDataListener(ListDataListener l)
-        {
-            // don't register anything
-        }
     }
     
     /**
@@ -86,81 +52,94 @@ public class ChannelSelector extends SwingVarEditor<Integer>
     @Override
     public JComponent createEditorComponent()
     {
-        jComboListener = new JComboListener();
-        
-        final JComboBox jComboChannels = new JComboBox(new ChannelSelectorModel());
-        
-        jComboChannels.setRenderer(new ListCellRenderer()
+        @SuppressWarnings("serial")
+        final SpinnerModel spinnerModel = new SpinnerNumberModel(0, allowAllChannels ? -1 : 0, 65535, 1)
         {
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+            @Override
+            public Object getNextValue()
             {
-                if (value == null) return new JLabel("No sequence");
+                if (sequence == null || sequence.getValue() == null) return super.getNextValue();
                 
-                if (value == Integer.valueOf(-1)) return new JLabel("All");
-                
-                int channel = (Integer) value;
-                
-                return new JLabel(sequence.getValue().getChannelName(channel));
+                return Math.min(sequence.getValue().getSizeC() - 1, variable.getValue() + 1);
+            }
+            
+            @Override
+            public void setValue(Object newValue)
+            {
+                super.setValue(newValue);
+                if (variable.getReference() == null) variable.setValue((Integer) newValue);
+            }
+        };
+        
+        JSpinner jSpinnerChannels = new JSpinner(spinnerModel);
+        
+        JFormattedTextField ftf = ((JSpinner.NumberEditor) jSpinnerChannels.getEditor()).getTextField();
+        
+        ftf.setFormatterFactory(new AbstractFormatterFactory()
+        {
+            @SuppressWarnings("serial")
+            @Override
+            public AbstractFormatter getFormatter(JFormattedTextField arg0)
+            {
+                return new AbstractFormatter()
+                {
+                    @Override
+                    public String valueToString(Object channelValue) throws ParseException
+                    {
+                        if (channelValue == null) return "";
+                        
+                        if (sequence == null || sequence.getValue() == null) return channelValue.toString();
+                        
+                        return sequence.getValue().getChannelName((Integer) channelValue);
+                    }
+                    
+                    @Override
+                    public Object stringToValue(String channelName) throws ParseException
+                    {
+                        if (sequence == null || sequence.getValue() == null) return Integer.parseInt(channelName);
+                        
+                        Sequence s = sequence.getValue();
+                        
+                        for (int c = 0; c < s.getSizeC(); c++)
+                            if (s.getChannelName(c).equalsIgnoreCase(channelName)) return c;
+                        
+                        throw new ParseException("Channel " + channelName + " does not exist", 0);
+                    }
+                };
             }
         });
         
-        return jComboChannels;
-    }
-    
-    @Override
-    public Dimension getPreferredSize()
-    {
-        Dimension dim = super.getPreferredSize();
-        dim.height = 20;
-        return dim;
+        return jSpinnerChannels;
     }
     
     @Override
     public void dispose()
     {
         super.dispose();
-        
-        final JComboBox jComboSequences = getEditorComponent();
-        
-        // replace custom instances by new empty ones for garbage collection
-        jComboSequences.setRenderer(new DefaultListCellRenderer());
-        jComboSequences.setModel(new DefaultComboBoxModel());
-        
     }
     
     @Override
     protected void updateInterfaceValue()
     {
-        if (sequence == null || sequence.getValue() == null)
-        {
-            getEditorComponent().setSelectedIndex(-1);
-        }
-        else
-        {
-            int index = variable.getValue();
-            if (allowAllChannels) index++;
-            getEditorComponent().setSelectedIndex(index);
-        }
-        getEditorComponent().repaint();
-    }
-    
-    @Override
-    public JComboBox getEditorComponent()
-    {
-        return (JComboBox) super.getEditorComponent();
+        super.updateInterfaceValue();
+        
+        JFormattedTextField ftf = ((JSpinner.NumberEditor) getEditorComponent().getEditor()).getTextField();
+        
+        ftf.setValue(variable.getValue());
+        ftf.setEditable(sequence == null || sequence.getValue() == null);
     }
     
     @Override
     protected void activateListeners()
     {
-        getEditorComponent().addActionListener(jComboListener);
-        
+        super.activateListeners();
+        sequence.addListener(sequenceListener);
     }
     
     @Override
     protected void deactivateListeners()
     {
-        getEditorComponent().removeActionListener(jComboListener);
+        sequence.removeListener(sequenceListener);
+        super.deactivateListeners();
     }
-    
 }

@@ -4,7 +4,7 @@ import icy.sequence.Sequence;
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
 
-public class VarChannel extends Var<Integer>
+public class VarChannel extends VarInteger
 {
     private boolean       allowAllChannels;
     

@@ -7,8 +7,6 @@ import java.awt.event.MouseWheelListener;
 import javax.swing.JComponent;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import plugins.adufour.vars.gui.model.RangeModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
@@ -16,11 +14,31 @@ import plugins.adufour.vars.lang.Var;
 
 public class Spinner<N extends Number> extends SwingVarEditor<N>
 {
-    private static final int   MAX_SPINNER_WIDTH = 200;
+    private static final int         MAX_SPINNER_WIDTH  = 100;
     
-    private MouseWheelListener mouseWheelListener;
-    
-    private ChangeListener     changeListener;
+    private final MouseWheelListener mouseWheelListener = new MouseWheelListener()
+                                                        {
+                                                            public void mouseWheelMoved(MouseWheelEvent e)
+                                                            {
+                                                                JSpinner spinner = getEditorComponent();
+                                                                
+                                                                if (!spinner.isEnabled()) return;
+                                                                
+                                                                int clicks = Math.abs(e.getWheelRotation());
+                                                                
+                                                                boolean up = (e.getWheelRotation() < 0);
+                                                                Object newValue;
+                                                                
+                                                                for (int i = 0; i < clicks; i++)
+                                                                {
+                                                                    newValue = (up ? spinner.getNextValue() : spinner.getPreviousValue());
+                                                                    
+                                                                    if (newValue == null) break;
+                                                                    
+                                                                    spinner.setValue(newValue);
+                                                                }
+                                                            }
+                                                        };
     
     public Spinner(Var<N> variable)
     {
@@ -39,45 +57,19 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
         
         RangeModel<N> constraint = (RangeModel<N>) model;
         
-        final JSpinner jSpinner = new JSpinner(new SpinnerNumberModel(constraint.getDefaultValue(), constraint.getMinimum(), constraint.getMaximum(), constraint.getStepSize()));
-        
-        jSpinner.setValue(constraint.getDefaultValue());
-        
-        changeListener = new ChangeListener()
+        @SuppressWarnings("serial")
+        final JSpinner jSpinner = new JSpinner(new SpinnerNumberModel(constraint.getDefaultValue(), constraint.getMinimum(), constraint.getMaximum(), constraint.getStepSize())
         {
             @SuppressWarnings("unchecked")
-            public void stateChanged(ChangeEvent e)
+            @Override
+            public void setValue(Object value)
             {
-                if (variable.getReference() == null) variable.setValue((N) jSpinner.getValue());
+                super.setValue(value);
+                if (variable.getReference() == null) variable.setValue((N) value);
             }
-        };
+        });
         
-        mouseWheelListener = new MouseWheelListener()
-        {
-            public void mouseWheelMoved(MouseWheelEvent e)
-            {
-                if (!jSpinner.isEnabled()) return;
-                
-                int clicks = Math.abs(e.getWheelRotation());
-                
-                boolean up = (e.getWheelRotation() < 0);
-                Object newValue;
-                
-                for (int i = 0; i < clicks; i++)
-                {
-                    newValue = (up ? jSpinner.getNextValue() : jSpinner.getPreviousValue());
-                    
-                    if (newValue == null) break;
-                    
-                    jSpinner.setValue(newValue);
-                }
-            }
-        };
-        
-        // Assign a maximum size to the spinner to avoid huge-ass interfaces
-        Dimension dim = jSpinner.getPreferredSize();
-        dim.setSize(Math.min(dim.width, MAX_SPINNER_WIDTH), dim.height);
-        jSpinner.setPreferredSize(dim);
+        jSpinner.setValue(constraint.getDefaultValue());
         
         return jSpinner;
     }
@@ -85,26 +77,25 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     public void setMaximum(Comparable<N> maxValue)
     {
         ((SpinnerNumberModel) getEditorComponent().getModel()).setMaximum(maxValue);
-        ((RangeModel<N>)variable.getDefaultEditorModel()).setMaximum(maxValue);
+        ((RangeModel<N>) variable.getDefaultEditorModel()).setMaximum(maxValue);
     }
     
     public void setMinimum(Comparable<N> minValue)
     {
         ((SpinnerNumberModel) getEditorComponent().getModel()).setMinimum(minValue);
-        ((RangeModel<N>)variable.getDefaultEditorModel()).setMinimum(minValue);
+        ((RangeModel<N>) variable.getDefaultEditorModel()).setMinimum(minValue);
     }
     
     public void setStepSize(N stepSize)
     {
         ((SpinnerNumberModel) getEditorComponent().getModel()).setStepSize(stepSize);
-        ((RangeModel<N>)variable.getDefaultEditorModel()).setStepSize(stepSize);
+        ((RangeModel<N>) variable.getDefaultEditorModel()).setStepSize(stepSize);
     }
     
     @Override
     protected void updateInterfaceValue()
     {
-        N value = variable.getValue();
-        getEditorComponent().setValue(value != null ? value : variable.getDefaultValue());
+        // the spinner should be permanently up-to-date
     }
     
     @Override
@@ -114,11 +105,18 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     }
     
     @Override
+    public Dimension getPreferredSize()
+    {
+        Dimension dim = super.getPreferredSize();
+        dim.width = Math.max(MAX_SPINNER_WIDTH, dim.width);
+        return dim;
+    }
+    
+    @Override
     protected void activateListeners()
     {
         JSpinner jSpinner = getEditorComponent();
         jSpinner.addMouseWheelListener(mouseWheelListener);
-        jSpinner.addChangeListener(changeListener);
     }
     
     @Override
@@ -126,6 +124,5 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     {
         JSpinner jSpinner = getEditorComponent();
         jSpinner.removeMouseWheelListener(mouseWheelListener);
-        jSpinner.removeChangeListener(changeListener);
     }
 }
