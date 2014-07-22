@@ -26,7 +26,8 @@ public abstract class RangeModel<N extends Number> implements VarEditorModel<N>
          */
         SPINNER,
         /**
-         * A slider with tick marks and a label on each side
+         * A slider with tick marks and a label on each side<br/>
+         * <b>WARNING: this is experimental and labels might not display accurately!!</b>
          */
         SLIDER
     }
