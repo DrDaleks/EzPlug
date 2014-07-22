@@ -1,6 +1,5 @@
 package plugins.adufour.ezplug;
 
-import icy.common.Version;
 import icy.file.FileUtil;
 import icy.main.Icy;
 import icy.plugin.abstract_.Plugin;
@@ -52,7 +51,7 @@ import plugins.adufour.vars.util.VarException;
  * @see plugins.adufour.ezplug.EzInternalFrame
  * @author Alexandre Dufour
  */
-public abstract class EzPlug extends PluginActionable implements PluginLibrary, Runnable
+public abstract class EzPlug extends PluginActionable implements PluginLibrary
 {
     public static final String              EZPLUG_MAINTAINERS = "Alexandre Dufour (adufour@pasteur.fr)";
     
@@ -88,6 +87,8 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
     
     private long                            startTime;
     
+    private Thread                          executionThread    = null;
+    
     protected EzPlug()
     {
         ezVars = new HashMap<String, EzVar<?>>();
@@ -103,7 +104,7 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
         if (component == null)
         {
             // the component was not initialized inside the plug-in code
-            throw new EzException("Error in plugin \"" + getName() + "\": null graphical component", false);
+            throw new EzException(this, "null graphical component", false);
         }
         
         EzGUI g = getUI();
@@ -125,7 +126,7 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
         if (component == null)
         {
             // the component was not initialized inside the plug-in code
-            throw new EzException("Error in plugin \"" + getName() + "\": a plugin variable was not initialized", false);
+            throw new EzException(this, "A plug-in variable was not initialized properly", false);
         }
         
         // if the component is a variable, register it
@@ -181,7 +182,8 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
      * desktop pane. This method can be called either via ICY's main menu or directly via code.
      */
     @Override
-    public final void compute()
+    @Deprecated
+    public void compute()
     {
         try
         {
@@ -190,18 +192,6 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
             
             // show the interface to the user
             showUI();
-            
-            // check obsolete version
-            if (Icy.version.isLower(new Version(1, 2, 0, 0)))
-            {
-                String message = "Warning: you are using an obsolete version of Icy, and cannot benefit from latest improvements.\n";
-                message += "Here are four ways to upgrade or stay up to date:\n";
-                message += " - Use the \"i\" > \"Check for update\" menu\n";
-                message += " - Enable the \"Check for application update at startup\" in the preferences menu\n";
-                message += " - Check the \"Enable auto update\" in the preferences menu, to always be up to date\n";
-                message += " - If the upgrade process fails, download Icy again from http://icy.bioimageanalysis.org";
-                JOptionPane.showMessageDialog(null, message, "Warning: Icy upgrade available", JOptionPane.WARNING_MESSAGE);
-            }
         }
         catch (EzException e)
         {
@@ -356,6 +346,17 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
     protected abstract void initialize();
     
     /**
+     * Attempts to interrupt the execution of this plug-in, by calling {@link Thread#interrupt()} on
+     * the execution thread. Note that this does not guarantee that the execution will indeed stop,
+     * as it is up to the implementation of {@link #execute()} to regularly monitor the thread's
+     * interrupted flag
+     */
+    public void stopExecution()
+    {
+        if (executionThread != null) executionThread.interrupt();
+    }
+    
+    /**
      * Saves the EzPlug user parameters into the specified XML file
      * 
      * @param file
@@ -365,11 +366,11 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
     {
         try
         {
-            EzVarIO.load(file, ezVars);
+            EzVarIO.load(this, file, ezVars);
         }
         catch (EzException e)
         {
-            if (!Icy.isHeadLess())
+            if (!Icy.getMainInterface().isHeadLess())
             {
                 JOptionPane.showMessageDialog(ezgui.getFrame(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -410,24 +411,39 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
     @Override
     public synchronized void run()
     {
+        executionThread = Thread.currentThread();
+        
         try
         {
-            if (ezgui != null) ezgui.setRunningState(true);
-            
-            startTime = System.nanoTime();
-            
-            execute();
-            
-            if (timeTrial) System.out.println(getName() + " executed in " + (System.nanoTime() - startTime) / 1000000 + " ms");
-        }
-        catch (final VarException e)
-        {
-            throw new IcyHandledException(e.getMessage(), e);
+            try
+            {
+                if (ezgui != null) ezgui.setRunningState(true);
+                
+                startTime = System.nanoTime();
+                
+                execute();
+                
+                if (timeTrial) System.out.println(getName() + " executed in " + (System.nanoTime() - startTime) / 1000000 + " ms");
+            }
+            catch (final VarException e)
+            {
+                String message = "Parameter: " + (e.source == null ? "(unknown)" : e.source.getName()) + "\n";
+                message += "Message: " + e.getMessage();
+                
+                throw new EzException(this, message, true);
+            }
         }
         catch (final EzException e)
         {
-            if (e.catchException) throw new IcyHandledException(e.getMessage(), e);
-            throw new RuntimeException(e.getMessage(), e);
+            if (e.catchException)
+            {
+                String message = "Plugin: " + (e.source == null ? "(unknown)" : e.source.getName()) + "\n";
+                message += e.getMessage();
+                
+                throw new IcyHandledException(message);
+            }
+            
+            throw e;
         }
         finally
         {
@@ -443,7 +459,7 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary, 
      */
     public void saveParameters(File file)
     {
-        EzVarIO.save(ezVars, file);
+        EzVarIO.save(this, ezVars, file);
     }
     
     /**

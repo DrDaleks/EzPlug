@@ -23,56 +23,57 @@ import plugins.adufour.vars.util.VarListener;
 
 public class EzGUI extends EzDialog implements ActionListener
 {
-    public static final int           LOGO_HEIGHT               = 32;
+    public static final int LOGO_HEIGHT               = 32;
     
-    private EzPlug                    ezPlug;
+    private EzPlug          ezPlug;
     
-    private Thread                    executionThread;
+    private Thread          executionThread;
     
-    private JPanel                    jPanelBottom;
+    private JPanel          jPanelBottom;
     
-    private JPanel                    jPanelButtons;
+    private JPanel          jPanelButtons;
     
-    private JButton                   jButtonRun;
+    private JButton         jButtonRun;
     
-    private JButton                   jButtonStop;
+    private JButton         jButtonStop;
     
-    private JButton                   jButtonSaveParameters;
+    private JButton         jButtonSaveParameters;
     
-    private JButton                   jButtonLoadParameters;
+    private JButton         jButtonLoadParameters;
     
-    private JButton                   jButtonHelp;
+    private JButton         jButtonHelp;
     
-    private boolean                   jButtonsParametersVisible = true;
+    private boolean         jButtonsParametersVisible = true;
     
-    private JProgressBar              jProgressBar;
+    private JProgressBar    jProgressBar;
     
-    private VarDouble                 progressBarValue          = new VarDouble("Progress", 0.0);
+    private VarDouble       progressBarValue          = new VarDouble("Progress", 0.0);
     
-    private final VarListener<Double> progressListener          = new VarListener<Double>()
-                                                                {
-                                                                    @Override
-                                                                    public void valueChanged(Var<Double> source, Double oldValue, final Double newValue)
-                                                                    { // TODO replace inner class by
-                                                                      // local private class
-                                                                        ThreadUtil.invokeLater(new Runnable()
-                                                                        {
-                                                                            public void run()
-                                                                            {
-                                                                                boolean inderterminate = newValue < 0 || newValue > 1;
-                                                                                jProgressBar.setIndeterminate(inderterminate);
-                                                                                
-                                                                                if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
-                                                                            }
-                                                                        });
-                                                                    }
-                                                                    
-                                                                    @Override
-                                                                    public void referenceChanged(Var<Double> source, Var<? extends Double> oldReference, Var<? extends Double> newReference)
-                                                                    {
-                                                                        
-                                                                    }
-                                                                };
+    private class ProgressBarUpdater implements VarListener<Double>
+    {
+        @Override
+        public void valueChanged(Var<Double> source, Double oldValue, final Double newValue)
+        {
+            ThreadUtil.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    boolean inderterminate = newValue < 0 || newValue > 1;
+                    jProgressBar.setIndeterminate(inderterminate);
+                    
+                    if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
+                }
+            });
+        }
+        
+        @Override
+        public void referenceChanged(Var<Double> source, Var<? extends Double> oldReference, Var<? extends Double> newReference)
+        {
+            
+        }
+    }
+    
+    private final ProgressBarUpdater progressBarUpdater = new ProgressBarUpdater();
     
     public EzGUI(final EzPlug ezPlug)
     {
@@ -85,26 +86,26 @@ public class EzGUI extends EzDialog implements ActionListener
         jPanelButtons = new JPanel(new GridLayout(1, 5));
         jPanelBottom.add(jPanelButtons);
         
-        jButtonRun = new IcyButton(new IcyIcon(ResourceUtil.getAlphaIconAsImage("playback_play.png")));//new JButton("Start");
+        jButtonRun = new IcyButton(new IcyIcon(ResourceUtil.getAlphaIconAsImage("playback_play.png")));
         jButtonRun.setToolTipText("Start the plug-in...");
         jButtonRun.addActionListener(this);
         jPanelButtons.add(jButtonRun);
         
         if (ezPlug instanceof EzStoppable)
         {
-            jButtonStop = new IcyButton(new IcyIcon(ResourceUtil.getAlphaIconAsImage("playback_stop.png")));//new JButton("Stop");
+            jButtonStop = new IcyButton(new IcyIcon(ResourceUtil.getAlphaIconAsImage("playback_stop.png")));
             jButtonStop.setToolTipText("Stop the plug-in...");
             jButtonStop.setEnabled(false);
             jButtonStop.addActionListener(this);
             jPanelButtons.add(jButtonStop);
         }
         
-        jButtonSaveParameters = new IcyButton(new IcyIcon(ResourceUtil.ICON_SAVE));//new JButton("Save");
+        jButtonSaveParameters = new IcyButton(new IcyIcon(ResourceUtil.ICON_SAVE));
         jButtonSaveParameters.setToolTipText("Save the parameters to a file...");
         jButtonSaveParameters.addActionListener(this);
         jPanelButtons.add(jButtonSaveParameters);
         
-        jButtonLoadParameters = new IcyButton(new IcyIcon(ResourceUtil.ICON_LOAD));//new JButton("Load");
+        jButtonLoadParameters = new IcyButton(new IcyIcon(ResourceUtil.ICON_LOAD));
         jButtonLoadParameters.setToolTipText("Load the parameters from a file...");
         jButtonLoadParameters.addActionListener(this);
         jPanelButtons.add(jButtonLoadParameters);
@@ -118,7 +119,7 @@ public class EzGUI extends EzDialog implements ActionListener
         jProgressBar.setString("Running...");
         jPanelBottom.add(jProgressBar);
         
-        progressBarValue.addListener(progressListener);
+        progressBarValue.addListener(progressBarUpdater);
         
         getContentPane().add(jPanelBottom, BorderLayout.SOUTH);
         
@@ -169,14 +170,9 @@ public class EzGUI extends EzDialog implements ActionListener
         });
     }
     
-    void setRunningState(final boolean running)
+    public void setRunningState(final boolean running)
     {
-        synchronized (executionThread)
-        {
-            if (executionThread.isInterrupted()) return;
-        }
-        
-        ThreadUtil.invokeNow(new Runnable()
+        ThreadUtil.invokeLater(new Runnable()
         {
             public void run()
             {
@@ -226,7 +222,6 @@ public class EzGUI extends EzDialog implements ActionListener
     }
     
     /**
-     * 
      * @param value
      *            A value between 0 and 1 (any other value will set an infinitely active state)
      */
@@ -332,13 +327,10 @@ public class EzGUI extends EzDialog implements ActionListener
         
         if (executionThread != null && executionThread.isAlive())
         {
+            ezPlug.stopExecution();
+            
             // stop the execution if it was still running
-            if (ezPlug instanceof EzStoppable)
-            {
-                ((EzStoppable) ezPlug).stopExecution();
-                ThreadUtil.sleep(100);
-            }
-            else
+            if (!(ezPlug instanceof EzStoppable))
             {
                 // special case: process needs to be force-killed.
                 // => use the dedicated interruption handler
@@ -355,7 +347,7 @@ public class EzGUI extends EzDialog implements ActionListener
         if (jButtonStop != null) jButtonStop.removeActionListener(this);
         jButtonLoadParameters.removeActionListener(this);
         jButtonSaveParameters.removeActionListener(this);
-        progressBarValue.addListener(progressListener);
+        progressBarValue.addListener(progressBarUpdater);
         
         ezPlug = null;
     }
