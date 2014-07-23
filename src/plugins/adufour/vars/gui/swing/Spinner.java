@@ -108,7 +108,7 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     public Dimension getPreferredSize()
     {
         Dimension dim = super.getPreferredSize();
-        dim.width = Math.max(MAX_SPINNER_WIDTH, dim.width);
+        dim.width = Math.min(MAX_SPINNER_WIDTH, dim.width);
         return dim;
     }
     
