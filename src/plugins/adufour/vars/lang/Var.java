@@ -591,7 +591,8 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * Sets a flag indicating whether this variable should be considered "optional". This flag is
      * typically used to mark a plug-in parameter as optional, allowing plug-ins to react
      * accordingly and save potentially unnecessary computations. Setting a variable as optional
-     * will add a check-box next to the variable editor to provide visual feedback
+     * will add a check-box next to the variable editor to provide visual feedback.<br/>
+     * It is up to the developer's responsibility to check and react to this flag accordingly
      * 
      * @param optional
      *            <code>true</code> to indicate that this variable is optional
