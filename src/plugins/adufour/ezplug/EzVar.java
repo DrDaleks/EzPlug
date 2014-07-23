@@ -176,7 +176,9 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         
         VarEditor<T> ed = getVarEditor();
         ed.setEnabled(true); // activates listeners
-        container.add((JComponent) ed.getEditorComponent(), gbc);
+        JComponent component = (JComponent) ed.getEditorComponent();
+        component.setPreferredSize(ed.getPreferredSize());
+        container.add(component, gbc);
     }
     
     protected void dispose()
