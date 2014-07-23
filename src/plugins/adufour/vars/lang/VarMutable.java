@@ -89,8 +89,12 @@ public class VarMutable extends Var implements MutableType
     @Override
     public void setDefaultEditorModel(VarEditorModel model)
     {
-        // this is just to avoid the warning in client code
-        super.setDefaultEditorModel(model);
+        if (model instanceof TypeSelectionModel)
+        {
+            defaultEditorModel = model;
+            setType(((TypeSelectionModel) model).getDefaultValue());
+        }
+        else super.setDefaultEditorModel(model);
     }
     
     @SuppressWarnings("unchecked")

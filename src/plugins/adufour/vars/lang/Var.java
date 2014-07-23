@@ -109,7 +109,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     private final List<Var<? super T>>   referrers         = new ArrayList<Var<? super T>>();
     
-    private VarEditorModel<T>            defaultEditorModel;
+    protected VarEditorModel<T>            defaultEditorModel;
     
     protected final List<VarListener<T>> listeners         = new ArrayList<VarListener<T>>();
     
