@@ -12,7 +12,7 @@ public class TypeSelectionModel extends ValueSelectionModel<Class<?>>
 	 */
 	public TypeSelectionModel()
 	{
-		super(new Class<?>[] { Object.class, Sequence.class, Integer.class, Double.class, int[].class, double[].class, String.class, File.class, File[].class, ROI[].class });
+		super(new Class<?>[] { Object.class, Sequence.class, Integer.class, Double.class, Boolean.class, int[].class, double[].class, String.class, File.class, File[].class, ROI[].class });
 	}
 
 	/**

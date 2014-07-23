@@ -11,6 +11,7 @@ public class TypeUtil
     {
         if (!primitiveType.isPrimitive()) return primitiveType;
         
+        if (primitiveType == boolean.class) return Boolean.class;
         if (primitiveType == void.class) return Void.class;
         if (primitiveType == char.class) return Character.class;
         if (primitiveType == byte.class) return Byte.class;
