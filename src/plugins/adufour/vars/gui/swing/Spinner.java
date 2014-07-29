@@ -69,7 +69,7 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
             }
         });
         
-        jSpinner.setValue(constraint.getDefaultValue());
+//        jSpinner.setValue(constraint.getDefaultValue());
         
         return jSpinner;
     }
@@ -95,7 +95,7 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     @Override
     protected void updateInterfaceValue()
     {
-        // the spinner should be permanently up-to-date
+        getEditorComponent().setValue(variable.getValue());
     }
     
     @Override

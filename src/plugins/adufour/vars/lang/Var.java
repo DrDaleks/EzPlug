@@ -699,10 +699,14 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     {
         if (this.reference != null) throw new IllegalAccessError("Cannot assign the value of a linked variable.");
         
+        if (this.value == null && newValue == null) return;
+        
+        if (this.value != null && this.value.equals(newValue)) return;
+        
         T oldValue = this.value;
         this.value = newValue;
         
-        if (oldValue != newValue) fireVariableChanged(oldValue, newValue);
+        fireVariableChanged(oldValue, newValue);
     }
     
     @Override
