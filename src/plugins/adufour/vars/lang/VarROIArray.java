@@ -1,5 +1,6 @@
 package plugins.adufour.vars.lang;
 
+import plugins.adufour.vars.gui.VarEditor;
 import icy.roi.ROI;
 
 public class VarROIArray extends VarArray<ROI>
@@ -7,6 +8,12 @@ public class VarROIArray extends VarArray<ROI>
     public VarROIArray(String name)
     {
         super(name, ROI[].class, new ROI[0]);
+    }
+    
+    @Override
+    public VarEditor<ROI[]> createVarEditor()
+    {
+        return super.createVarViewer();
     }
     
     /**
