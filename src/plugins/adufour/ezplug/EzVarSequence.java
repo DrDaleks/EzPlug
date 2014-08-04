@@ -47,4 +47,10 @@ public class EzVarSequence extends EzVar<Sequence>
         getVariable().setValue(value);
         // (note: listeners will not be fired twice if the first line worked)
     }
+    
+    @Override
+    public VarSequence getVariable()
+    {
+        return (VarSequence) super.getVariable();
+    }
 }
