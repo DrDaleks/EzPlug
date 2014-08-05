@@ -14,7 +14,7 @@ public class SwimmingObjectTypeModel<T> implements VarEditorModel<SwimmingObject
             T cast = (T) value.getObject();
             return true;
         }
-        catch (ClassCastException ccE)
+        catch (Exception ccE)
         {
             return false;
         }
