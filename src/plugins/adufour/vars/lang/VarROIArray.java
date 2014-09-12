@@ -37,10 +37,4 @@ public class VarROIArray extends VarArray<ROI>
     {
         return null;
     }
-    
-    @Override
-    public void setValue(ROI[] newValue) throws IllegalAccessError, IllegalArgumentException
-    {
-        super.setValue(newValue);
-    }
 }

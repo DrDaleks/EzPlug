@@ -2,6 +2,7 @@ package plugins.adufour.vars.lang;
 
 import icy.sequence.Sequence;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import plugins.adufour.vars.gui.VarEditor;
@@ -42,7 +43,8 @@ public class VarMutable extends Var implements MutableType
         if (getDefaultEditorModel() instanceof TypeSelectionModel)
             return VarEditorFactory.getDefaultFactory().createTypeChooser(this);
         
-        else return VarEditorFactory.getDefaultFactory().createMutableVarEditor(this);
+        else
+            return VarEditorFactory.getDefaultFactory().createMutableVarEditor(this);
     }
     
     @SuppressWarnings("unchecked")
@@ -94,7 +96,8 @@ public class VarMutable extends Var implements MutableType
             defaultEditorModel = model;
             setType(((TypeSelectionModel) model).getDefaultValue());
         }
-        else super.setDefaultEditorModel(model);
+        else
+            super.setDefaultEditorModel(model);
     }
     
     @SuppressWarnings("unchecked")
@@ -118,7 +121,19 @@ public class VarMutable extends Var implements MutableType
     @Override
     public void setValue(Object newValue)
     {
-        super.setValue(newValue);
+        if (newValue != null && getType().isArray())
+        {
+            if (newValue.getClass().isArray())
+            {
+                int nbValues = Array.getLength(newValue);
+                Object array = Array.newInstance(getType().getComponentType(), nbValues);
+                System.arraycopy(newValue, 0, array, 0, nbValues);
+                super.setValue(array);
+            }
+            else throw new ClassCastException("Cannot interpret " + newValue + " as an object of type " + getType());
+        }
+        else
+            super.setValue(newValue);
     }
     
     @SuppressWarnings("unchecked")
