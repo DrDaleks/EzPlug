@@ -453,7 +453,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
         String xmlValue = null;
         try
         {
-            xmlValue = XMLUtil.getAttributeValue((Element) node, XML_KEY_VALUE, null);
+            xmlValue = XMLUtil.getAttributeValue((Element) node, XML_KEY_VALUE, "");
             
             if (xmlValue.isEmpty()) return true;
             
