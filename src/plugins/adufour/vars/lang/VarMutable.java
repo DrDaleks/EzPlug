@@ -121,19 +121,42 @@ public class VarMutable extends Var implements MutableType
     @Override
     public void setValue(Object newValue)
     {
+        // Since this method is loosely typed, we need to make the difference between single objects
+        // and arrays of objects to prevent potential (erroneous) ClassCastException(s)
+        
         if (newValue != null && getType().isArray())
         {
+            // We are expecting an array of "getType().getComponentType()" objects
+            Class<?> componentType = getType().getComponentType();
+            
             if (newValue.getClass().isArray())
             {
+                // the array could be Object[] with valid items inside (cast will fail)
+                // => copy its elements "manually" into a valid array
                 int nbValues = Array.getLength(newValue);
-                Object array = Array.newInstance(getType().getComponentType(), nbValues);
+                Object array = Array.newInstance(componentType, nbValues);
                 System.arraycopy(newValue, 0, array, 0, nbValues);
                 super.setValue(array);
             }
-            else throw new ClassCastException("Cannot interpret " + newValue + " as an object of type " + getType());
+            else if (componentType.isAssignableFrom(newValue.getClass()))
+            {
+                // newValue is not an array but a single object
+                // => place it into a valid array
+                Object array = Array.newInstance(componentType, 1);
+                Array.set(array, 0, newValue);
+                super.setValue(array);
+            }
+            else
+            {
+                // There clearly is a (real) problem...
+                throw new ClassCastException("Cannot interpret " + newValue + " as an object of type " + getType());
+            }
         }
         else
+        {
+            // The default method is good enough
             super.setValue(newValue);
+        }
     }
     
     @SuppressWarnings("unchecked")
