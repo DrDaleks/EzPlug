@@ -34,26 +34,34 @@ public class VarMutable extends Var implements MutableType
     @SuppressWarnings("unchecked")
     public VarMutable(String name, Class<?> initialType)
     {
-        super(name, initialType, null);
+        super(name, initialType != null ? initialType : Object.class, null);
     }
     
     @Override
     public VarEditor createVarEditor()
     {
         if (getDefaultEditorModel() instanceof TypeSelectionModel)
+        {
             return VarEditorFactory.getDefaultFactory().createTypeChooser(this);
-        
+        }
         else
+        {
             return VarEditorFactory.getDefaultFactory().createMutableVarEditor(this);
+        }
     }
     
     @SuppressWarnings("unchecked")
     @Override
     public VarEditor createVarViewer()
     {
-        if (Sequence.class.equals(type)) return VarEditorFactory.getDefaultFactory().createSequenceViewer(this);
-        
-        return super.createVarViewer();
+        if (Sequence.class.equals(type))
+        {
+            return VarEditorFactory.getDefaultFactory().createSequenceViewer(this);
+        }
+        else
+        {
+            return super.createVarViewer();
+        }
     }
     
     public void addTypeChangeListener(TypeChangeListener listener)
@@ -96,8 +104,7 @@ public class VarMutable extends Var implements MutableType
             defaultEditorModel = model;
             setType(((TypeSelectionModel) model).getDefaultValue());
         }
-        else
-            super.setDefaultEditorModel(model);
+        else super.setDefaultEditorModel(model);
     }
     
     @SuppressWarnings("unchecked")
