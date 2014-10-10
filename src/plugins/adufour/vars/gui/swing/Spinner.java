@@ -3,10 +3,13 @@ package plugins.adufour.vars.gui.swing;
 import java.awt.Dimension;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.text.DecimalFormat;
 
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.text.NumberFormatter;
 
 import plugins.adufour.vars.gui.model.RangeModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
@@ -40,6 +43,8 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
                                                             }
                                                         };
     
+    private NumberFormatter          formatter;
+    
     public Spinner(Var<N> variable)
     {
         super(variable);
@@ -69,7 +74,9 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
             }
         });
         
-//        jSpinner.setValue(constraint.getDefaultValue());
+        JSpinner.NumberEditor editor = (JSpinner.NumberEditor) jSpinner.getEditor();
+        JFormattedTextField field = (JFormattedTextField) editor.getComponent(0);
+        formatter = (NumberFormatter) field.getFormatter();
         
         return jSpinner;
     }
@@ -95,7 +102,12 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     @Override
     protected void updateInterfaceValue()
     {
-        getEditorComponent().setValue(variable.getValue());
+        N value = variable.getValue();
+        
+        // adjust the text format
+        ((DecimalFormat) formatter.getFormat()).applyPattern(value.toString().replaceAll("[0-9]", "#"));
+        
+        getEditorComponent().setValue(value);
     }
     
     @Override
