@@ -104,8 +104,11 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
     {
         N value = variable.getValue();
         
-        // adjust the text format
-        ((DecimalFormat) formatter.getFormat()).applyPattern(value.toString().replaceAll("[0-9]", "#"));
+        // adjust the text format (if not in scientific notation)
+        if (!value.toString().contains("E"))
+        {
+            ((DecimalFormat) formatter.getFormat()).applyPattern(value.toString().replaceAll("[0-9]", "#"));
+        }
         
         getEditorComponent().setValue(value);
     }
