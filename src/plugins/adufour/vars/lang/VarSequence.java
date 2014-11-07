@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
+import plugins.adufour.vars.util.VarListener;
 
 public class VarSequence extends Var<Sequence>
 {
@@ -18,9 +19,24 @@ public class VarSequence extends Var<Sequence>
     
     private boolean            noSequenceSelection = false;
     
+    /**
+     * @param name
+     * @param defaultValue
+     */
     public VarSequence(String name, Sequence defaultValue)
     {
-        super(name, Sequence.class, defaultValue);
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarSequence(String name, Sequence defaultValue, VarListener<Sequence> defaultListener)
+    {
+        super(name, Sequence.class, defaultValue, defaultListener);
     }
     
     /**

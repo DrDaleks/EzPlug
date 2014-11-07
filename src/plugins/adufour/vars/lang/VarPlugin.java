@@ -5,6 +5,7 @@ import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
+import plugins.adufour.vars.util.VarListener;
 
 /**
  * Variable that manipulates a plug-in definition
@@ -15,9 +16,24 @@ public class VarPlugin<P extends Plugin> extends Var<PluginDescriptor>
 {
     public final Class<P> pluginType;
     
+    /**
+     * @param name
+     * @param pluginType
+     */
     public VarPlugin(String name, Class<P> pluginType)
     {
-        super(name, PluginDescriptor.class, null);
+        this(name, pluginType, null);
+    }
+    
+    /**
+     * @param name
+     * @param pluginType
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarPlugin(String name, Class<P> pluginType, VarListener<PluginDescriptor> defaultListener)
+    {
+        super(name, PluginDescriptor.class, null, defaultListener);
         this.pluginType = pluginType;
     }
     

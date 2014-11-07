@@ -1,15 +1,39 @@
 package plugins.adufour.vars.lang;
 
+import plugins.adufour.vars.util.VarListener;
+
 public class VarFloat extends VarNumber<Float>
 {
+    /**
+     * @deprecated use {@link #VarFloat(String, float)} instead
+     * @param name
+     * @param defaultValue
+     */
     public VarFloat(String name, Float defaultValue)
     {
         this(name, defaultValue == null ? 0f : defaultValue.floatValue());
     }
     
+    /**
+     * 
+     * @param name
+     * @param defaultValue
+     */
     public VarFloat(String name, float defaultValue)
     {
-        super(name, Float.TYPE, defaultValue);
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * 
+     * @param name
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarFloat(String name, float defaultValue, VarListener<Float> defaultListener)
+    {
+        super(name, Float.TYPE, defaultValue, defaultListener);
     }
     
 	@Override

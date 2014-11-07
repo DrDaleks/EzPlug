@@ -11,6 +11,7 @@ import plugins.adufour.vars.gui.model.TypeSelectionModel;
 import plugins.adufour.vars.gui.model.VarEditorModel;
 import plugins.adufour.vars.util.MutableType;
 import plugins.adufour.vars.util.TypeChangeListener;
+import plugins.adufour.vars.util.VarListener;
 
 /**
  * Variable holding a value with mutable type, i.e. its type may be changed at runtime
@@ -31,10 +32,26 @@ public class VarMutable extends Var implements MutableType
      *            the type of variable to handle (this can be changed via the
      *            {@link #setType(Class)} method
      */
-    @SuppressWarnings("unchecked")
     public VarMutable(String name, Class<?> initialType)
     {
-        super(name, initialType != null ? initialType : Object.class, null);
+        this(name, initialType, null);
+    }
+    
+    /**
+     * Constructs a new mutable variable with specified name and type. The default value for mutable
+     * variables is always null, in order to be reset properly
+     * 
+     * @param name
+     * @param initialType
+     *            the type of variable to handle (this can be changed via the
+     *            {@link #setType(Class)} method
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    @SuppressWarnings("unchecked")
+    public VarMutable(String name, Class<?> initialType, VarListener<?> defaultListener)
+    {
+        super(name, initialType != null ? initialType : Object.class, null, defaultListener);
     }
     
     @Override

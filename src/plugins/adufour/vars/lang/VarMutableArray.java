@@ -2,17 +2,33 @@ package plugins.adufour.vars.lang;
 
 import java.lang.reflect.Array;
 
+import plugins.adufour.vars.util.VarListener;
+
 /**
  * Variable holding an array of mutable type
  * 
  * @author Alexandre Dufour
- * 
  */
 public class VarMutableArray extends VarMutable
 {
+    /**
+     * @param name
+     * @param initialType
+     */
     public VarMutableArray(String name, Class<?> initialType)
     {
-        super(name, initialType);
+        this(name, initialType, null);
+    }
+    
+    /**
+     * @param name
+     * @param initialType
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarMutableArray(String name, Class<?> initialType, VarListener<?> defaultListener)
+    {
+        super(name, initialType, defaultListener);
     }
     
     @SuppressWarnings("rawtypes")

@@ -3,12 +3,28 @@ package plugins.adufour.vars.lang;
 import icy.swimmingPool.SwimmingObject;
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
+import plugins.adufour.vars.util.VarListener;
 
 public class VarSwimmingObject extends Var<SwimmingObject>
 {
+    /**
+     * @param name
+     * @param defaultValue
+     */
     public VarSwimmingObject(String name, SwimmingObject defaultValue)
     {
-        super(name, SwimmingObject.class, defaultValue);
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarSwimmingObject(String name, SwimmingObject defaultValue, VarListener<SwimmingObject> defaultListener)
+    {
+        super(name, SwimmingObject.class, defaultValue, defaultListener);
     }
     
     @Override

@@ -1,5 +1,7 @@
 package plugins.adufour.vars.lang;
 
+import plugins.adufour.vars.util.VarListener;
+
 public class VarDouble extends VarNumber<Double>
 {
     /**
@@ -12,9 +14,24 @@ public class VarDouble extends VarNumber<Double>
         this(name, defaultValue == null ? 0.0 : defaultValue.doubleValue());
     }
     
+    /**
+     * @param name
+     * @param defaultValue
+     */
     public VarDouble(String name, double defaultValue)
     {
-        super(name, Double.TYPE, defaultValue);
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarDouble(String name, double defaultValue, VarListener<Double> defaultListener)
+    {
+        super(name, Double.TYPE, defaultValue, defaultListener);
     }
     
     @Override

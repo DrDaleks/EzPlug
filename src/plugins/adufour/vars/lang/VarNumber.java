@@ -5,6 +5,7 @@ import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.gui.model.RangeModel;
 import plugins.adufour.vars.gui.model.RangeModel.RangeEditorType;
 import plugins.adufour.vars.gui.model.VarEditorModel;
+import plugins.adufour.vars.util.VarListener;
 
 /**
  * Class bringing support for variables handling comparable types
@@ -13,9 +14,26 @@ import plugins.adufour.vars.gui.model.VarEditorModel;
  */
 public abstract class VarNumber<N extends Number> extends Var<N> implements Comparable<N>
 {
+    /**
+     * @param name
+     * @param type
+     * @param defaultValue
+     */
     public VarNumber(String name, Class<N> type, N defaultValue)
     {
-        super(name, type, defaultValue);
+        this(name, type, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     * @param type
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarNumber(String name, Class<N> type, N defaultValue, VarListener<N> defaultListener)
+    {
+        super(name, type, defaultValue, defaultListener);
     }
     
     public VarNumber(String name, VarEditorModel<N> model)

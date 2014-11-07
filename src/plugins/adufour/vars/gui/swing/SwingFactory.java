@@ -1,5 +1,6 @@
 package plugins.adufour.vars.gui.swing;
 
+import ome.xml.model.primitives.Color;
 import icy.plugin.PluginDescriptor;
 import icy.plugin.abstract_.Plugin;
 import icy.sequence.Sequence;
@@ -21,6 +22,12 @@ public class SwingFactory extends VarEditorFactory
     }
     
     @Override
+    public VarEditor<Integer> createChannelSelector(VarChannel varChannel, Var<Sequence> sequence, boolean allowAllChannels)
+    {
+        return new ChannelSelector(varChannel, sequence, allowAllChannels);
+    }
+
+    @Override
     public VarEditor<Boolean> createCheckBox(Var<Boolean> variable)
     {
         return new CheckBox(variable);
@@ -33,17 +40,48 @@ public class SwingFactory extends VarEditorFactory
     }
     
     @Override
+    public VarEditor<Color> createColorChooser(Var<Color> variable)
+    {
+        return new ColorChooser(variable);
+    }
+    
+    @Override
     public <V> VarEditor<V> createLabel(Var<V> variable)
     {
         return new Label<V>(variable);
     }
     
+    @SuppressWarnings("rawtypes")
+    @Override
+    public VarEditor createMutableVarEditor(VarMutable varMutable)
+    {
+        return new MutableVarEditor(varMutable);
+    }
+
+    @Override
+    public VarEditor<PluginDescriptor> createPluginChooser(Var<PluginDescriptor> variable)
+    {
+        return new PluginChooser<Plugin>(variable);
+    }
+
     @Override
     public VarEditor<Sequence> createSequenceChooser(Var<Sequence> variable)
     {
         return new SequenceChooser(variable);
     }
     
+    @Override
+    public VarEditor<Sequence[]> createSequenceList(VarGenericArray<Sequence[]> varSequenceArray)
+    {
+        return new SequenceList(varSequenceArray);
+    }
+
+    @Override
+    public VarEditor<Sequence> createSequenceViewer(Var<Sequence> variable)
+    {
+        return new SequenceViewer(variable);
+    }
+
     @Override
     public <N extends Number> VarEditor<N> createSlider(Var<N> variable)
     {
@@ -79,36 +117,5 @@ public class SwingFactory extends VarEditorFactory
     public VarEditor<VarMutable> createTypeChooser(VarMutable variable)
     {
         return new TypeChooser(variable);
-    }
-    
-    @Override
-    public VarEditor<PluginDescriptor> createPluginChooser(Var<PluginDescriptor> variable)
-    {
-        return new PluginChooser<Plugin>(variable);
-    }
-    
-    @Override
-    public VarEditor<Integer> createChannelSelector(VarChannel varChannel, Var<Sequence> sequence, boolean allowAllChannels)
-    {
-        return new ChannelSelector(varChannel, sequence, allowAllChannels);
-    }
-    
-    @SuppressWarnings("rawtypes")
-    @Override
-    public VarEditor createMutableVarEditor(VarMutable varMutable)
-    {
-        return new MutableVarEditor(varMutable);
-    }
-    
-    @Override
-    public VarEditor<Sequence> createSequenceViewer(Var<Sequence> variable)
-    {
-        return new SequenceViewer(variable);
-    }
-    
-    @Override
-    public VarEditor<Sequence[]> createSequenceList(VarGenericArray<Sequence[]> varSequenceArray)
-    {
-        return new SequenceList(varSequenceArray);
     }
 }

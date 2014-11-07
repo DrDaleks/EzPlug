@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.util.ArrayType;
+import plugins.adufour.vars.util.VarListener;
 
 /**
  * Class defining a variable holding an array of arbitrary type (including Java primitives). This
@@ -18,13 +19,27 @@ import plugins.adufour.vars.util.ArrayType;
  */
 public class VarGenericArray<A> extends Var<A> implements ArrayType
 {
-    @SuppressWarnings("unchecked")
+    /**
+     * @param name
+     * @param type
+     * @param defaultValue
+     */
     public VarGenericArray(String name, Class<A> type, A defaultValue)
     {
-        super(name, type, (defaultValue != null ? defaultValue : (A) Array.newInstance(type.getComponentType(), 0)));
-        // if (type != null && !type.isArray()) throw new
-        // IllegalArgumentException("Cannot create variable " + name + ": " + type.getSimpleName() +
-        // " is not an array type");
+        this(name, type, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     * @param type
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    @SuppressWarnings("unchecked")
+    public VarGenericArray(String name, Class<A> type, A defaultValue, VarListener<A> defaultListener)
+    {
+        super(name, type, (defaultValue != null ? defaultValue : (A) Array.newInstance(type.getComponentType(), 0)), defaultListener);
     }
     
     @Override

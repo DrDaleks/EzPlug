@@ -2,6 +2,7 @@ package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
+import plugins.adufour.vars.util.VarListener;
 
 public class VarString extends Var<String>
 {
@@ -15,7 +16,20 @@ public class VarString extends Var<String>
      */
     public VarString(String name, String defaultValue)
     {
-        this(name, defaultValue, 1);
+        this(name, defaultValue, 1, null);
+    }
+    
+    /**
+     * Creates a new text variable with a default text field editor
+     * 
+     * @param name
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarString(String name, String defaultValue, VarListener<String> defaultListener)
+    {
+        this(name, defaultValue, 1, null);
     }
     
     /**
@@ -30,7 +44,24 @@ public class VarString extends Var<String>
      */
     public VarString(String name, String defaultValue, int nbLines)
     {
-        super(name, String.class, defaultValue);
+        this(name, defaultValue, nbLines, null);
+    }
+    
+    /**
+     * Creates a new text variable with a default text field editor
+     * 
+     * @param name
+     *            the name of this variable (*not* the actual text to store and/or display)
+     * @param defaultValue
+     *            the initial text to store and/or display
+     * @param nbLines
+     *            The number of lines (used only to create the graphical interface)
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarString(String name, String defaultValue, int nbLines, VarListener<String> defaultListener)
+    {
+        super(name, String.class, defaultValue, defaultListener);
         this.nbLines = nbLines;
     }
     

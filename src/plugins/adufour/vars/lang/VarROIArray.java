@@ -1,13 +1,31 @@
 package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
+import plugins.adufour.vars.util.VarListener;
 import icy.roi.ROI;
 
 public class VarROIArray extends VarArray<ROI>
 {
+    /**
+     * Creates a new variable with an initial non-<code>null</code> array of ROI of size 0
+     * 
+     * @param name
+     */
     public VarROIArray(String name)
     {
-        super(name, ROI[].class, new ROI[0]);
+        this(name, null);
+    }
+    
+    /**
+     * Creates a new variable with an initial non-<code>null</code> array of ROI of size 0
+     * 
+     * @param name
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarROIArray(String name, VarListener<ROI[]> defaultListener)
+    {
+        super(name, ROI[].class, new ROI[0], defaultListener);
     }
     
     @Override

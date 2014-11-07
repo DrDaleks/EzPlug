@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import plugins.adufour.vars.util.VarListener;
+
 /**
  * Convenience class defining a generic array of elements based on the specified inner type.<br/>
  * The type of the underlying array cannot be changed. To creates arrays of changeable types, use
@@ -32,6 +34,23 @@ public class VarArray<T> extends VarGenericArray<T[]> implements Iterable<T>
     public VarArray(String name, Class<T[]> type, T[] defaultValue)
     {
         super(name, type, defaultValue);
+    }
+    
+    /**
+     * Creates a new array variable
+     * 
+     * @param name
+     *            the variable name
+     * @param type
+     *            the data type of the array (including the <code>[]</code>)
+     * @param defaultValue
+     *            the initial array
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarArray(String name, Class<T[]> type, T[] defaultValue, VarListener<T[]> defaultListener)
+    {
+        super(name, type, defaultValue, defaultListener);
     }
     
     /**

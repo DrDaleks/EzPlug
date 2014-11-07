@@ -1,5 +1,7 @@
 package plugins.adufour.vars.lang;
 
+import plugins.adufour.vars.util.VarListener;
+
 /**
  * Class defining a variable with a native array of type <code>float[]</code>. This class should be
  * preferred to {@link VarFloatArray} for optimized performances on large arrays
@@ -8,9 +10,24 @@ package plugins.adufour.vars.lang;
  */
 public class VarFloatArrayNative extends VarGenericArray<float[]>
 {
+    /**
+     * @param name
+     * @param defaultValue
+     */
     public VarFloatArrayNative(String name, float[] defaultValue)
     {
-        super(name, float[].class, defaultValue);
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarFloatArrayNative(String name, float[] defaultValue, VarListener<float[]> defaultListener)
+    {
+        super(name, float[].class, defaultValue, defaultListener);
     }
     
     @Override

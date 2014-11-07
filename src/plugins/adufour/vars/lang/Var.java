@@ -109,7 +109,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     private final List<Var<? super T>>   referrers         = new ArrayList<Var<? super T>>();
     
-    protected VarEditorModel<T>            defaultEditorModel;
+    protected VarEditorModel<T>          defaultEditorModel;
     
     protected final List<VarListener<T>> listeners         = new ArrayList<VarListener<T>>();
     
@@ -123,10 +123,35 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * @throws NullPointerException
      *             if {@link #defaultValue} is null
      */
-    @SuppressWarnings("unchecked")
     public Var(String name, T defaultValue) throws NullPointerException
     {
-        this(name, (Class<T>) defaultValue.getClass(), defaultValue);
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * Convenience constructor that adds the specified listener to the variable immediately after
+     * creation. Based on the specified parameters, this constructor is equivalent to the following
+     * code:<br/>
+     * <br/>
+     * <code>
+     * Var v = new Var(name, defaultValue);<br/>
+     * v.addListener(defaultListener);<br/>
+     * </code> This allows developers to reduce boiler-plate code by adding a listener directly at
+     * construction
+     * 
+     * @param name
+     *            the name of this variable
+     * @param defaultValue
+     *            the non-null default value of this variable
+     * @throws NullPointerException
+     *             if {@link #defaultValue} is null
+     * @param defaultListener
+     *            the default listener to add to this variable
+     */
+    @SuppressWarnings("unchecked")
+    public Var(String name, T defaultValue, VarListener<T> defaultListener) throws NullPointerException
+    {
+        this(name, (Class<T>) defaultValue.getClass(), defaultValue, defaultListener);
     }
     
     /**
@@ -140,7 +165,43 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     public Var(String name, Class<T> type)
     {
-        this(name, type, null);
+        this(name, type, null, null);
+    }
+    
+    /**
+     * Creates a new {@link Var}iable with the specified name, and inner value type and default
+     * value (may be null).
+     * 
+     * @param name
+     *            the name of this variable
+     * @param type
+     *            the type of this variable
+     * @deprecated use {@link #Var(String, Class, Object, VarListener)} instead.
+     */
+    public Var(String name, Class<T> type, T defaultValue)
+    {
+        this(name, type, defaultValue, null);
+    }
+    
+    /**
+     * Creates a new {@link Var}iable with the specified name, and inner value type and default
+     * value (may be null).
+     * 
+     * @param name
+     *            the name of this variable
+     * @param type
+     *            the type of this variable
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public Var(String name, Class<T> type, T defaultValue, VarListener<T> defaultListener)
+    {
+        this.name = name;
+        this.type = type;
+        this.defaultValue = defaultValue;
+        this.value = defaultValue;
+        
+        if (defaultListener != null) addListener(defaultListener);
     }
     
     /**
@@ -155,25 +216,8 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     @SuppressWarnings("unchecked")
     public Var(String name, VarEditorModel<T> editorModel)
     {
-        this(name, (Class<T>) editorModel.getDefaultValue().getClass(), editorModel.getDefaultValue());
+        this(name, (Class<T>) editorModel.getDefaultValue().getClass(), editorModel.getDefaultValue(), null);
         this.defaultEditorModel = editorModel;
-    }
-    
-    /**
-     * Creates a new {@link Var}iable with the specified name, and inner value type and default
-     * value (may be null).
-     * 
-     * @param name
-     *            the name of this variable
-     * @param type
-     *            the type of this variable
-     */
-    public Var(String name, Class<T> type, T defaultValue)
-    {
-        this.name = name;
-        this.type = type;
-        this.defaultValue = defaultValue;
-        this.value = defaultValue;
     }
     
     /**
@@ -204,9 +248,16 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     /**
      * Creates a new {@link VarEditor} object that allows the user to graphically adjust the value
      * of this variable. By default this editor is an empty label for generic types, but this method
-     * can be overridden to provide a custom editor.
+     * can be overridden to provide a custom editor. <br/>
+     * <br/>
+     * NOTE: the editor returned by this method is "disabled" by default, and therefore will not
+     * respond to user events (this is to avoid memory leaks and creating useless listeners). To
+     * activate the editor, call {@link #setEnabled(boolean) setEnabled(true)}
      * 
-     * @return the variable editor embarking the graphical component
+     * @return the variable editor embarking the graphical component. </br>NOTE: the editor returned
+     *         by this method is "disabled" by default, and therefore will not respond to user
+     *         events (this is to avoid memory leaks and creating useless listeners). To activate
+     *         the editor, call {@link #setEnabled(boolean) setEnabled(true)}
      */
     public VarEditor<T> createVarEditor()
     {
@@ -216,6 +267,23 @@ public class Var<T> implements XMLPersistent, VarListener<T>
         if (getDefaultEditorModel() == null) return new Label<T>(this);
         
         throw new UnsupportedOperationException("A " + getClass().getSimpleName() + " cannot be edited with a " + getDefaultEditorModel().getClass().getSimpleName());
+    }
+    
+    /**
+     * Convenience method that creates and potentially enables a new {@link VarEditor} object for
+     * this variable in a single call.
+     * 
+     * @param enable
+     *            <code>true</code> if the underlying component should be enabled after creation
+     *            (will respond to user interaction), or <code>false</code> otherwise (indicating
+     *            <code>false</code> is equivalent to calling {@link #createVarEditor()})
+     * @return the variable editor embarking the graphical component.
+     */
+    public VarEditor<T> createVarEditor(boolean enable)
+    {
+        VarEditor<T> editor = createVarEditor();
+        if (enable) editor.setEnabled(true);
+        return editor;
     }
     
     /**

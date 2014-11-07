@@ -1,23 +1,37 @@
 package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.model.ValueSelectionModel;
+import plugins.adufour.vars.util.VarListener;
 
 public class VarEnum<T extends Enum<T>> extends Var<T>
 {
     /**
-     * 
      * @param name
      * @param defaultValue
      * @throws NullPointerException
      *             if defaultValue is null
      */
-    @SuppressWarnings("unchecked")
     public VarEnum(String name, T defaultValue) throws NullPointerException
     {
-        super(name, (Class<T>) defaultValue.getClass(), defaultValue);
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     * @param defaultValue
+     *            the default enumeration value (warning: cannot be <code>null</code> !!)
+     * @throws NullPointerException
+     *             if defaultValue is null
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    @SuppressWarnings("unchecked")
+    public VarEnum(String name, T defaultValue, VarListener<T> defaultListener) throws NullPointerException
+    {
+        super(name, (Class<T>) defaultValue.getClass(), defaultValue, defaultListener);
         setDefaultEditorModel(new ValueSelectionModel<T>((T[]) defaultValue.getDeclaringClass().getEnumConstants(), defaultValue, false));
     }
-
+    
     @Override
     public String getValueAsString()
     {

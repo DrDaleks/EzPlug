@@ -1,5 +1,7 @@
 package plugins.adufour.vars.lang;
 
+import plugins.adufour.vars.util.VarListener;
+
 /**
  * Class defining a variable with a native array of type <code>int[]</code>. This class should be
  * preferred to {@link VarIntegerArray} for optimized performances on large arrays
@@ -8,9 +10,24 @@ package plugins.adufour.vars.lang;
  */
 public class VarIntegerArrayNative extends VarGenericArray<int[]>
 {
+    /**
+     * @param name
+     * @param defaultValue
+     */
     public VarIntegerArrayNative(String name, int[] defaultValue)
     {
-        super(name, int[].class, defaultValue);
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     * @param defaultValue
+     * @param defaultListener
+     *            A listener to add to this variable immediately after creation
+     */
+    public VarIntegerArrayNative(String name, int[] defaultValue, VarListener<int[]> defaultListener)
+    {
+        super(name, int[].class, defaultValue, defaultListener);
     }
     
     @Override

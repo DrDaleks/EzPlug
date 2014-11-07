@@ -1,5 +1,6 @@
 package plugins.adufour.vars.gui;
 
+import ome.xml.model.primitives.Color;
 import icy.plugin.PluginDescriptor;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
@@ -50,36 +51,38 @@ public abstract class VarEditorFactory
         }
     }
     
-    public abstract <V> VarEditor<V> createLabel(Var<V> variable);
-    
     public abstract VarEditor<Integer> createButton(VarTrigger variable);
     
-    public abstract <V> VarEditor<V> createTextField(Var<V> variable);
+    public abstract VarEditor<Integer> createChannelSelector(VarChannel varChannel, Var<Sequence> sequence, boolean allowAllChannels);
+
+    public abstract VarEditor<Boolean> createCheckBox(Var<Boolean> variable);
+
+    public abstract VarEditor<Color> createColorChooser(Var<Color> variable);
     
     public abstract <V> VarEditor<V> createComboBox(Var<V> variable);
-    
+
+    public abstract <V> VarEditor<V> createLabel(Var<V> variable);
+
+    @SuppressWarnings("rawtypes")
+    public abstract VarEditor createMutableVarEditor(VarMutable varMutable);
+
+    public abstract VarEditor<PluginDescriptor> createPluginChooser(Var<PluginDescriptor> variable);
+
+    public abstract VarEditor<Sequence> createSequenceChooser(Var<Sequence> variable);
+
+    public abstract VarEditor<Sequence[]> createSequenceList(VarGenericArray<Sequence[]> varSequenceArray);
+
+    public abstract VarEditor<Sequence> createSequenceViewer(Var<Sequence> variable);
+
+    public abstract <N extends Number> VarEditor<N> createSlider(Var<N> variable);
+
+    public abstract VarEditor<SwimmingObject> createSwimmingObjectChooser(Var<SwimmingObject> variable);
+
     public abstract <N extends Number> VarEditor<N> createSpinner(Var<N> variable);
     
     public abstract <V> VarEditor<V> createTextArea(Var<V> variable, int rows);
     
-    public abstract VarEditor<Boolean> createCheckBox(Var<Boolean> variable);
-    
-    public abstract VarEditor<PluginDescriptor> createPluginChooser(Var<PluginDescriptor> variable);
-    
-    public abstract VarEditor<Sequence> createSequenceChooser(Var<Sequence> variable);
-    
-    public abstract VarEditor<SwimmingObject> createSwimmingObjectChooser(Var<SwimmingObject> variable);
-    
+    public abstract <V> VarEditor<V> createTextField(Var<V> variable);
+
     public abstract VarEditor<VarMutable> createTypeChooser(VarMutable variable);
-    
-    public abstract <N extends Number> VarEditor<N> createSlider(Var<N> variable);
-    
-    public abstract VarEditor<Integer> createChannelSelector(VarChannel varChannel, Var<Sequence> sequence, boolean allowAllChannels);
-    
-    @SuppressWarnings("rawtypes")
-    public abstract VarEditor createMutableVarEditor(VarMutable varMutable);
-    
-    public abstract VarEditor<Sequence> createSequenceViewer(Var<Sequence> variable);
-    
-    public abstract VarEditor<Sequence[]> createSequenceList(VarGenericArray<Sequence[]> varSequenceArray);
 }
