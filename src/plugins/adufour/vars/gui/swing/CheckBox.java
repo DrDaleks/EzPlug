@@ -20,11 +20,7 @@ public class CheckBox extends SwingVarEditor<Boolean>
     @Override
     public JComponent createEditorComponent()
     {
-        // Legacy note: by default, "nameVisible" is "true", but this component was not using it
-        // until now, therefore set it to false here to preserve retro-compatibility
-        setNameVisible(false);
-        
-        final JCheckBox jCheckBox = new JCheckBox(isNameVisible() ? variable.getName() : " ");
+        final JCheckBox jCheckBox = new JCheckBox();
         
         actionListener = new ActionListener()
         {
