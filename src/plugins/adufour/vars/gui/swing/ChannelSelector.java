@@ -121,8 +121,6 @@ public class ChannelSelector extends Spinner<Integer>
     @Override
     protected void updateInterfaceValue()
     {
-        super.updateInterfaceValue();
-        
         JFormattedTextField ftf = ((JSpinner.NumberEditor) getEditorComponent().getEditor()).getTextField();
         
         ftf.setValue(variable.getValue());
