@@ -44,4 +44,12 @@ public class VarException extends IllegalArgumentException
         super(message);
         this.source = source;
     }
+    
+    @Override
+    public String getMessage()
+    {
+        if (source == null) return super.getMessage();
+        
+        return "Parameter \"" + source.getName() + "\": " + super.getMessage();
+    }
 }
