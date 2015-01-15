@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -77,6 +78,20 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
         JSpinner.NumberEditor editor = (JSpinner.NumberEditor) jSpinner.getEditor();
         JFormattedTextField field = (JFormattedTextField) editor.getComponent(0);
         formatter = (NumberFormatter) field.getFormatter();
+        
+        // set the preferred size the maximum possible text length
+        try
+        {
+            String min = formatter.valueToString(constraint.getMinimum());
+            String max = formatter.valueToString(constraint.getMaximum());
+            String step = formatter.valueToString(constraint.getStepSize());
+            
+            field.setColumns(Math.max(min.length(), Math.max(max.length(), step.length())));
+        }
+        catch (ParseException e)
+        {
+            throw new RuntimeException(e);
+        }
         
         return jSpinner;
     }
