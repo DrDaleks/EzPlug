@@ -186,6 +186,7 @@ public class EzGroup extends EzComponent implements Iterable<EzComponent>
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.weightx = 1.0;
         gridbag.setConstraints(jPanelGroup, gbc);
         
         container.add(jPanelGroup);
