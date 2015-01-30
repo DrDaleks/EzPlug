@@ -87,10 +87,9 @@ public class EzLabel extends EzComponent
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 5, 2, 5);
         
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.weightx = 1;
-        gbc.weighty = 1;
         
         jTextArea.setEditable(false);
         jTextArea.setOpaque(false);
