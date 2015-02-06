@@ -1,5 +1,6 @@
 package plugins.adufour.vars.lang;
 
+import plugins.adufour.vars.util.VarException;
 import plugins.adufour.vars.util.VarListener;
 
 public class VarDouble extends VarNumber<Double>
@@ -47,9 +48,9 @@ public class VarDouble extends VarNumber<Double>
     }
     
     @Override
-    public Double getValue()
+    public Double getValue(boolean forbidNull) throws VarException
     {
-        Number number = (Number) super.getValue();
+        Number number = (Number) super.getValue(forbidNull);
         
         return number == null ? null : number.doubleValue();
     }

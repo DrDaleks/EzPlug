@@ -51,9 +51,9 @@ public class VarInteger extends VarNumber<Integer>
      * NOTE: if the current variable references a variable of different (wider) type, truncation
      * will occur
      */
-    public Integer getValue()
+    public Integer getValue(boolean forbidNull)
     {
-        Number number = (Number) super.getValue();
+        Number number = (Number) super.getValue(forbidNull);
         
         return number == null ? null : number.intValue();
     }
