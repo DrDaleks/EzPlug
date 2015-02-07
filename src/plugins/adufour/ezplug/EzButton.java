@@ -53,7 +53,6 @@ public class EzButton extends EzComponent
 		
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.gridheight = GridBagConstraints.RELATIVE;
 		
 		container.add(jButton, gbc);
 	}
