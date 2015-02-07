@@ -32,10 +32,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 
 import org.pushingpixels.substance.api.ComponentState;
 import org.pushingpixels.substance.api.SubstanceColorScheme;
@@ -88,7 +90,8 @@ public class EzDialog extends IcyFrame implements FoldListener
         {
             public void run()
             {
-                jPanelParameters = new JPanel(new GridBagLayout());
+                jPanelParameters = new JPanel();
+                jPanelParameters.setLayout(new BoxLayout(jPanelParameters, BoxLayout.X_AXIS));
                 jPanelParameters.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
                 
                 if (isDialog)
@@ -126,7 +129,8 @@ public class EzDialog extends IcyFrame implements FoldListener
         
         Dimension screenDim = getToolkit().getScreenSize();
         
-        loop: while (!validLocation)
+        loop:
+        while (!validLocation)
         {
             AbstractList<? extends Component> comps;
             
@@ -245,32 +249,61 @@ public class EzDialog extends IcyFrame implements FoldListener
         {
             jPanelParameters.removeAll();
             
-            for (Object object : components)
-                if (object instanceof EzComponent)
-                {
-                    ((EzComponent) object).addToContainer(jPanelParameters);
-                }
-                else if (object instanceof Component)
-                {
-                    Component component = (Component) object;
-                    
-                    GridBagLayout gridbag = (GridBagLayout) jPanelParameters.getLayout();
-                    
-                    GridBagConstraints gbc = new GridBagConstraints();
-                    gbc.insets = new Insets(2, 5, 2, 5);
-                    gbc.fill = GridBagConstraints.BOTH;
-                    gbc.gridwidth = GridBagConstraints.REMAINDER;
-                    // resize behavior
-                    gbc.weightx = 1;
-                    gbc.weighty = 1;
-                    
-                    component.setFocusable(false);
-                    gridbag.setConstraints(component, gbc);
-                    
-                    jPanelParameters.add(component);
-                }
-                else throw new UnsupportedOperationException("Cannot add a " + object.getClass().getSimpleName() + " to the graphical interface");
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(2, 5, 2, 5);
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            // resize behavior
+            gbc.weightx = 1;
+            gbc.weighty = 1;
             
+            // split components by columns
+            ArrayList<List<Object>> columns = new ArrayList<List<Object>>();
+            ArrayList<Object> currentColumn = new ArrayList<Object>();
+            columns.add(currentColumn);
+            for (Object component : components)
+            {
+                if (component instanceof JSeparator && ((JSeparator) component).getOrientation() == JSeparator.VERTICAL)
+                {
+                    currentColumn = new ArrayList<Object>();
+                    columns.add(currentColumn);
+                }
+                else
+                {
+                    currentColumn.add(component);
+                }
+            }
+            
+            for (int i = 0; i < columns.size(); i++)
+            {
+                List<Object> column = columns.get(i);
+                
+                if (i > 0 && column.size() > 0) jPanelParameters.add(new JSeparator(JSeparator.VERTICAL));
+
+                JPanel columnContainer = new JPanel(new GridBagLayout());
+                
+                for (Object object : column)
+                {
+                    if (object instanceof EzComponent)
+                    {
+                        ((EzComponent) object).addToContainer(columnContainer);
+                    }
+                    else if (object instanceof Component)
+                    {
+                        Component component = (Component) object;
+                        
+                        GridBagLayout gridbag = (GridBagLayout) columnContainer.getLayout();
+                        
+                        component.setFocusable(false);
+                        gridbag.setConstraints(component, gbc);
+                        
+                        columnContainer.add(component);
+                    }
+                    else throw new UnsupportedOperationException("Cannot add a " + object.getClass().getSimpleName() + " to the graphical interface");
+                }
+                
+                jPanelParameters.add(columnContainer);
+            }
             jPanelParameters.validate();
             jPanelParameters.repaint();
         }
@@ -286,7 +319,7 @@ public class EzDialog extends IcyFrame implements FoldListener
             pack();
         }
     }
-        
+    
     /**
      * Shows the dialog on the screen and returns only when the dialog is closed (either via the
      * close button, or by calling the {@link #hideDialog()} method). By default, the dialog is
@@ -323,8 +356,7 @@ public class EzDialog extends IcyFrame implements FoldListener
     @Override
     public void close()
     {
-        if (isDialog)
-            hideDialog();
+        if (isDialog) hideDialog();
         else super.close();
     }
     
