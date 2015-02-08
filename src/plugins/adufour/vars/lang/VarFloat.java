@@ -48,6 +48,12 @@ public class VarFloat extends VarNumber<Float>
 		return getValue().compareTo(f);
 	}
 	
+	@Override
+	public Float getValue()
+	{
+	    return getValue(false);
+	}
+	
 	/**
 	 * Returns a Float representing the variable value.<br>
 	 * NOTE: if the current variable references a variable of different (wider) type, truncation

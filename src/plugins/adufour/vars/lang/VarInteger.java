@@ -46,8 +46,14 @@ public class VarInteger extends VarNumber<Integer>
         return getValue().compareTo(integer);
     }
     
+    @Override
+    public Integer getValue()
+    {
+        return getValue(false);
+    }
+    
     /**
-     * Returns a Float representing the variable value.<br>
+     * Returns an integer representing the variable value.<br>
      * NOTE: if the current variable references a variable of different (wider) type, truncation
      * will occur
      */

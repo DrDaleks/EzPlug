@@ -48,6 +48,12 @@ public class VarDouble extends VarNumber<Double>
     }
     
     @Override
+    public Double getValue()
+    {
+        return getValue(false);
+    }
+    
+    @Override
     public Double getValue(boolean forbidNull) throws VarException
     {
         Number number = (Number) super.getValue(forbidNull);
