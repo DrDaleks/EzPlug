@@ -1,10 +1,12 @@
 package plugins.adufour.vars.gui.swing;
 
-import ome.xml.model.primitives.Color;
 import icy.plugin.PluginDescriptor;
 import icy.plugin.abstract_.Plugin;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
+
+import java.awt.Color;
+
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.lang.Var;

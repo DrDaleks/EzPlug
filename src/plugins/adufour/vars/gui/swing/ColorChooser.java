@@ -1,5 +1,6 @@
 package plugins.adufour.vars.gui.swing;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,7 +11,6 @@ import javax.swing.JComponent;
 
 import org.jdesktop.swingx.icon.EmptyIcon;
 
-import ome.xml.model.primitives.Color;
 import plugins.adufour.vars.lang.Var;
 
 /**
@@ -39,10 +39,9 @@ public class ColorChooser extends SwingVarEditor<Color>
             public void actionPerformed(ActionEvent arg0)
             {
                 Color defaultColor = variable.getDefaultValue();
-                java.awt.Color awtColor = new java.awt.Color(defaultColor.getRed(), defaultColor.getGreen(), defaultColor.getBlue(), defaultColor.getAlpha());
-                java.awt.Color newColor = JColorChooser.showDialog(getEditorComponent(), variable.getName(), awtColor);
+                java.awt.Color newColor = JColorChooser.showDialog(getEditorComponent(), variable.getName(), defaultColor);
                 if (newColor == null) return;
-                variable.setValue(new Color(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), newColor.getAlpha()));
+                variable.setValue(newColor);
             }
         };
         
@@ -52,8 +51,7 @@ public class ColorChooser extends SwingVarEditor<Color>
             @Override
             protected void paintComponent(Graphics g)
             {
-                Color color = variable.getValue();
-                g.setColor(new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
+                g.setColor(variable.getValue());
                 g.fill3DRect(0, 0, getWidth(), getHeight(), true);
             }
         };
