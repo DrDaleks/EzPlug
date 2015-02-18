@@ -48,7 +48,10 @@ public class VarSequence extends Var<Sequence>
     @Override
     public boolean saveToXML(Node node) throws UnsupportedOperationException
     {
-        if (getValue() == null) XMLUtil.setAttributeValue((Element) node, Var.XML_KEY_VALUE, NO_SEQUENCE);
+        if (getValue() == null)
+        {
+            XMLUtil.setAttributeValue((Element) node, Var.XML_KEY_VALUE, isNoSequenceSelected() ? NO_SEQUENCE : ACTIVE_SEQUENCE);
+        }
         
         return true;
     }
@@ -101,10 +104,12 @@ public class VarSequence extends Var<Sequence>
     
     public void setNoSequenceSelection()
     {
+        if (noSequenceSelection) return;
+
         noSequenceSelection = true;
         Sequence oldValue = getValue();
         setValue(null);
-        if (oldValue == null) fireVariableChanged(oldValue, null);
+        fireVariableChanged(oldValue, null);
     }
     
     @Override

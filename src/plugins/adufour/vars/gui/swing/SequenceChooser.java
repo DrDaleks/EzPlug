@@ -28,8 +28,7 @@ import plugins.adufour.vars.lang.VarSequence;
 public class SequenceChooser extends SwingVarEditor<Sequence>
 {
     private abstract class SequenceListener implements GlobalSequenceListener, ActiveSequenceListener
-    {
-    };
+    {};
     
     private SequenceListener          listener;
     
@@ -54,6 +53,10 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             if (o == null)
             {
                 variable.setValue(null);
+            }
+            else if (o == VarSequence.NO_SEQUENCE)
+            {
+                ((VarSequence) variable).setNoSequenceSelection();
             }
             else if (o.toString().equals(VarSequence.ACTIVE_SEQUENCE))
             {
@@ -90,7 +93,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         @Override
         public Object getElementAt(int index)
         {
-            if (index <= 0) return null;
+            if (index <= 0) return VarSequence.NO_SEQUENCE;
             
             if (index == 1) return VarSequence.ACTIVE_SEQUENCE;
             
@@ -123,7 +126,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
             {
                 if (value == VarSequence.ACTIVE_SEQUENCE) return new JLabel(VarSequence.ACTIVE_SEQUENCE);
                 
-                if (value == null) return new JLabel(VarSequence.NO_SEQUENCE);
+                if (value == null || value == VarSequence.NO_SEQUENCE) return new JLabel(VarSequence.NO_SEQUENCE);
                 
                 if (value instanceof Sequence)
                 {
