@@ -60,17 +60,17 @@ public class FileChooser extends SwingVarEditor<File>
         {
         case FILES:
             jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            jButton.setText("Select file...");
+            jButton.setText("Choose file name...");
         break;
 
         case FOLDERS:
             jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            jButton.setText("Select folder...");
+            jButton.setText("Choose folder name...");
         break;
 
         default:
             jFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            jButton.setText("Select file or folder...");
+            jButton.setText("Choose file or folder name...");
         }
 
         jFileChooser.setMultiSelectionEnabled(false);
