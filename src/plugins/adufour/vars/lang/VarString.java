@@ -2,6 +2,7 @@ package plugins.adufour.vars.lang;
 
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
+import plugins.adufour.vars.gui.model.PasswordModel;
 import plugins.adufour.vars.util.VarListener;
 
 public class VarString extends Var<String>
@@ -77,6 +78,8 @@ public class VarString extends Var<String>
         VarEditorFactory factory = VarEditorFactory.getDefaultFactory();
         
         if (getDefaultEditorModel() == null) return nbLines > 1 ? factory.createTextArea(this, nbLines) : factory.createTextField(this);
+        
+        if (getDefaultEditorModel() instanceof PasswordModel) return factory.createPasswordField(this);
         
         return super.createVarEditor();
     }

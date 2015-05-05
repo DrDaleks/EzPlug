@@ -16,22 +16,29 @@ import plugins.adufour.vars.lang.Var;
 
 public class TextField<T> extends SwingVarEditor<T>
 {
-    private ActionListener actionListener;
-
-    private FocusListener  focusListener;
-
-    private KeyListener    keyListener;
-
+    protected ActionListener actionListener;
+    
+    protected FocusListener  focusListener;
+    
+    protected KeyListener    keyListener;
+    
     public TextField(Var<T> variable)
     {
         super(variable);
     }
-
+    
     @Override
     public JComponent createEditorComponent()
     {
         final JTextField jTextField = new JTextField();
-
+        
+        initializeComponent(jTextField);
+        
+        return jTextField;
+    }
+    
+    protected void initializeComponent(final JTextField jTextField)
+    {
         jTextField.setText(getVariable().getValueAsString());
         actionListener = new ActionListener()
         {
@@ -41,7 +48,7 @@ public class TextField<T> extends SwingVarEditor<T>
                 setVariableValue(jTextField);
             }
         };
-
+        
         focusListener = new FocusAdapter()
         {
             @Override
@@ -50,14 +57,14 @@ public class TextField<T> extends SwingVarEditor<T>
                 setVariableValue(jTextField);
             }
         };
-
+        
         keyListener = new KeyListener()
         {
             @Override
             public void keyTyped(KeyEvent e)
             {
             }
-
+            
             @Override
             public void keyReleased(KeyEvent e)
             {
@@ -66,21 +73,20 @@ public class TextField<T> extends SwingVarEditor<T>
                     variable.parse(jTextField.getText());
                     jTextField.setForeground(Color.black);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     jTextField.setForeground(Color.red);
                 }
             }
-
+            
             @Override
             public void keyPressed(KeyEvent e)
             {
             }
         };
-        return jTextField;
     }
-
-    private void setVariableValue(JTextField jTextField)
+    
+    protected void setVariableValue(JTextField jTextField)
     {
         try
         {
@@ -94,26 +100,26 @@ public class TextField<T> extends SwingVarEditor<T>
             jTextField.setToolTipText("Cannot convert input into a " + getVariable().getTypeAsString());
         }
     }
-
+    
     @Override
     protected void updateInterfaceValue()
     {
         getEditorComponent().setText(variable.getValueAsString(true));
     }
-
+    
     @Override
     public void dispose()
     {
         super.dispose();
-
+        
     }
-
+    
     @Override
     public JTextField getEditorComponent()
     {
         return (JTextField) super.getEditorComponent();
     }
-
+    
     @Override
     protected void activateListeners()
     {
@@ -121,7 +127,7 @@ public class TextField<T> extends SwingVarEditor<T>
         getEditorComponent().addFocusListener(focusListener);
         getEditorComponent().addKeyListener(keyListener);
     }
-
+    
     @Override
     protected void deactivateListeners()
     {

@@ -120,4 +120,10 @@ public class SwingFactory extends VarEditorFactory
     {
         return new TypeChooser(variable);
     }
+
+    @Override
+    public VarEditor<String> createPasswordField(Var<String> variable)
+    {
+        return new PasswordField(variable);
+    }
 }
