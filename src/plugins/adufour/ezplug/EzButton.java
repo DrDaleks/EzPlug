@@ -15,80 +15,100 @@ import javax.swing.SwingUtilities;
  * EzComponents, and fires an action listener whenever it is clicked from the interface.
  * 
  * @author Alexandre Dufour
- * 
  */
 public class EzButton extends EzComponent
 {
-	private JButton	jButton;
-	
-	/**
-	 * Creates a new EzButton with given title and action listener (i.e. the method which will be
-	 * called when the button is clicked)
-	 * 
-	 * @param title
-	 *            the button title
-	 * @param listener
-	 *            the listener which will be called when the button is clicked
-	 */
-	public EzButton(final String title, final ActionListener listener)
-	{
-		super(title);
-		
-		ThreadUtil.invoke(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				jButton = new JButton(title);
-				jButton.addActionListener(listener);
-			}
-		}, !SwingUtilities.isEventDispatchThread());
-	}
-	
-	@Override
-	public void addTo(Container container)
-	{
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.insets = new Insets(2, 5, 2, 5);
-		
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		
-		container.add(jButton, gbc);
-	}
-	
-	@Override
-	public void setToolTipText(final String text)
-	{
-		ThreadUtil.invoke(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				jButton.setToolTipText(text);
-			}
-		}, !SwingUtilities.isEventDispatchThread());
-	}
-	
-	public void setText(final String text)
-	{
-		ThreadUtil.invoke(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				jButton.setText(text);
-			}
-		}, !SwingUtilities.isEventDispatchThread());
-	}
-	
-	@Override
-	public void dispose()
-	{
-		jButton = null;
-		super.dispose();
-	}
-
+    private JButton jButton;
+    
+    /**
+     * Creates a new EzButton with given title and action listener (i.e. the method which will be
+     * called when the button is clicked)
+     * 
+     * @param title
+     *            the button title
+     * @param listener
+     *            the listener which will be called when the button is clicked
+     */
+    public EzButton(final String title, final ActionListener listener)
+    {
+        super(title);
+        
+        ThreadUtil.invoke(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                jButton = new JButton(title);
+                jButton.addActionListener(listener);
+            }
+        }, !SwingUtilities.isEventDispatchThread());
+    }
+    
+    @Override
+    public void addTo(Container container)
+    {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 5, 2, 5);
+        
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        
+        container.add(jButton, gbc);
+    }
+    
+    /**
+     * Adds an action that will be executed when the button is clicked
+     * 
+     * @param listener
+     */
+    public void addAction(ActionListener action)
+    {
+        jButton.addActionListener(action);
+    }
+    
+    /**
+     * Removes an action that is executed when the button is clicked. No error is thrown if this
+     * action was not registered
+     * 
+     * @param listener
+     */
+    public void removeAction(ActionListener action)
+    {
+        jButton.removeActionListener(action);
+    }
+    
+    @Override
+    public void setToolTipText(final String text)
+    {
+        ThreadUtil.invoke(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                jButton.setToolTipText(text);
+            }
+        }, !SwingUtilities.isEventDispatchThread());
+    }
+    
+    public void setText(final String text)
+    {
+        ThreadUtil.invoke(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                jButton.setText(text);
+            }
+        }, !SwingUtilities.isEventDispatchThread());
+    }
+    
+    @Override
+    public void dispose()
+    {
+        jButton = null;
+        super.dispose();
+    }
+    
     public void setEnabled(final boolean enabled)
     {
         ThreadUtil.invokeLater(new Runnable()
