@@ -185,6 +185,14 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary
     @Deprecated
     public void compute()
     {
+        if (Icy.getMainInterface().isHeadLess())
+        {
+            // Special scenario: The plugin is running headless (from the command line)
+            // => call the execute() method right away and exit
+            execute();
+            return;
+        }
+        
         try
         {
             // generate the user interface
@@ -195,8 +203,7 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary
         }
         catch (EzException e)
         {
-            if (e.catchException)
-                JOptionPane.showMessageDialog(ezgui.getFrame(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            if (e.catchException) JOptionPane.showMessageDialog(ezgui.getFrame(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             else throw e;
         }
     }
