@@ -1,5 +1,7 @@
 package plugins.adufour.vars.lang;
 
+import org.w3c.dom.Node;
+
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.gui.model.PasswordModel;
@@ -82,5 +84,23 @@ public class VarString extends Var<String>
         if (getDefaultEditorModel() instanceof PasswordModel) return factory.createPasswordField(this);
         
         return super.createVarEditor();
+    }
+    
+    @Override
+    public String getValueAsString()
+    {
+        // don't show passwords
+        if (getDefaultEditorModel() instanceof PasswordModel) return "XXXXX (password)";
+        
+        return super.getValueAsString();
+    }
+    
+    @Override
+    public boolean saveToXML(Node node) throws UnsupportedOperationException
+    {
+        // don't save passwords
+        if (getDefaultEditorModel() instanceof PasswordModel) return true;
+        
+        return super.saveToXML(node);
     }
 }
