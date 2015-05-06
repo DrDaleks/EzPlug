@@ -1,9 +1,11 @@
 package plugins.adufour.ezplug;
 
+import icy.resource.ResourceUtil;
 import icy.system.thread.ThreadUtil;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -12,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -57,6 +61,10 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     
     private final ArrayList<EzVarListener<T>> listeners          = new ArrayList<EzVarListener<T>>();
     
+    private static final ImageIcon            helpIcon           = ResourceUtil.getColorIcon("help", 12);
+    
+    private final JButton                     bHelp              = new JButton(helpIcon);
+    
     /**
      * Constructs a new variable
      * 
@@ -76,6 +84,12 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         {
             public void run()
             {
+                bHelp.setPreferredSize(new Dimension(12, 12));
+                bHelp.setBorder(null);
+                bHelp.setContentAreaFilled(false);
+                bHelp.setBorderPainted(false);
+                bHelp.setOpaque(false);
+                
                 jLabelName = new JLabel(variable.getName());
                 varEditor = variable.createVarEditor();
             }
@@ -172,13 +186,17 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
         
         gbc.weightx = 1;
         
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        
         VarEditor<T> ed = getVarEditor();
         ed.setEnabled(true); // activates listeners
         JComponent component = (JComponent) ed.getEditorComponent();
         component.setPreferredSize(ed.getPreferredSize());
         container.add(component, gbc);
+        
+        gbc.insets.left = 2;
+        gbc.weightx = 0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        
+        container.add(bHelp, gbc);
     }
     
     protected void dispose()
@@ -396,6 +414,7 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     public void setToolTipText(String text)
     {
         jLabelName.setToolTipText(text);
+        bHelp.setToolTipText(text);
         getVarEditor().setComponentToolTipText(text);
     }
     
