@@ -90,7 +90,7 @@ public class VarString extends Var<String>
     public String getValueAsString()
     {
         // don't show passwords
-        if (getDefaultEditorModel() instanceof PasswordModel) return "XXXXX (password)";
+        if (getDefaultEditorModel() instanceof PasswordModel) return "";
         
         return super.getValueAsString();
     }
