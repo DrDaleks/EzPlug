@@ -4,13 +4,12 @@ import icy.sequence.Sequence;
 
 import java.text.ParseException;
 
+import javax.swing.AbstractSpinnerModel;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.JSpinner;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
 
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.util.VarListener;
@@ -52,28 +51,40 @@ public class ChannelSelector extends Spinner<Integer>
     @Override
     public JComponent createEditorComponent()
     {
-        @SuppressWarnings("serial")
-        final SpinnerModel spinnerModel = new SpinnerNumberModel(0, allowAllChannels ? -1 : 0, 65535, 1)
+        JSpinner jSpinnerChannels = new JSpinner(new AbstractSpinnerModel()
         {
             @Override
-            public Object getNextValue()
+            public void setValue(Object channel)
             {
-                if (sequence == null || sequence.getValue() == null) return super.getNextValue();
-                
-                return Math.min(sequence.getValue().getSizeC() - 1, variable.getValue() + 1);
+                variable.setValue((Integer) channel);
             }
             
             @Override
-            public void setValue(Object newValue)
+            public Integer getValue()
             {
-                super.setValue(newValue);
-                if (variable.getReference() == null) variable.setValue((Integer) newValue);
+                return variable.getValue();
             }
-        };
+            
+            @Override
+            public Integer getPreviousValue()
+            {
+                int minValue = allowAllChannels ? -1 : 0;
+                
+                return Math.max(minValue, variable.getValue() - 1);
+            }
+            
+            @Override
+            public Object getNextValue()
+            {
+                int maxValue = 65535;
+                
+                if (sequence != null && sequence.getValue() != null) maxValue = sequence.getValue().getSizeC() - 1;
+                
+                return Math.min(maxValue, variable.getValue() + 1);
+            }
+        });
         
-        JSpinner jSpinnerChannels = new JSpinner(spinnerModel);
-        
-        JFormattedTextField ftf = ((JSpinner.NumberEditor) jSpinnerChannels.getEditor()).getTextField();
+        JFormattedTextField ftf = ((JSpinner.DefaultEditor) jSpinnerChannels.getEditor()).getTextField();
         
         ftf.setFormatterFactory(new AbstractFormatterFactory()
         {
@@ -88,18 +99,24 @@ public class ChannelSelector extends Spinner<Integer>
                     {
                         if (channelValue == null) return "";
                         
+                        if (channelValue.equals(-1)) return "ALL";
+                        
                         if (sequence == null || sequence.getValue() == null) return channelValue.toString();
                         
-                        return sequence.getValue().getChannelName((Integer) channelValue);
+                        return channelValue.toString() + " (" + sequence.getValue().getChannelName((Integer) channelValue) + ")";
                     }
                     
                     @Override
                     public Object stringToValue(String channelName) throws ParseException
                     {
+                        if (channelName.equalsIgnoreCase("ALL")) return -1;
+                        
                         if (sequence == null || sequence.getValue() == null) return Integer.parseInt(channelName);
                         
                         Sequence s = sequence.getValue();
                         
+                        channelName = channelName.substring(channelName.indexOf("(") + 1);
+                        channelName = channelName.substring(0, channelName.length() - 1);
                         for (int c = 0; c < s.getSizeC(); c++)
                             if (s.getChannelName(c).equalsIgnoreCase(channelName)) return c;
                         
@@ -121,7 +138,7 @@ public class ChannelSelector extends Spinner<Integer>
     @Override
     protected void updateInterfaceValue()
     {
-        JFormattedTextField ftf = ((JSpinner.NumberEditor) getEditorComponent().getEditor()).getTextField();
+        JFormattedTextField ftf = ((JSpinner.DefaultEditor) getEditorComponent().getEditor()).getTextField();
         
         ftf.setValue(variable.getValue());
         ftf.setEditable(sequence == null || sequence.getValue() == null);
