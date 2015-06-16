@@ -434,6 +434,8 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary
             }
             catch (final VarException e)
             {
+                if (isHeadLess()) throw e;
+                
                 String message = "Parameter: " + (e.source == null ? "(unknown)" : e.source.getName()) + "\n";
                 message += "Message: " + e.getMessage();
                 

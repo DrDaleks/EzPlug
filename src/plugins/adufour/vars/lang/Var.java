@@ -446,7 +446,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     {
         T returnValue = reference == null ? value : reference.getValue();
         
-        if (returnValue == null && forbidNull) throw new VarException(this, "Empty value");
+        if (returnValue == null && forbidNull) throw new VarException(this, "No value specified");
         
         return returnValue;
     }
