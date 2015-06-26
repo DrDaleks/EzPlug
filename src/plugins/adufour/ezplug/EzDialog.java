@@ -279,7 +279,7 @@ public class EzDialog extends IcyFrame implements FoldListener
                 List<Object> column = columns.get(i);
                 
                 if (i > 0 && column.size() > 0) jPanelParameters.add(new JSeparator(JSeparator.VERTICAL));
-
+                
                 JPanel columnContainer = new JPanel(new GridBagLayout());
                 
                 for (Object object : column)
@@ -347,8 +347,10 @@ public class EzDialog extends IcyFrame implements FoldListener
             public void run()
             {
                 repack(true);
+                dialog.setLocationRelativeTo(null);
                 dialog.setModal(modal);
                 dialog.setVisible(true);
+                if (modal) close();
             }
         });
     }
@@ -416,7 +418,6 @@ public class EzDialog extends IcyFrame implements FoldListener
         int titleHeight = m.getHeight() - 6;
         
         graphics.drawString(title, (width - titleWidth) / 2, (height + titleHeight) / 2);
-        // graphics.dispose();
     }
     
     /**
