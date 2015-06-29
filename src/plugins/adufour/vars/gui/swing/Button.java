@@ -42,6 +42,12 @@ public class Button extends SwingVarEditor<Integer>
     }
     
     @Override
+    public double getComponentVerticalResizeFactor()
+    {
+        return 0.0;
+    }
+    
+    @Override
     protected void activateListeners()
     {
         getEditorComponent().addActionListener(listener);

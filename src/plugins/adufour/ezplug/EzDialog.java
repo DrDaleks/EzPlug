@@ -295,6 +295,11 @@ public class EzDialog extends IcyFrame implements FoldListener
                         GridBagLayout gridbag = (GridBagLayout) columnContainer.getLayout();
                         
                         component.setFocusable(false);
+                        
+                        // reset vertical resizing
+                        gbc.weighty = 1;
+                        if (component instanceof JButton) gbc.weighty = 0;
+                        
                         gridbag.setConstraints(component, gbc);
                         
                         columnContainer.add(component);
