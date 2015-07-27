@@ -45,15 +45,15 @@ import plugins.adufour.vars.util.VarException;
  * from where the user may start or {@link EzStoppable stop} the execution process, load and save
  * parameters from/to disk via XML files.<br>
  * <br>
- * An example showing most of the features in action is available online <a
- * href="http://icy.bioimageanalysis.org/index.php?display=detailPlugin&pluginId=77">here</a>.
+ * An example showing most of the features in action is available online
+ * <a href="http://icy.bioimageanalysis.org/index.php?display=detailPlugin&pluginId=77">here</a>.
  * 
  * @see plugins.adufour.ezplug.EzInternalFrame
  * @author Alexandre Dufour
  */
 public abstract class EzPlug extends PluginActionable implements PluginLibrary
 {
-    public static final String              EZPLUG_MAINTAINERS = "Alexandre Dufour (adufour@pasteur.fr)";
+    public static final String EZPLUG_MAINTAINERS = "Alexandre Dufour (adufour@pasteur.fr)";
     
     /**
      * This piece of code removes the Vars plug-in from Icy, since it has been merged into EzPlug
@@ -77,17 +77,19 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary
     /**
      * Number of active instances of this plugin
      */
-    private static IntegerValue             nbInstances        = new IntegerValue(0);
+    private static IntegerValue nbInstances = new IntegerValue(0);
     
-    private EzGUI                           ezgui;
+    private EzGUI ezgui;
     
     private final HashMap<String, EzVar<?>> ezVars;
     
-    private boolean                         timeTrial          = false;
+    private boolean timeTrial = false;
     
-    private long                            startTime;
+    private long startTime;
     
-    private Thread                          executionThread    = null;
+    private Thread executionThread = null;
+    
+    private final EzStatus status = new EzStatus();
     
     protected EzPlug()
     {
@@ -226,7 +228,7 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary
         // fire listeners declared in the initialize method
         for (EzVar<?> var : ezVars.values())
             var.fireVariableChangedInternal();
-        
+            
         addIcyFrame(ezgui);
     }
     
@@ -321,6 +323,11 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary
     public EzGUI getUI()
     {
         return ezgui;
+    }
+    
+    protected EzStatus getStatus()
+    {
+        return status;
     }
     
     /**
@@ -424,9 +431,10 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary
         {
             try
             {
-                if (ezgui != null) ezgui.setRunningState(true);
-                
                 startTime = System.nanoTime();
+                
+                status.setCompletion(0.0);
+                status.setMessage("Running");
                 
                 execute();
                 
@@ -456,7 +464,7 @@ public abstract class EzPlug extends PluginActionable implements PluginLibrary
         }
         finally
         {
-            if (ezgui != null) ezgui.setRunningState(false);
+            status.done();
         }
     }
     

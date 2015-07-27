@@ -23,33 +23,31 @@ import plugins.adufour.vars.util.VarListener;
 
 public class EzGUI extends EzDialog implements ActionListener
 {
-    public static final int LOGO_HEIGHT               = 32;
+    public static final int LOGO_HEIGHT = 32;
     
-    private EzPlug          ezPlug;
+    private EzPlug ezPlug;
     
-    private Thread          executionThread;
+    private Thread executionThread;
     
-    private JPanel          jPanelBottom;
+    private JPanel jPanelBottom;
     
-    private JPanel          jPanelButtons;
+    private JPanel jPanelButtons;
     
-    private JButton         jButtonRun;
+    private JButton jButtonRun;
     
-    private JButton         jButtonStop;
+    private JButton jButtonStop;
     
-    private JButton         jButtonSaveParameters;
+    private JButton jButtonSaveParameters;
     
-    private JButton         jButtonLoadParameters;
+    private JButton jButtonLoadParameters;
     
-    private JButton         jButtonHelp;
+    private JButton jButtonHelp;
     
-    private boolean         jButtonsParametersVisible = true;
+    private boolean jButtonsParametersVisible = true;
     
-    private JProgressBar    jProgressBar;
+    private JProgressBar jProgressBar;
     
-    private VarDouble       progressBarValue          = new VarDouble("Progress", 0.0);
-    
-    private class ProgressBarUpdater implements VarListener<Double>
+    private final VarListener<Double> statusProgressListener = new VarListener<Double>()
     {
         @Override
         public void valueChanged(Var<Double> source, Double oldValue, final Double newValue)
@@ -58,10 +56,11 @@ public class EzGUI extends EzDialog implements ActionListener
             {
                 public void run()
                 {
-                    boolean inderterminate = newValue < 0 || newValue > 1;
-                    jProgressBar.setIndeterminate(inderterminate);
+                    jButtonRun.setEnabled(newValue == -1.0);
+                    if (ezPlug instanceof EzStoppable) jButtonStop.setEnabled(newValue != -1.0);
                     
-                    if (!inderterminate) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
+                    jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
+                    jProgressBar.setIndeterminate(newValue == 0);
                 }
             });
         }
@@ -69,11 +68,31 @@ public class EzGUI extends EzDialog implements ActionListener
         @Override
         public void referenceChanged(Var<Double> source, Var<? extends Double> oldReference, Var<? extends Double> newReference)
         {
-            
+        
         }
-    }
+    };
     
-    private final ProgressBarUpdater progressBarUpdater = new ProgressBarUpdater();
+    private final VarListener<String> statusMessageListener = new VarListener<String>()
+    {
+        @Override
+        public void valueChanged(Var<String> source, String oldValue, final String newValue)
+        {
+            ThreadUtil.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    jProgressBar.setString(newValue);
+                    jProgressBar.setStringPainted(!newValue.trim().isEmpty());
+                }
+            });
+        }
+        
+        @Override
+        public void referenceChanged(Var<String> source, Var<? extends String> oldReference, Var<? extends String> newReference)
+        {
+        
+        }
+    };
     
     public EzGUI(final EzPlug ezPlug)
     {
@@ -119,7 +138,8 @@ public class EzGUI extends EzDialog implements ActionListener
         jProgressBar.setString("Running...");
         jPanelBottom.add(jProgressBar);
         
-        progressBarValue.addListener(progressBarUpdater);
+        ezPlug.getStatus().addProgressListener(statusProgressListener);
+        ezPlug.getStatus().addMessageListener(statusMessageListener);
         
         getContentPane().add(jPanelBottom, BorderLayout.SOUTH);
         
@@ -170,27 +190,18 @@ public class EzGUI extends EzDialog implements ActionListener
         });
     }
     
+    /**
+     * Sets the running state of this plug-in. The running state is materialized by enabling or
+     * disabling the "Run" (and "Stop") buttons and animating the progress bar.
+     * 
+     * @deprecated The running state is now automatically handled via the
+     *             {@link #setProgressBarValue(double)} and {@link #setProgressBarMessage(String)}
+     *             methods
+     * @param running
+     */
     public void setRunningState(final boolean running)
     {
-        ThreadUtil.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                jButtonRun.setEnabled(!running);
-                if (ezPlug instanceof EzStoppable) jButtonStop.setEnabled(running);
-                
-                // Note: Printing a string on a progress bar is not supported on Mac OS look'n'feel.
-                // jButtonRun.setText(running ? "Running..." : "Run");
-                jProgressBar.setString(running ? "Running..." : "");
-                jProgressBar.setStringPainted(running);
-                
-                jProgressBar.setValue(0);
-                jProgressBar.setIndeterminate(running);
-                
-                // Repack the frame to ensure good behavior of some components
-                repack(false);
-            }
-        });
+        ezPlug.getStatus().setCompletion(running ? 0.0 : -1.0);
     }
     
     /**
@@ -218,16 +229,28 @@ public class EzGUI extends EzDialog implements ActionListener
      */
     public VarDouble getProgressBarValue()
     {
-        return progressBarValue;
+        return ezPlug.getStatus().getProgressVariable();
+    }
+    
+    public void setProgressBarMessage(final String string)
+    {
+        ezPlug.getStatus().setMessage(string);
     }
     
     /**
+     * Sets the progress indicator for this plug-in
+     * 
      * @param value
-     *            A value between 0 and 1 (any other value will set an infinitely active state)
+     *            a value x such that
+     *            <ul>
+     *            <li>x=0 sets the progress bar in "infinitely running" state</li>
+     *            <li>0&lt;x&le;1 sets the current progress indicator as a percentage</li>
+     *            <li>-1 stops the animation (this is the default)</li>
+     *            </ul>
      */
     public void setProgressBarValue(final double value)
     {
-        progressBarValue.setValue(value);
+        ezPlug.getStatus().setCompletion(value);
     }
     
     public void setProgressBarVisible(final boolean visible)
@@ -347,22 +370,10 @@ public class EzGUI extends EzDialog implements ActionListener
         if (jButtonStop != null) jButtonStop.removeActionListener(this);
         jButtonLoadParameters.removeActionListener(this);
         jButtonSaveParameters.removeActionListener(this);
-        progressBarValue.addListener(progressBarUpdater);
+        ezPlug.getStatus().removeProgressListener(statusProgressListener);
+        ezPlug.getStatus().removeMessageListener(statusMessageListener);
         
         ezPlug = null;
-    }
-    
-    public void setProgressBarMessage(final String string)
-    {
-        ThreadUtil.invokeLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                jProgressBar.setString(string);
-                jProgressBar.setStringPainted(!string.trim().equals(""));
-            }
-        });
     }
     
 }
