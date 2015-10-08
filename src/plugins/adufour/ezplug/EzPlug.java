@@ -1,13 +1,5 @@
 package plugins.adufour.ezplug;
 
-import icy.file.FileUtil;
-import icy.main.Icy;
-import icy.plugin.abstract_.Plugin;
-import icy.plugin.abstract_.PluginActionable;
-import icy.plugin.interface_.PluginLibrary;
-import icy.system.IcyHandledException;
-import icy.type.value.IntegerValue;
-
 import java.awt.Component;
 import java.io.File;
 import java.io.StringWriter;
@@ -15,6 +7,13 @@ import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 
+import icy.file.FileUtil;
+import icy.main.Icy;
+import icy.plugin.abstract_.Plugin;
+import icy.plugin.interface_.PluginImageAnalysis;
+import icy.plugin.interface_.PluginLibrary;
+import icy.system.IcyHandledException;
+import icy.type.value.IntegerValue;
 import plugins.adufour.vars.util.VarException;
 
 /**
@@ -51,7 +50,8 @@ import plugins.adufour.vars.util.VarException;
  * @see plugins.adufour.ezplug.EzInternalFrame
  * @author Alexandre Dufour
  */
-public abstract class EzPlug extends PluginActionable implements PluginLibrary
+@SuppressWarnings("deprecation")
+public abstract class EzPlug extends Plugin implements PluginImageAnalysis, PluginLibrary, Runnable
 {
     public static final String EZPLUG_MAINTAINERS = "Alexandre Dufour (adufour@pasteur.fr)";
     
