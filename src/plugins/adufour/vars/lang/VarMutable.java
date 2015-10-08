@@ -1,10 +1,12 @@
 package plugins.adufour.vars.lang;
 
-import icy.sequence.Sequence;
-
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+import icy.sequence.Sequence;
+import icy.type.DataType;
+import icy.type.collection.array.Array1DUtil;
+import icy.type.collection.array.ArrayUtil;
 import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.gui.model.TypeSelectionModel;
@@ -131,7 +133,7 @@ public class VarMutable extends Var implements MutableType
         
         if (oldType == newType) return;
         
-        if (isReferenced()) throw new IllegalAccessError("Cannot change the type of a linked mutable variable");
+        if (isReferenced()) throw new IllegalAccessError("Cannot change the type of variable \"" + getName() + "\": it is being referenced by another variable");
         
         setValue(null);
         
@@ -148,39 +150,63 @@ public class VarMutable extends Var implements MutableType
         // Since this method is loosely typed, we need to make the difference between single objects
         // and arrays of objects to prevent potential (erroneous) ClassCastException(s)
         
-        if (newValue != null && getType().isArray())
+        // the obvious ones first
+        if (newValue == null || getType().isAssignableFrom(newValue.getClass()))
         {
-            // We are expecting an array of "getType().getComponentType()" objects
-            Class<?> componentType = getType().getComponentType();
-            
-            if (newValue.getClass().isArray())
-            {
-                // the array could be Object[] with valid items inside (cast will fail)
-                // => copy its elements "manually" into a valid array
-                int nbValues = Array.getLength(newValue);
-                Object array = Array.newInstance(componentType, nbValues);
-                System.arraycopy(newValue, 0, array, 0, nbValues);
-                super.setValue(array);
-            }
-            else if (componentType.isAssignableFrom(newValue.getClass()))
-            {
-                // newValue is not an array but a single object
-                // => place it into a valid array
-                Object array = Array.newInstance(componentType, 1);
-                Array.set(array, 0, newValue);
-                super.setValue(array);
-            }
-            else
-            {
-                // There clearly is a (real) problem...
-                throw new ClassCastException("Cannot interpret " + newValue + " as an object of type " + getType());
-            }
-        }
-        else
-        {
-            // The default method is good enough
             super.setValue(newValue);
         }
+        // the easy ones next
+        else if (Number.class.isAssignableFrom(getType()) && newValue instanceof Number)
+        {
+            // put the common ones first to optimize a bit...
+            if (getType().equals(Integer.class)) super.setValue(((Number) newValue).intValue());
+            else if (getType().equals(Double.class)) super.setValue(((Number) newValue).doubleValue());
+            else if (getType().equals(Byte.class)) super.setValue(((Number) newValue).byteValue());
+            else if (getType().equals(Short.class)) super.setValue(((Number) newValue).shortValue());
+            else if (getType().equals(Float.class)) super.setValue(((Number) newValue).floatValue());
+            else super.setValue(((Number) newValue).longValue());
+        }
+        // and now for the hard one
+        else if (getType().isArray() && newValue.getClass().isArray())
+        {
+            // the easy way (both arrays match) is already covered above
+            // => we need to handle the tricky case (Javascript) where newValue is *always* Object[]
+            // ==> copy its elements "manually" into a valid array
+            
+            try
+            {
+                // create a new valid array
+                Class<?> localType = getType().getComponentType();
+                int nbValues = Array.getLength(newValue);
+                Object array = Array.newInstance(localType, nbValues);
+                
+                if (localType.isPrimitive())
+                {                    
+                    DataType dataType = ArrayUtil.getDataType(array);
+                    for (int i = 0; i < nbValues; i++)
+                    {
+                        // assume newValue also has numbers inside...
+                        Number n = (Number) Array.get(newValue, i);
+                        // let Icy do the conversion
+                        Array1DUtil.setValue(array, i, dataType, n.doubleValue());
+                    }
+                }
+                else
+                {
+                    System.arraycopy(newValue, 0, array, 0, nbValues);
+                }
+                
+                super.setValue(array);
+            }
+            catch (ArrayStoreException typeError)
+            {
+                String text = "[" + ArrayUtil.arrayToString(newValue).replace(":", ", ") + "]";
+                throw new ClassCastException(text + " is not of type " + getType().getSimpleName());
+            }            
+        }
+        // This has to fail then...
+        else throw new ClassCastException(newValue + " is not of type " + getType().getSimpleName());
+        
     }
     
     @SuppressWarnings("unchecked")
