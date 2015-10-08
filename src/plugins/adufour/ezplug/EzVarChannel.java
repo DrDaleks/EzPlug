@@ -22,7 +22,7 @@ public class EzVarChannel extends EzVar<Integer>
                 if (sizeC == 1)
                 {
                     setVisible(false);
-                    setValue(0);
+                    if (variable.getReference() == null) setValue(0);
                 }
                 else
                 {
