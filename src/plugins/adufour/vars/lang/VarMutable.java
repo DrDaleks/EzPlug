@@ -204,6 +204,13 @@ public class VarMutable extends Var implements MutableType
                 throw new ClassCastException(text + " is not of type " + getType().getSimpleName());
             }            
         }
+        // let's be nice and box single values into arrays
+        else if (getType().isArray() && getType().getComponentType().isAssignableFrom(newValue.getClass()))
+        {
+            Object array = Array.newInstance(getType().getComponentType(), 1);
+            Array.set(array, 0, newValue);
+            super.setValue(array);
+        }
         // This has to fail then...
         else throw new ClassCastException(newValue + " is not of type " + getType().getSimpleName());
         
