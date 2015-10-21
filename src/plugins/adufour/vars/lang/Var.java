@@ -62,56 +62,56 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * Attribute key defining the unique identifier of a variable. This key is used by the
      * {@link XMLPersistent} mechanism to save/load the variable value to/from XML files.
      */
-    public static final String           XML_KEY_ID        = "ID";
+    public static final String XML_KEY_ID = "ID";
     
     /**
      * Attribute key defining the value of a variable. This key is used by the {@link XMLPersistent}
      * mechanism to save/load the variable value to/from XML files.
      */
-    static final String                  XML_KEY_VALUE     = "value";
+    static final String XML_KEY_VALUE = "value";
     
     /**
      * User-friendly representation of the Java <code>null</code> keyword
      */
-    public static final String           NO_VALUE          = "No value";
+    public static final String NO_VALUE = "No value";
     
-    private final String                 name;
+    private final String name;
     
     /**
      * A flag indicating that this variable is optional, i.e., it may be flagged as "not wanted"
      * (via code of via GUI), such as optional parameters
      */
-    private boolean                      optional          = false;
+    private boolean optional = false;
     
     /**
      * If this variable is #optional, indicates whether the option is actively selected
      */
-    private boolean                      enabled           = true;
+    private boolean enabled = true;
     
     /**
      * The {@link Class} definition describing the type of the variable value
      */
-    protected Class<T>                   type;
+    protected Class<T> type;
     
-    private final T                      defaultValue;
+    private final T defaultValue;
     
-    private T                            value;
+    private T value;
     
-    private VarReferencingPolicy         referencingPolicy = VarReferencingPolicy.BOTH;
+    private VarReferencingPolicy referencingPolicy = VarReferencingPolicy.BOTH;
     
     /**
      * The variable referenced by this variable
      */
-    private Var<? extends T>             reference;
+    private Var<? extends T> reference;
     
     /**
      * The list of variables referencing this variable
      */
-    private final List<Var<? super T>>   referrers         = new ArrayList<Var<? super T>>();
+    private final List<Var<? super T>> referrers = new ArrayList<Var<? super T>>();
     
-    protected VarEditorModel<T>          defaultEditorModel;
+    protected VarEditorModel<T> defaultEditorModel;
     
-    protected final List<VarListener<T>> listeners         = new ArrayList<VarListener<T>>();
+    protected final List<VarListener<T>> listeners = new ArrayList<VarListener<T>>();
     
     /**
      * Creates a new {@link Var}iable with given name and non-null default value.
@@ -254,10 +254,11 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * respond to user events (this is to avoid memory leaks and creating useless listeners). To
      * activate the editor, call {@link #setEnabled(boolean) setEnabled(true)}
      * 
-     * @return the variable editor embarking the graphical component. </br>NOTE: the editor returned
-     *         by this method is "disabled" by default, and therefore will not respond to user
-     *         events (this is to avoid memory leaks and creating useless listeners). To activate
-     *         the editor, call {@link #setEnabled(boolean) setEnabled(true)}
+     * @return the variable editor embarking the graphical component. </br>
+     *         NOTE: the editor returned by this method is "disabled" by default, and therefore will
+     *         not respond to user events (this is to avoid memory leaks and creating useless
+     *         listeners). To activate the editor, call {@link #setEnabled(boolean)
+     *         setEnabled(true)}
      */
     public VarEditor<T> createVarEditor()
     {
@@ -582,7 +583,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
         sb.append(Array.get(value, 0).toString());
         for (int i = 1; i < length; i++)
             sb.append(separator + Array.get(value, i).toString());
-        
+            
         return sb.toString();
     }
     
@@ -757,15 +758,17 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      * this variable is not referencing another one.
      * 
      * @param newValue
-     * @throws IllegalAccessError
-     *             if this variable is already linked to another one
      * @throws IllegalArgumentException
      *             if this variable has a non-null editor model and the specified value is not valid
      *             for this model
      */
-    public void setValue(T newValue) throws IllegalAccessError, IllegalArgumentException
+    public void setValue(T newValue) throws IllegalArgumentException
     {
-        if (this.reference != null) throw new IllegalAccessError("Cannot assign the value of a linked variable.");
+        if (this.reference != null)
+        {
+            System.err.println("Warning: cannot assign a value to \"" + name + "\": it is pointing to another variable");
+            return;
+        }
         
         if (this.value == null && newValue == null) return;
         
