@@ -14,7 +14,7 @@ public class EzStatus
     /**
      * A completion level between 0 and 1
      */
-    private final VarDouble progress = new VarDouble("Progress value", -1.0);
+    private final VarDouble progress = new VarDouble("Progress value", 0.0);
     
     /**
      * A text indicating what the task is currently doing
@@ -49,7 +49,7 @@ public class EzStatus
      */
     public void done()
     {
-        setCompletion(-1.0);
+        setCompletion(0.0);
         setMessage("");
     }
     

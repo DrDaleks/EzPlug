@@ -56,11 +56,11 @@ public class EzGUI extends EzDialog implements ActionListener
             {
                 public void run()
                 {
-                    jButtonRun.setEnabled(newValue == -1.0);
-                    if (ezPlug instanceof EzStoppable) jButtonStop.setEnabled(newValue != -1.0);
+                    jButtonRun.setEnabled(newValue == 0);
+                    if (ezPlug instanceof EzStoppable) jButtonStop.setEnabled(newValue != 0);
                     
-                    jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
-                    jProgressBar.setIndeterminate(newValue == 0);
+                    if (!Double.isNaN(newValue)) jProgressBar.setValue((int) (Math.max(0, Math.min(1.0, newValue)) * 100));
+                    jProgressBar.setIndeterminate(Double.isNaN(newValue));
                 }
             });
         }
@@ -201,7 +201,7 @@ public class EzGUI extends EzDialog implements ActionListener
      */
     public void setRunningState(final boolean running)
     {
-        ezPlug.getStatus().setCompletion(running ? 0.0 : -1.0);
+        ezPlug.getStatus().setCompletion(running ? Double.NaN : 0.0);
     }
     
     /**
@@ -241,11 +241,10 @@ public class EzGUI extends EzDialog implements ActionListener
      * Sets the progress indicator for this plug-in
      * 
      * @param value
-     *            a value x such that
      *            <ul>
-     *            <li>x=0 sets the progress bar in "infinitely running" state</li>
-     *            <li>0&lt;x&le;1 sets the current progress indicator as a percentage</li>
-     *            <li>-1 stops the animation (this is the default)</li>
+     *            <li>NaN: no animation (default)</li>
+     *            <li>0: started (infinitely running)</li>
+     *            <li>from 0 to 1: a progress percentage indicator</li>
      *            </ul>
      */
     public void setProgressBarValue(final double value)

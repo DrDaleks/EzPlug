@@ -433,7 +433,7 @@ public abstract class EzPlug extends Plugin implements PluginImageAnalysis, Plug
             {
                 startTime = System.nanoTime();
                 
-                status.setCompletion(0.0);
+                status.setCompletion(Double.NaN);
                 status.setMessage("Running");
                 
                 execute();
