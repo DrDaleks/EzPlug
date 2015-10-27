@@ -242,8 +242,8 @@ public class EzGUI extends EzDialog implements ActionListener
      * 
      * @param value
      *            <ul>
-     *            <li>NaN: no animation (default)</li>
-     *            <li>0: started (infinitely running)</li>
+     *            <li>0: no animation (default)</li>
+     *            <li>NaN: started (infinitely running)</li>
      *            <li>from 0 to 1: a progress percentage indicator</li>
      *            </ul>
      */
