@@ -2,15 +2,15 @@ package plugins.adufour.ezplug;
 
 import icy.sequence.Sequence;
 import plugins.adufour.vars.lang.Var;
-import plugins.adufour.vars.lang.VarChannel;
+import plugins.adufour.vars.lang.VarSlice;
 import plugins.adufour.vars.util.VarListener;
 
 /**
- * Graphical component letting the user select a channel (C dimension) from a sequence
+ * Graphical component letting the user select a slice number (Z dimension) from a sequence
  * 
  * @author Alexandre Dufour
  */
-public class EzVarChannel extends EzVar<Integer>
+public class EzVarSlice extends EzVar<Integer>
 {
     private final VarListener<Sequence> listener = new VarListener<Sequence>()
     {
@@ -23,8 +23,8 @@ public class EzVarChannel extends EzVar<Integer>
             }
             else
             {
-                int sizeC = newValue.getSizeC();
-                if (sizeC == 1)
+                int sizeZ = newValue.getSizeZ();
+                if (sizeZ == 1)
                 {
                     setVisible(false);
                     if (variable.getReference() == null) setValue(0);
@@ -43,11 +43,11 @@ public class EzVarChannel extends EzVar<Integer>
         }
     };
     
-    private final Var<Sequence> sequence; 
+    private final Var<Sequence> sequence;
     
-    public EzVarChannel(String name, Var<Sequence> sequence, boolean allowAllChannels)
+    public EzVarSlice(String name, Var<Sequence> sequence, boolean allowAllSlices)
     {
-        super(new VarChannel(name, sequence, allowAllChannels), null);
+        super(new VarSlice(name, sequence, allowAllSlices), null);
         
         this.sequence = sequence;
         sequence.addListener(listener);

@@ -1,16 +1,17 @@
 package plugins.adufour.vars.gui;
 
+import java.awt.Color;
+
 import icy.plugin.PluginDescriptor;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
-
-import java.awt.Color;
-
 import plugins.adufour.vars.gui.swing.SwingFactory;
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarChannel;
+import plugins.adufour.vars.lang.VarFrame;
 import plugins.adufour.vars.lang.VarGenericArray;
 import plugins.adufour.vars.lang.VarMutable;
+import plugins.adufour.vars.lang.VarSlice;
 import plugins.adufour.vars.lang.VarTrigger;
 
 public abstract class VarEditorFactory
@@ -56,6 +57,10 @@ public abstract class VarEditorFactory
     public abstract VarEditor<Integer> createButton(VarTrigger variable);
     
     public abstract VarEditor<Integer> createChannelSelector(VarChannel varChannel, Var<Sequence> sequence, boolean allowAllChannels);
+    
+    public abstract VarEditor<Integer> createFrameSelector(VarFrame varFrame, Var<Sequence> sequence, boolean allowAllFrames);
+    
+    public abstract VarEditor<Integer> createSliceSelector(VarSlice varSlice, Var<Sequence> sequence, boolean allowAllSlices);
     
     public abstract VarEditor<Boolean> createCheckBox(Var<Boolean> variable);
     

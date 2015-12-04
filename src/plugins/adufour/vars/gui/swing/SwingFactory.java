@@ -11,8 +11,10 @@ import plugins.adufour.vars.gui.VarEditor;
 import plugins.adufour.vars.gui.VarEditorFactory;
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarChannel;
+import plugins.adufour.vars.lang.VarFrame;
 import plugins.adufour.vars.lang.VarGenericArray;
 import plugins.adufour.vars.lang.VarMutable;
+import plugins.adufour.vars.lang.VarSlice;
 import plugins.adufour.vars.lang.VarTrigger;
 
 public class SwingFactory extends VarEditorFactory
@@ -28,7 +30,7 @@ public class SwingFactory extends VarEditorFactory
     {
         return new ChannelSelector(varChannel, sequence, allowAllChannels);
     }
-
+    
     @Override
     public VarEditor<Boolean> createCheckBox(Var<Boolean> variable)
     {
@@ -48,6 +50,12 @@ public class SwingFactory extends VarEditorFactory
     }
     
     @Override
+    public VarEditor<Integer> createFrameSelector(VarFrame varFrame, Var<Sequence> sequence, boolean allowAllFrames)
+    {
+        return new FrameSelector(varFrame, sequence, allowAllFrames);
+    }
+    
+    @Override
     public <V> VarEditor<V> createLabel(Var<V> variable)
     {
         return new Label<V>(variable);
@@ -59,13 +67,19 @@ public class SwingFactory extends VarEditorFactory
     {
         return new MutableVarEditor(varMutable);
     }
-
+    
+    @Override
+    public VarEditor<String> createPasswordField(Var<String> variable)
+    {
+        return new PasswordField(variable);
+    }
+    
     @Override
     public VarEditor<PluginDescriptor> createPluginChooser(Var<PluginDescriptor> variable)
     {
         return new PluginChooser<Plugin>(variable);
     }
-
+    
     @Override
     public VarEditor<Sequence> createSequenceChooser(Var<Sequence> variable)
     {
@@ -77,13 +91,19 @@ public class SwingFactory extends VarEditorFactory
     {
         return new SequenceList(varSequenceArray);
     }
-
+    
     @Override
     public VarEditor<Sequence> createSequenceViewer(Var<Sequence> variable)
     {
         return new SequenceViewer(variable);
     }
-
+    
+    @Override
+    public VarEditor<Integer> createSliceSelector(VarSlice varSlice, Var<Sequence> sequence, boolean allowAllSlices)
+    {
+        return new SliceSelector(varSlice, sequence, allowAllSlices);
+    }
+    
     @Override
     public <N extends Number> VarEditor<N> createSlider(Var<N> variable)
     {
@@ -119,11 +139,5 @@ public class SwingFactory extends VarEditorFactory
     public VarEditor<VarMutable> createTypeChooser(VarMutable variable)
     {
         return new TypeChooser(variable);
-    }
-
-    @Override
-    public VarEditor<String> createPasswordField(Var<String> variable)
-    {
-        return new PasswordField(variable);
     }
 }
