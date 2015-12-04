@@ -17,6 +17,17 @@ public class VarBoolean extends Var<Boolean>
      * @param defaultValue
      *            the default value
      */
+    public VarBoolean(String name, boolean defaultValue)
+    {
+        this(name, defaultValue, null);
+    }
+    
+    /**
+     * @param name
+     *            the variable name
+     * @param defaultValue
+     *            the default value
+     */
     public VarBoolean(String name, Boolean defaultValue)
     {
         this(name, defaultValue, null);
