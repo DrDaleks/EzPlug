@@ -1,22 +1,5 @@
 package plugins.adufour.connectedcomponents;
 
-import icy.file.FileUtil;
-import icy.image.IcyBufferedImage;
-import icy.image.colormap.FireColorMap;
-import icy.main.Icy;
-import icy.roi.ROI;
-import icy.sequence.Sequence;
-import icy.sequence.SequenceDataIterator;
-import icy.sequence.VolumetricImage;
-import icy.swimmingPool.SwimmingObject;
-import icy.system.IcyHandledException;
-import icy.type.DataIteratorUtil;
-import icy.type.DataType;
-import icy.type.collection.array.Array1DUtil;
-import icy.type.point.Point5D;
-import icy.util.StringUtil;
-import icy.util.XLSUtil;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +13,21 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 import javax.vecmath.Point4d;
 
+import icy.file.FileUtil;
+import icy.image.IcyBufferedImage;
+import icy.image.colormap.FireColorMap;
+import icy.main.Icy;
+import icy.roi.ROI;
+import icy.sequence.Sequence;
+import icy.sequence.SequenceDataIterator;
+import icy.sequence.VolumetricImage;
+import icy.swimmingPool.SwimmingObject;
+import icy.system.IcyHandledException;
+import icy.type.DataIteratorUtil;
+import icy.type.DataType;
+import icy.type.collection.array.Array1DUtil;
+import icy.util.StringUtil;
+import icy.util.XLSUtil;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import plugins.adufour.blocks.lang.Block;
@@ -88,10 +86,9 @@ public class ConnectedComponents extends EzPlug implements Block
         /**
          * Components are not sorted
          */
-        ARBITRARY(null),
-        /**
-         * Components are sorted by ascending depth value
-         */
+        ARBITRARY(null), /**
+                          * Components are sorted by ascending depth value
+                          */
         DEPTH_ASC(new Comparator<ConnectedComponent>()
         {
             @Override
@@ -99,10 +96,9 @@ public class ConnectedComponents extends EzPlug implements Block
             {
                 return (int) Math.signum(o1.getZ() - o2.getZ());
             }
-        }),
-        /**
-         * Components are sorted by descending depth value
-         */
+        }), /**
+             * Components are sorted by descending depth value
+             */
         DEPTH_DESC(new Comparator<ConnectedComponent>()
         {
             @Override
@@ -123,39 +119,39 @@ public class ConnectedComponents extends EzPlug implements Block
         }
     }
     
-    protected EzVarSequence                         input                  = new EzVarSequence("Input");
+    protected EzVarSequence input = new EzVarSequence("Input");
     
-    protected EzVarEnum<ExtractionType>             extractionMethod       = new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
+    protected EzVarEnum<ExtractionType> extractionMethod = new EzVarEnum<ExtractionType>("Extraction mode", ExtractionType.values());
     
-    protected EzLabel                               extractionMethodDetail = new EzLabel("Description");
+    protected EzLabel extractionMethodDetail = new EzLabel("Description");
     
-    protected EzVarInteger                          background             = new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+    protected EzVarInteger background = new EzVarInteger("Value", 0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
     
-    protected EzVarBoolean                          discardEdgesX          = new EzVarBoolean("Remove border objects (X)", true);
-    protected EzVarBoolean                          discardEdgesY          = new EzVarBoolean("Remove border objects (Y)", true);
-    protected EzVarBoolean                          discardEdgesZ          = new EzVarBoolean("Remove border objects (Z)", true);
+    protected EzVarBoolean discardEdgesX = new EzVarBoolean("Remove border objects (X)", true);
+    protected EzVarBoolean discardEdgesY = new EzVarBoolean("Remove border objects (Y)", true);
+    protected EzVarBoolean discardEdgesZ = new EzVarBoolean("Remove border objects (Z)", true);
     
-    protected EzVarBoolean                          boundSize              = new EzVarBoolean("Filter objects by size", false);
+    protected EzVarBoolean boundSize = new EzVarBoolean("Filter objects by size", false);
     
-    protected EzVarInteger                          minSize                = new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
-    protected EzVarInteger                          maxSize                = new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
+    protected EzVarInteger minSize = new EzVarInteger("Min. size", 1, 1, Integer.MAX_VALUE, 1);
+    protected EzVarInteger maxSize = new EzVarInteger("Max. size", 10000, 1, Integer.MAX_VALUE, 1);
     
-    protected EzVarBoolean                          labeledExtraction;
+    protected EzVarBoolean labeledExtraction;
     
-    protected EzLabel                               objectCount;
+    protected EzLabel objectCount;
     
-    protected EzVarBoolean                          exportSequence         = new EzVarBoolean("Labeled sequence", true);
+    protected EzVarBoolean exportSequence = new EzVarBoolean("Labeled sequence", true);
     
-    protected EzVarEnum<Sorting>                    labelSorting           = new EzVarEnum<ConnectedComponents.Sorting>("Sort components", Sorting.values(), Sorting.ARBITRARY);
+    protected EzVarEnum<Sorting> labelSorting = new EzVarEnum<ConnectedComponents.Sorting>("Sort components", Sorting.values(), Sorting.ARBITRARY);
     
-    protected EzVarBoolean                          exportSwPool           = new EzVarBoolean("Swimming pool", false);
-    protected EzVarBoolean                          exportROI              = new EzVarBoolean("ROI", false);
-    protected EzVarBoolean                          exportExcel            = new EzVarBoolean("Export to Excel", false);
-    protected EzVarFile                             exportExcelFile        = new EzVarFile("Excel file", "");
+    protected EzVarBoolean exportSwPool    = new EzVarBoolean("Swimming pool", false);
+    protected EzVarBoolean exportROI       = new EzVarBoolean("ROI", false);
+    protected EzVarBoolean exportExcel     = new EzVarBoolean("Export to Excel", false);
+    protected EzVarFile    exportExcelFile = new EzVarFile("Excel file", "");
     
-    protected VarSequence                           outputSequence         = new VarSequence("output", null);
-    protected VarGenericArray<ConnectedComponent[]> outputCCs              = new VarGenericArray<ConnectedComponent[]>("components", ConnectedComponent[].class, null);
-    protected VarROIArray                           outputROIs             = new VarROIArray("list of ROI");
+    protected VarSequence                           outputSequence = new VarSequence("output", null);
+    protected VarGenericArray<ConnectedComponent[]> outputCCs      = new VarGenericArray<ConnectedComponent[]>("components", ConnectedComponent[].class, null);
+    protected VarROIArray                           outputROIs     = new VarROIArray("list of ROI");
     
     @Override
     protected void initialize()
@@ -183,17 +179,18 @@ public class ConnectedComponents extends EzPlug implements Block
             {
                 switch (newValue)
                 {
-                    case BACKGROUND:
-                        extractionMethodDetail.setText("Standard mode: extracts all pixels different than the given background value, regardless of their intensity");
+                case BACKGROUND:
+                    extractionMethodDetail.setText("Standard mode: extracts all pixels different than the given background value, regardless of their intensity");
                     break;
-                    case BACKGROUND_LABELED:
-                        extractionMethodDetail.setText("Standard labeled mode: extracts all pixels different than the background, however different intensities are seen as different objects");
+                case BACKGROUND_LABELED:
+                    extractionMethodDetail
+                            .setText("Standard labeled mode: extracts all pixels different than the background, however different intensities are seen as different objects");
                     break;
-                    case VALUE:
-                        extractionMethodDetail.setText("Value-extraction mode: extracts all pixels with the specified value");
+                case VALUE:
+                    extractionMethodDetail.setText("Value-extraction mode: extracts all pixels with the specified value");
                     break;
-                    case ROI:
-                        extractionMethodDetail.setText("ROI mode: extracts all ROI in the input sequence");
+                case ROI:
+                    extractionMethodDetail.setText("ROI mode: extracts all ROI in the input sequence");
                     break;
                 }
             }
@@ -216,6 +213,8 @@ public class ConnectedComponents extends EzPlug implements Block
         exportExcel.addVisibilityTriggerTo(exportExcelFile, true);
         
         addEzComponent(objectCount = new EzLabel(""));
+        
+        setTimeDisplay(true);
     }
     
     @Override
@@ -230,8 +229,8 @@ public class ConnectedComponents extends EzPlug implements Block
         inputMap.add("size filter", boundSize.getVariable());
         inputMap.add("min. size", minSize.getVariable());
         inputMap.add("max. size", maxSize.getVariable());
-        inputMap.add(exportExcel.getVariable());
-        inputMap.add(exportExcelFile.getVariable());
+        inputMap.add("Export to Excel", exportExcel.getVariable());
+        inputMap.add("Excel file", exportExcelFile.getVariable());
     }
     
     @Override
@@ -254,7 +253,7 @@ public class ConnectedComponents extends EzPlug implements Block
         Sequence output = new Sequence();
         
         Sequence inputSequence = input.getValue(true);
-        if (inputSequence.getSizeT() == 0) throw new VarException("Cannot extract connected components from an emtpy sequence !");
+        if (inputSequence.getSizeT() == 0) throw new VarException(input.getVariable(), "Cannot extract connected components from an emtpy sequence !");
         
         // never remove objects touching the Z edge in 2D (that would remove... everything!)
         boolean discardEdgesAlongZ = (inputSequence.getSizeZ() > 1 && discardEdgesZ.getValue());
@@ -268,20 +267,18 @@ public class ConnectedComponents extends EzPlug implements Block
             for (int t = 0; t < inputSequence.getSizeT(); t++)
                 for (int z = 0; z < inputSequence.getSizeZ(); z++)
                     labeledSequence.setImage(t, z, new IcyBufferedImage(width, height, 1, DataType.USHORT));
-            
+                    
             short cpt = 1;
             for (ROI roi : inputSequence.getROIs())
-            {
-                Point5D pos = roi.getPosition5D();
-                DataIteratorUtil.set(new SequenceDataIterator(labeledSequence, roi, true, -1, (int) pos.getT(), -1), cpt & 0xffff);
-                cpt++;
-            }
-            componentsMap = extractConnectedComponents(labeledSequence, 0, ExtractionType.BACKGROUND_LABELED, discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesAlongZ, min, max, output);
+                DataIteratorUtil.set(new SequenceDataIterator(labeledSequence, roi, true), cpt++ & 0xffff);
+                
+            componentsMap = extractConnectedComponents(labeledSequence, 0, ExtractionType.BACKGROUND_LABELED, discardEdgesX.getValue(), discardEdgesY.getValue(),
+                    discardEdgesAlongZ, min, max, output);
         }
         else
         {
-            componentsMap = extractConnectedComponents(inputSequence, background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(), discardEdgesAlongZ, min,
-                    max, output);
+            componentsMap = extractConnectedComponents(inputSequence, background.getValue(), extractionMethod.getValue(), discardEdgesX.getValue(), discardEdgesY.getValue(),
+                    discardEdgesAlongZ, min, max, output);
         }
         
         outputSequence.setValue(output);
@@ -320,10 +317,13 @@ public class ConnectedComponents extends EzPlug implements Block
             {
                 ArrayList<ROI3DArea> rois = new ArrayList<ROI3DArea>(componentsMap.size());
                 
+                int ccID = 1;
+                
                 for (List<ConnectedComponent> ccs : componentsMap.values())
                     for (ConnectedComponent cc : ccs)
                     {
                         ROI3DArea area = new ROI3DArea();
+                        area.setName("Object #" + ccID++);
                         area.beginUpdate();
                         for (Point3i pt : cc)
                             area.addPoint(pt.x, pt.y, pt.z);
@@ -331,7 +331,7 @@ public class ConnectedComponents extends EzPlug implements Block
                         area.endUpdate();
                         rois.add(area);
                     }
-                
+                    
                 outputROIs.setValue(rois.toArray(new ROI3DArea[rois.size()]));
             }
             else
@@ -349,7 +349,7 @@ public class ConnectedComponents extends EzPlug implements Block
                         area.endUpdate();
                         rois.add(area);
                     }
-                
+                    
                 outputROIs.setValue(rois.toArray(new ROI2DArea[rois.size()]));
             }
             
@@ -362,10 +362,10 @@ public class ConnectedComponents extends EzPlug implements Block
                 
                 for (ROI roi : input.getValue().getROIs())
                     in.removeROI(roi);
-                
+                    
                 for (ROI roi : outputROIs.getValue())
                     in.addROI(roi);
-                
+                    
                 in.endUpdate();
             }
         }
@@ -480,7 +480,7 @@ public class ConnectedComponents extends EzPlug implements Block
                         cpt = 1;
                     }
                 }
-            
+                
             try
             {
                 XLSUtil.saveAndClose(workbook);
@@ -499,19 +499,19 @@ public class ConnectedComponents extends EzPlug implements Block
     
     private static class Label
     {
-        final double    imageValue;
+        final double imageValue;
         
         /**
          * final label that should replace the current label if fusion is needed
          */
-        int             targetLabelValue;
+        int targetLabelValue;
         
         /**
          * if non-null, indicates the parent object with which the current object should be fused
          */
-        Label           targetLabel;
+        Label targetLabel;
         
-        int             size;
+        int size;
         
         private boolean onEdgeX;
         
@@ -613,7 +613,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, boolean isInputLabeled, int minSize, int maxSize, Sequence labeledSequence)
+    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, boolean isInputLabeled, int minSize, int maxSize,
+            Sequence labeledSequence)
     {
         return extractConnectedComponents(inputSequence, 0, isInputLabeled ? ExtractionType.BACKGROUND_LABELED : ExtractionType.BACKGROUND, minSize, maxSize, labeledSequence);
     }
@@ -640,7 +641,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, int minSize, int maxSize, Sequence labeledSequence)
+    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, int minSize, int maxSize,
+            Sequence labeledSequence)
     {
         return extractConnectedComponents(inputSequence, value, type, false, false, false, minSize, maxSize, labeledSequence);
     }
@@ -676,8 +678,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ,
-            int minSize, int maxSize, Sequence labeledSequence)
+    public static Map<Integer, List<ConnectedComponent>> extractConnectedComponents(Sequence inputSequence, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY,
+            boolean noEdgeZ, int minSize, int maxSize, Sequence labeledSequence)
     {
         if (inputSequence == null || inputSequence.getSizeT() == 0) throw new IllegalArgumentException("Cannot extract connected components from an emtpy sequence !");
         
@@ -692,7 +694,7 @@ public class ConnectedComponents extends EzPlug implements Block
         {
             for (int z = 0; z < inputSequence.getSizeZ(); z++)
                 labeledSequence.setImage(t, z, new IcyBufferedImage(width, height, 1, DataType.UINT));
-            
+                
             VolumetricImage volIN = inputSequence.getVolumetricImage(t);
             VolumetricImage volOUT = labeledSequence.getVolumetricImage(t);
             
@@ -744,8 +746,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize,
-            int maxSize)
+    public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ,
+            int minSize, int maxSize)
     {
         return extractConnectedComponents(stack, value, type, noEdgeX, noEdgeY, noEdgeZ, minSize, maxSize, new VolumetricImage());
     }
@@ -785,8 +787,8 @@ public class ConnectedComponents extends EzPlug implements Block
      * @see ExtractionType
      * @see ConnectedComponent
      */
-    public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ, int minSize,
-            int maxSize, final VolumetricImage labeledStack) throws NullPointerException
+    public static List<ConnectedComponent> extractConnectedComponents(VolumetricImage stack, double value, ExtractionType type, boolean noEdgeX, boolean noEdgeY, boolean noEdgeZ,
+            int minSize, int maxSize, final VolumetricImage labeledStack) throws NullPointerException
     {
         int width = stack.getFirstImage().getSizeX();
         int height = stack.getFirstImage().getSizeY();
@@ -1283,7 +1285,7 @@ public class ConnectedComponents extends EzPlug implements Block
                 Spot spot = new Spot(cc.getMassCenter().x, cc.getMassCenter().y, cc.getMassCenter().z);
                 detectionResult.addDetection(t, spot);
             }
-        
+            
         detectionResult.setSequence(sequence);
         
         return detectionResult;

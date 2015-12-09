@@ -28,19 +28,19 @@ import Jama.Matrix;
 
 public class ConnectedComponentDescriptor extends Plugin implements PluginBundled, Block
 {
-    Var<ConnectedComponent> varCC        = new Var<ConnectedComponent>("Connected component", ConnectedComponent.class);
+    Var<ConnectedComponent> varCC = new Var<ConnectedComponent>("Connected component", ConnectedComponent.class);
     
-    VarDouble               perimeter    = new VarDouble("perimeter", 0.0);
+    VarDouble perimeter = new VarDouble("perimeter", 0.0);
     
-    VarDouble               sphericity   = new VarDouble("sphericity", 0.0);
+    VarDouble sphericity = new VarDouble("sphericity", 0.0);
     
-    VarDouble               eccentricity = new VarDouble("eccentricity", 0.0);
+    VarDouble eccentricity = new VarDouble("eccentricity", 0.0);
     
-    VarDouble               longAxis     = new VarDouble("long diameter", 0.0);
+    VarDouble longAxis = new VarDouble("long diameter", 0.0);
     
-    VarDouble               shortAxis    = new VarDouble("short diameter", 0.0);
+    VarDouble shortAxis = new VarDouble("short diameter", 0.0);
     
-    VarDouble               shortAxisZ   = new VarDouble("short diameter (Z)", 0.0);
+    VarDouble shortAxisZ = new VarDouble("short diameter (Z)", 0.0);
     
     @Override
     public String getMainPluginClassName()
@@ -57,12 +57,12 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
     @Override
     public void declareOutput(VarList outputMap)
     {
-        outputMap.add(perimeter);
-        outputMap.add(longAxis);
-        outputMap.add(shortAxis);
-        outputMap.add(shortAxisZ);
-        outputMap.add(eccentricity);
-        outputMap.add(sphericity);
+        outputMap.add("perimeter", perimeter);
+        outputMap.add("long diameter", longAxis);
+        outputMap.add("short diameter", shortAxis);
+        outputMap.add("short diameter (Z)", shortAxisZ);
+        outputMap.add("eccentricity", eccentricity);
+        outputMap.add("sphericity", sphericity);
     }
     
     @Override
@@ -392,8 +392,8 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
             
             for (Point3i p : cc)
                 points.add(new Point2D.Double(p.x, p.y));
-            
-            points = QuickHull2D.computeConvexEnvelope(points);
+                
+            if (points.size() > 4) points = QuickHull2D.computeConvexEnvelope(points);
             
             // volume = sum( sqrt[ (x[i] - x[i-1])^2 + (y[i] - y[i-1])^2 ] )
             // area = 0.5 * sum( (x[i-1] * y[i]) - (y[i-1] * x[i]) )
@@ -410,13 +410,13 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
             
             area *= 0.5;
         }
-        else
+        else try
         {
             Point3d[] points = new Point3d[n];
             
             for (Point3i p : cc)
                 points[i++] = new Point3d(p.x, p.y, p.z);
-            
+                
             QuickHull3D qhull = new QuickHull3D(points);
             int[][] hullFaces = qhull.getFaces();
             Point3d[] hullPoints = qhull.getVertices();
@@ -440,6 +440,11 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
                 cross.normalize();
                 area += contour * cross.x * (p1.x + p2.x + p3.x);
             }
+        }
+        catch (IllegalArgumentException e)
+        {
+            // less than 4 points, or coplanarity detected
+            return new double[] { n, n };
         }
         
         return new double[] { contour, area };
@@ -580,8 +585,8 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
      *            (set to null if not wanted) the calculated ellipse orientation
      * @param equation
      *            (set to null if not wanted) a 6-element array, {a b c d f g}, which are the
-     *            calculated algebraic parameters of the fitting ellipse: <i>ax</i><sup>2</sup> +
-     *            2<i>bxy</i> + <i>cy</i><sup>2</sup> +2<i>dx</i> + 2<i>fy</i> + <i>g</i> = 0. The
+     *            calculated algebraic parameters of the fitting ellipse: <i>ax</i><sup>2</sup> + 2
+     *            <i>bxy</i> + <i>cy</i><sup>2</sup> +2<i>dx</i> + 2<i>fy</i> + <i>g</i> = 0. The
      *            vector <b>A</b> represented in the array is normed, so that ||<b>A</b>||=1.
      * @throws RuntimeException
      *             if the ellipse calculation fails (e.g. if a singular matrix is detected)
@@ -685,14 +690,12 @@ public class ConnectedComponentDescriptor extends Plugin implements PluginBundle
         double phi = 0;
         if (b == 0)
         {
-            if (a <= c)
-                phi = 0;
+            if (a <= c) phi = 0;
             else if (a > c) phi = Math.PI / 2;
         }
         else
         {
-            if (a < c)
-                phi = Math.atan(2 * b / (a - c)) / 2;
+            if (a < c) phi = Math.atan(2 * b / (a - c)) / 2;
             else if (a > c) phi = Math.atan(2 * b / (a - c)) / 2 + Math.PI / 2;
         }
         
