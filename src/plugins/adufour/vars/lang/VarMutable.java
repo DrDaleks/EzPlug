@@ -156,14 +156,14 @@ public class VarMutable extends Var implements MutableType
             super.setValue(newValue);
         }
         // the easy ones next
-        else if (Number.class.isAssignableFrom(getType()) && newValue instanceof Number)
+        else if (newValue instanceof Number && Number.class.isAssignableFrom(getType()) || (getType().isPrimitive() && getType() != Boolean.TYPE))
         {
             // put the common ones first to optimize a bit...
-            if (getType().equals(Integer.class)) super.setValue(((Number) newValue).intValue());
-            else if (getType().equals(Double.class)) super.setValue(((Number) newValue).doubleValue());
-            else if (getType().equals(Byte.class)) super.setValue(((Number) newValue).byteValue());
-            else if (getType().equals(Short.class)) super.setValue(((Number) newValue).shortValue());
-            else if (getType().equals(Float.class)) super.setValue(((Number) newValue).floatValue());
+            if (getType() == Integer.class || getType() == Integer.TYPE) super.setValue(((Number) newValue).intValue());
+            else if (getType() == Double.class || getType() == Double.TYPE) super.setValue(((Number) newValue).doubleValue());
+            else if (getType() == Byte.class || getType() == Byte.TYPE) super.setValue(((Number) newValue).byteValue());
+            else if (getType() == Short.class || getType() == Short.TYPE) super.setValue(((Number) newValue).shortValue());
+            else if (getType() == Float.class || getType() == Float.TYPE) super.setValue(((Number) newValue).floatValue());
             else super.setValue(((Number) newValue).longValue());
         }
         // and now for the hard one
@@ -181,7 +181,7 @@ public class VarMutable extends Var implements MutableType
                 Object array = Array.newInstance(localType, nbValues);
                 
                 if (localType.isPrimitive())
-                {                    
+                {
                     DataType dataType = ArrayUtil.getDataType(array);
                     for (int i = 0; i < nbValues; i++)
                     {
@@ -202,7 +202,7 @@ public class VarMutable extends Var implements MutableType
             {
                 String text = "[" + ArrayUtil.arrayToString(newValue).replace(":", ", ") + "]";
                 throw new ClassCastException(text + " is not of type " + getType().getSimpleName());
-            }            
+            }
         }
         // let's be nice and box single values into arrays
         else if (getType().isArray() && getType().getComponentType().isAssignableFrom(newValue.getClass()))
