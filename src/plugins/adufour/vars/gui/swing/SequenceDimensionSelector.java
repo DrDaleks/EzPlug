@@ -2,11 +2,13 @@ package plugins.adufour.vars.gui.swing;
 
 import java.text.ParseException;
 
-import javax.swing.AbstractSpinnerModel;
 import javax.swing.JFormattedTextField;
-import javax.swing.JSpinner;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.text.DefaultFormatter;
+import javax.swing.text.DefaultFormatterFactory;
 
 import icy.sequence.DimensionId;
 import icy.sequence.Sequence;
@@ -52,7 +54,8 @@ public abstract class SequenceDimensionSelector extends Spinner<Integer>
     @Override
     public JSpinner createEditorComponent()
     {
-        JSpinner jSpinner = new JSpinner(new AbstractSpinnerModel()
+        @SuppressWarnings("serial")
+        JSpinner jSpinner = new JSpinner(new SpinnerNumberModel()
         {
             @Override
             public void setValue(Object channel)
@@ -86,28 +89,15 @@ public abstract class SequenceDimensionSelector extends Spinner<Integer>
         });
         
         JFormattedTextField ftf = ((JSpinner.DefaultEditor) jSpinner.getEditor()).getTextField();
-        
         ftf.setFormatterFactory(getFormatterFactory());
         
         return jSpinner;
     }
     
+    @SuppressWarnings("serial")
     protected AbstractFormatterFactory getFormatterFactory()
     {
-        return new AbstractFormatterFactory()
-        {
-            @Override
-            public AbstractFormatter getFormatter(JFormattedTextField arg0)
-            {
-                return SequenceDimensionSelector.this.getFormatter();
-            }
-        };
-    }
-    
-    @SuppressWarnings("serial")
-    protected AbstractFormatter getFormatter()
-    {
-        return new AbstractFormatter()
+        final DefaultFormatter editFormatter = new DefaultFormatter()
         {
             @Override
             public String valueToString(Object value) throws ParseException
@@ -128,7 +118,28 @@ public abstract class SequenceDimensionSelector extends Spinner<Integer>
                 
                 if (sequence == null || sequence.getValue() == null) return Integer.parseInt(text);
                 
-                return toInteger(text);
+                try
+                {
+                    int value = toInteger(text);
+                    if (value < -1) throw new ParseException(text, 0);
+                    if (value == -1 && !allowAll) throw new ParseException(text, 0);
+                    if (value >= sequence.getValue().getSize(dimension)) throw new ParseException(text, 0);
+                    
+                    return value;
+                }
+                catch (NumberFormatException e)
+                {
+                    throw new ParseException(text, 0);
+                }
+            }
+        };
+        
+        return new DefaultFormatterFactory()
+        {
+            @Override
+            public AbstractFormatter getDefaultFormatter()
+            {
+                return editFormatter;
             }
         };
     }
@@ -155,7 +166,6 @@ public abstract class SequenceDimensionSelector extends Spinner<Integer>
         JFormattedTextField ftf = ((JSpinner.DefaultEditor) getEditorComponent().getEditor()).getTextField();
         
         ftf.setValue(variable.getValue());
-        ftf.setEditable(sequence == null || sequence.getValue() == null);
     }
     
     @Override
