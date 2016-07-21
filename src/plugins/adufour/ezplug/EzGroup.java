@@ -1,118 +1,27 @@
 package plugins.adufour.ezplug;
 
-import icy.system.thread.ThreadUtil;
-
-import java.awt.Container;
 import java.awt.FontMetrics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
 /**
  * Class defining a group of EzComponents, which will appear in the interface within a titled box.
  * 
  * @author Alexandre Dufour
- * 
  */
-public class EzGroup extends EzComponent implements Iterable<EzComponent>
+public class EzGroup extends EzPanel
 {
-    @SuppressWarnings("serial")
-    private class EzComponentList extends ArrayList<EzComponent>
-    {
-        public EzComponentList(int initialSize)
-        {
-            super(initialSize);
-        }
-        
-        @Override
-        public boolean add(EzComponent e)
-        {
-            e.setGroup(EzGroup.this);
-            return super.add(e);
-        }
-        
-        @Override
-        public void add(int index, EzComponent element)
-        {
-            element.setGroup(EzGroup.this);
-            super.add(index, element);
-        }
-        
-        @Override
-        public boolean addAll(Collection<? extends EzComponent> c)
-        {
-            for (EzComponent comp : c)
-                comp.setGroup(EzGroup.this);
-            return super.addAll(c);
-        }
-        
-        @Override
-        public boolean addAll(int index, Collection<? extends EzComponent> c)
-        {
-            for (EzComponent comp : c)
-                comp.setGroup(EzGroup.this);
-            return super.addAll(index, c);
-        }
-        
-        @Override
-        public void clear()
-        {
-            for (EzComponent comp : this)
-                comp.setGroup(null);
-            super.clear();
-        }
-        
-        @Override
-        public EzComponent remove(int index)
-        {
-            EzComponent oldElement = super.remove(index);
-            if (oldElement != null) oldElement.setGroup(null);
-            return oldElement;
-        }
-        
-        @Override
-        protected void removeRange(int fromIndex, int toIndex)
-        {
-            for (int i = fromIndex; i < toIndex; i++)
-            {
-                if (get(i) != null) get(i).setGroup(null);
-            }
-            super.removeRange(fromIndex, toIndex);
-        }
-        
-        @Override
-        public EzComponent set(int index, EzComponent element)
-        {
-            element.setGroup(EzGroup.this);
-            EzComponent oldElement = super.set(index, element);
-            if (oldElement != null) oldElement.setGroup(null);
-            return oldElement;
-        }
-    }
-    
     public interface FoldListener
     {
         void foldStateChanged(boolean state);
     }
     
-    public final List<EzComponent>        components;
+    private final FoldHandler             foldHandler = new FoldHandler();
     
-    private JPanel                        jPanelGroup;
-    
-    private final CollapseHandler         collapseHandler = new CollapseHandler();
-    
-    private final ArrayList<FoldListener> listeners       = new ArrayList<EzGroup.FoldListener>();
-    
-    private String                        toolTipText     = "";
+    private final ArrayList<FoldListener> listeners   = new ArrayList<EzGroup.FoldListener>();
     
     /**
      * Creates a new EzGroup with the given box title and set of ezComponents. Each component will
@@ -127,22 +36,9 @@ public class EzGroup extends EzComponent implements Iterable<EzComponent>
      */
     public EzGroup(String groupTitle, EzComponent... ezComponents)
     {
-        super(groupTitle);
+        super(groupTitle, ezComponents);
         
-        ThreadUtil.invoke(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                jPanelGroup = new JPanel(new GridBagLayout());
-                
-                jPanelGroup.addMouseListener(collapseHandler);
-            }
-        }, !SwingUtilities.isEventDispatchThread());
-        
-        this.components = new EzComponentList(ezComponents.length);
-        
-        addEzComponent(ezComponents);
+        container.addMouseListener(foldHandler);
     }
     
     public void addFoldListener(FoldListener listener)
@@ -155,68 +51,35 @@ public class EzGroup extends EzComponent implements Iterable<EzComponent>
      * 
      * @param ezComponents
      *            the components to add
+     * @deprecated use {@link #add(EzComponent...)}
      */
     public void addEzComponent(EzComponent... ezComponents)
     {
-        if (ezComponents == null || ezComponents.length == 0) return;
-        
-        for (EzComponent ezComponent : ezComponents)
-            components.add(ezComponent);
+        super.add(ezComponents);
     }
     
     @Override
-    public void addTo(Container container)
+    protected void buildPanel()
     {
-        jPanelGroup.removeAll();
-        
-        if (collapseHandler.isCollapsed)
+        if (foldHandler.isFolded)
         {
-            jPanelGroup.setBorder(collapseHandler.collapsedBorder);
+            container.removeAll();
+            container.setBorder(foldHandler.foldedBorder);
         }
         else
         {
-            jPanelGroup.setBorder(collapseHandler.uncollapsedBorder);
-            
-            for (EzComponent ezComponent : components)
-                if (ezComponent.isVisible()) ezComponent.addTo(jPanelGroup);
+            super.buildPanel();
+            container.setBorder(foldHandler.unfoldedBorder);
         }
-        
-        GridBagLayout gridbag = (GridBagLayout) container.getLayout();
-        
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1.0;
-        gridbag.setConstraints(jPanelGroup, gbc);
-        
-        container.add(jPanelGroup);
-        
-    }
-    
-    @Override
-    public void setToolTipText(String text)
-    {
-        this.toolTipText = text;
     }
     
     public void dispose()
     {
         listeners.clear();
         
-        jPanelGroup.removeMouseListener(collapseHandler);
-        
-        for (EzComponent ezComponent : components)
-            ezComponent.dispose();
-        
-        components.clear();
+        container.removeMouseListener(foldHandler);
         
         super.dispose();
-    }
-    
-    @Override
-    public Iterator<EzComponent> iterator()
-    {
-        return components.iterator();
     }
     
     private void fireFoldStateChanged(boolean state)
@@ -232,23 +95,46 @@ public class EzGroup extends EzComponent implements Iterable<EzComponent>
             listener.foldStateChanged(state);
     }
     
-    private final class CollapseHandler implements MouseListener
+    /**
+     * @return <code>true</code> if this group is currently folded (no visible component),
+     *         <code>false</code> otherwise
+     */
+    public boolean getFoldedState()
     {
-        private boolean            isCollapsed        = false;
+        return foldHandler.isFolded;
+    }
+    
+    /**
+     * Sets the folded state of this group
+     * 
+     * @param folded
+     */
+    public void setFoldedState(final boolean folded)
+    {
+        if (folded == foldHandler.isFolded) return;
         
-        private final static char  COLLAPSED_SYMBOL   = '\u25B6';
+        foldHandler.isFolded = folded;
+        fireFoldStateChanged(folded);
+        foldHandler.adjustToolTip();
+    }
+    
+    private final class FoldHandler implements MouseListener
+    {
+        private boolean            isFolded        = false;
         
-        private final static char  UNCOLLAPSED_SYMBOL = '\u25BC';
+        private final static char  FOLDED_SYMBOL   = '\u25B6';
         
-        private final TitledBorder collapsedBorder    = new TitledBorder(CollapseHandler.COLLAPSED_SYMBOL + " " + name);
+        private final static char  UNFOLDED_SYMBOL = '\u25BC';
         
-        private final TitledBorder uncollapsedBorder  = new TitledBorder(CollapseHandler.UNCOLLAPSED_SYMBOL + " " + name);
+        private final TitledBorder foldedBorder    = new TitledBorder(FoldHandler.FOLDED_SYMBOL + " " + name);
+        
+        private final TitledBorder unfoldedBorder  = new TitledBorder(FoldHandler.UNFOLDED_SYMBOL + " " + name);
         
         @Override
         public void mouseClicked(MouseEvent e)
         {
-            FontMetrics fm = jPanelGroup.getGraphics().getFontMetrics();
-            int w = fm.charWidth(COLLAPSED_SYMBOL);
+            FontMetrics fm = container.getGraphics().getFontMetrics();
+            int w = fm.charWidth(FOLDED_SYMBOL);
             int h = fm.getHeight();
             int xBorder = 10;
             int yBorder = 4;
@@ -258,8 +144,8 @@ public class EzGroup extends EzComponent implements Iterable<EzComponent>
                 return;
             }
             
-            isCollapsed = !isCollapsed;
-            fireFoldStateChanged(isCollapsed);
+            isFolded = !isFolded;
+            fireFoldStateChanged(isFolded);
             adjustToolTip();
         }
         
@@ -286,13 +172,13 @@ public class EzGroup extends EzComponent implements Iterable<EzComponent>
         
         private void adjustToolTip()
         {
-            if (isCollapsed && !toolTipText.isEmpty())
+            if (isFolded && !getToolTipText().isEmpty())
             {
-                jPanelGroup.setToolTipText(toolTipText);
+                container.setToolTipText(getToolTipText());
             }
             else
             {
-                jPanelGroup.setToolTipText(null);
+                container.setToolTipText(null);
             }
         }
     }

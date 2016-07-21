@@ -204,13 +204,13 @@ public class EzDialog extends IcyFrame implements FoldListener
     protected void addEzComponent(EzComponent component, boolean isSingle)
     {
         // if the component is a group, add its internal components recursively
-        if (component instanceof EzGroup)
+        if (component instanceof EzPanel)
         {
-            EzGroup group = (EzGroup) component;
+            EzPanel panel = (EzPanel) component;
             
-            group.addFoldListener(this);
+            if (panel instanceof EzGroup) ((EzGroup) panel).addFoldListener(this);
             
-            for (EzComponent groupComponent : group)
+            for (EzComponent groupComponent : panel)
                 addEzComponent(groupComponent, false);
         }
         
@@ -245,6 +245,8 @@ public class EzDialog extends IcyFrame implements FoldListener
      */
     public void repack(boolean updateParametersPanel)
     {
+//        int width = getWidth();
+        
         if (updateParametersPanel)
         {
             jPanelParameters.removeAll();
@@ -323,6 +325,8 @@ public class EzDialog extends IcyFrame implements FoldListener
         {
             pack();
         }
+        
+//        setSize(new Dimension(Math.max(width, getWidth()), getPreferredSize().height));
     }
     
     /**
@@ -431,7 +435,8 @@ public class EzDialog extends IcyFrame implements FoldListener
      * <ul>
      * <li>Shade and lighting effects adjusted</li>
      * <li>Border outline removed</li>
-     * <li>Bottom corners of the rounded rectangle masked to better stick to the rest of the frame</li>
+     * <li>Bottom corners of the rounded rectangle masked to better stick to the rest of the frame
+     * </li>
      * </ul>
      * 
      * @param width

@@ -273,12 +273,12 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
     {
         String id = variable.getName();
         
-        EzGroup group = getGroup();
+        EzPanel panel = getParentPanel();
         
-        while (group != null)
+        while (panel != null)
         {
-            id = group.name + "." + id;
-            group = group.getGroup();
+            id = panel.name + "." + id;
+            panel = panel.getParentPanel();
         }
         
         return id;

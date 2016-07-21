@@ -1,31 +1,42 @@
 package plugins.adufour.ezplug;
 
-import icy.system.thread.ThreadUtil;
-
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
-import javax.swing.JTextArea;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+
+import icy.system.thread.ThreadUtil;
 
 /**
  * Class defining a text label for use with EzPlugs.
  * 
  * @author Alexandre Dufour
- * 
  */
 public class EzLabel extends EzComponent
 {
-    private JTextArea jTextArea;
+    private JEditorPane label;
+    
+    private String      text;
+    
+    private Color       textColor;
+    
+    private int         labelWidth = 200;
     
     /**
-     * Creates a new EzButton with given title and action listener (i.e. the method which will be
-     * called when the button is clicked)
+     * Creates a new label with given text
      * 
      * @param text
-     *            the text to display
+     *            the text to display. <b>Important note for HTML-formatted text:
+     *            <ul>
+     *            <li>If no <code>&lt;body&gt;</code> tag is found, one is generated to account for
+     *            other formatting properties of this class (e.g. text color or label width)</li>
+     *            <li>If a <code>&lt;body&gt;</code> tag already exists, no extra formatting is
+     *            performed, leaving full freedom to the developer.</li>
+     *            </ul>
+     *            </b>
      */
     public EzLabel(String text)
     {
@@ -33,41 +44,80 @@ public class EzLabel extends EzComponent
     }
     
     /**
-     * Creates a new EzButton with given title and action listener (i.e. the method which will be
-     * called when the button is clicked)
+     * Creates a new label with given text and color
      * 
      * @param text
-     *            the text to display
+     *            the text to display.<b>Important note for HTML-formatted text:
+     *            <ul>
+     *            <li>If no <code>&lt;body&gt;</code> tag is found, one is generated to account for
+     *            other formatting properties of this class (e.g. text color or label width)</li>
+     *            <li>If a <code>&lt;body&gt;</code> tag already exists, no extra formatting is
+     *            performed, leaving full freedom to the developer.</li>
+     *            </ul>
+     *            </b>
      * @param textColor
-     *            the default text color
+     *            the default text color. NB: this parameter is not used if the specified text is in
+     *            HTML format
      */
     public EzLabel(final String text, final Color textColor)
     {
         super("label");
+        
+        this.text = text;
+        this.textColor = textColor;
+        
         ThreadUtil.invoke(new Runnable()
         {
             @Override
             public void run()
             {
-                jTextArea = new JTextArea(text.isEmpty() ? " " : text);
-                jTextArea.setLineWrap(true);
-                jTextArea.setWrapStyleWord(true);
-                jTextArea.setForeground(textColor);
-                jTextArea.setMargin(new Insets(0, 2, 0, 2));
-                jTextArea.setColumns(20);
+                label = new JEditorPane("text/html", "");
+                label.setEditable(false);
+                label.setOpaque(false);
+                label.setMargin(new Insets(0, 2, 0, 2));
+                updateLabel();
             }
         }, !SwingUtilities.isEventDispatchThread());
     }
     
     /**
-     * Sets the text of this label
+     * Sets the text of this label. This text can be given unformatted or in HTML format.<br/>
+     * <b>Important note for HTML-formatted text:
+     * <ul>
+     * <li>If no <code>&lt;body&gt;</code> tag is found, one is generated to account for other
+     * formatting properties of this class (e.g. text color or label width)</li>
+     * <li>If a <code>&lt;body&gt;</code> tag already exists, no extra formatting is performed,
+     * leaving full freedom to the developer.</li>
+     * </ul>
+     * </b>
      * 
      * @param text
-     *            the text to display
+     *            the text to display.<br/>
+     *            <b>Important note for HTML-formatted text:
+     *            <ul>
+     *            <li>If no <code>&lt;body&gt;</code> tag is found, one is generated to account for
+     *            other formatting properties of this class (e.g. text color or label width)</li>
+     *            <li>If a <code>&lt;body&gt;</code> tag already exists, no extra formatting is
+     *            performed, leaving full freedom to the developer.</li>
+     *            </ul>
+     *            </b>
      */
     public void setText(String text)
     {
-        jTextArea.setText(text);
+        this.text = text;
+        updateLabel();
+    }
+    
+    /**
+     * Overrides the default label width (200px) with the specified value
+     * 
+     * @param width
+     *            the new label width in pixels
+     */
+    public void setLabelWidth(int width)
+    {
+        this.labelWidth = width;
+        updateLabel();
     }
     
     /**
@@ -78,29 +128,26 @@ public class EzLabel extends EzComponent
      */
     public void setColor(Color textColor)
     {
-        jTextArea.setForeground(textColor);
+        this.textColor = textColor;
+        updateLabel();
     }
     
     @Override
     protected void addTo(Container container)
     {
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 5, 2, 5);
+        gbc.insets = new Insets(2, 10, 2, 10);
         
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1;
         
-        jTextArea.setEditable(false);
-        jTextArea.setOpaque(false);
-        
-        container.add(jTextArea, gbc);
+        container.add(label, gbc);
     }
     
     @Override
     public void setToolTipText(String text)
     {
-        jTextArea.setToolTipText(text);
+        label.setToolTipText(text);
     }
     
     /**
@@ -110,35 +157,59 @@ public class EzLabel extends EzComponent
      * does *not* indicate a limit in the number of characters per line, since the width of each
      * character is potentially different in many fonts.
      * 
+     * @deprecated this method is no longer used. To specify the width of the label, use
+     *             {@link #setLabelWidth(int)} instead.
      * @param nbCols
      *            the number of columns of this label
      */
     public void setNumberOfColumns(final int nbCols)
     {
-        ThreadUtil.invokeLater(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                jTextArea.setColumns(nbCols);
-            }
-        });
     }
     
     /**
      * Sets the number of rows in this label (this will affect its apparent height)
      * 
+     * @deprecated This method is no longer used, as the component's height is automatically
+     *             calculated based on its contents
      * @param nbRows
      */
     public void setNumberOfRows(final int nbRows)
     {
-        ThreadUtil.invokeLater(new Runnable()
+    }
+    
+    private static String convertToHTML(String text, Color textColor, int labelWidth)
+    {
+        if (text.trim().toLowerCase().startsWith("<html>") && text.toLowerCase().contains("<body"))
         {
-            @Override
-            public void run()
-            {
-                jTextArea.setRows(nbRows);
-            }
-        });
+            // A "body" tag already exists => let's assume the developer knows what he's doing
+            return text;
+        }
+        
+        // Convert the string to HTML
+        String html = text.trim();
+        if (!html.toLowerCase().startsWith("<html>"))
+        {
+            // The text seems unformatted
+            // Convert it to HTML (managing potential "new line" characters)
+            html = "<html>" + html.replace("\n", "<br>") + "</html>";
+        }
+        
+        // Now that the text is HTML, adjust its style (via CSS)
+        // Warning: this is ugly (should use Document.getStyleSheet() instead, etc.)
+        
+        String style = "max-width: " + labelWidth + "px; ";
+        style += "font: helvetica; ";
+        style += "color: rgb(" + textColor.getRed() + "," + textColor.getGreen() + "," + textColor.getBlue() + "); ";
+        
+        html = html.replace("<html>", "<html><body style='" + style + "'>");
+        html = html.replace("</html>", "</body></html>");
+        
+        return html;
+    }
+    
+    private void updateLabel()
+    {
+        String html = convertToHTML(text, textColor, labelWidth);
+        label.setText(html);
     }
 }
