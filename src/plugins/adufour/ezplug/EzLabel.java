@@ -40,7 +40,7 @@ public class EzLabel extends EzComponent
      */
     public EzLabel(String text)
     {
-        this(text, Color.black);
+        this(text, null);
     }
     
     /**
@@ -121,7 +121,9 @@ public class EzLabel extends EzComponent
     }
     
     /**
-     * Set the color of the text in this label
+     * Sets the color of the text in this label. Setting the color overrides the default color
+     * computed for the current look'n'feel and skin. To revert to this default color, use
+     * <code>setColor(null)</code>
      * 
      * @param textColor
      *            the new text color
@@ -138,7 +140,7 @@ public class EzLabel extends EzComponent
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 10, 2, 10);
         
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         
         container.add(label, gbc);
@@ -197,9 +199,14 @@ public class EzLabel extends EzComponent
         // Now that the text is HTML, adjust its style (via CSS)
         // Warning: this is ugly (should use Document.getStyleSheet() instead, etc.)
         
+        int r, g, b;
+        r = textColor.getRed();
+        g = textColor.getGreen();
+        b = textColor.getBlue();
+        
         String style = "max-width: " + labelWidth + "px; ";
         style += "font: helvetica; ";
-        style += "color: rgb(" + textColor.getRed() + "," + textColor.getGreen() + "," + textColor.getBlue() + "); ";
+        style += "color: rgb(" + r + "," + g + "," + b + "); ";
         
         html = html.replace("<html>", "<html><body style='" + style + "'>");
         html = html.replace("</html>", "</body></html>");
@@ -209,7 +216,16 @@ public class EzLabel extends EzComponent
     
     private void updateLabel()
     {
-        String html = convertToHTML(text, textColor, labelWidth);
+        // Check which color to use
+        Color color = textColor;
+        
+        if (color == null)
+        {
+            // Use the default from the current look'n'feel
+            color = label.getForeground();
+        }
+        
+        String html = convertToHTML(text, color, labelWidth);
         label.setText(html);
     }
 }
