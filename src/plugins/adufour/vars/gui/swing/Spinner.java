@@ -120,7 +120,7 @@ public class Spinner<N extends Number> extends SwingVarEditor<N>
         N value = variable.getValue();
         
         // adjust the text format (if not in scientific notation)
-        if (!value.toString().contains("E"))
+        if (value != null && !value.toString().contains("E"))
         {
             if (formatter != null && formatter.getFormat() != null)
             {
