@@ -25,10 +25,9 @@ public class VarEnum<T extends Enum<T>> extends Var<T>
      * @param defaultListener
      *            A listener to add to this variable immediately after creation
      */
-    @SuppressWarnings("unchecked")
     public VarEnum(String name, T defaultValue, VarListener<T> defaultListener) throws NullPointerException
     {
-        super(name, (Class<T>) defaultValue.getClass(), defaultValue, defaultListener);
+        super(name, defaultValue.getDeclaringClass(), defaultValue, defaultListener);
         setDefaultEditorModel(new ValueSelectionModel<T>((T[]) defaultValue.getDeclaringClass().getEnumConstants(), defaultValue, false));
     }
     
