@@ -49,7 +49,9 @@ public class EzTabs extends EzPanel
     @Override
     protected void buildPanel()
     {
-        int currentTab = ((JTabbedPane) container).getSelectedIndex();
+        JTabbedPane tabs = (JTabbedPane) container;
+        
+        int currentTab = tabs.getSelectedIndex();
         
         container.removeAll();
         
@@ -58,9 +60,12 @@ public class EzTabs extends EzPanel
             {
                 JPanel tabPanel = new JPanel(new GridBagLayout());
                 tab.addTo(tabPanel);
-                ((JTabbedPane) container).addTab(tab.name, tabPanel);
+                tabs.addTab(tab.name, tabPanel);
             }
         
-        if (currentTab >= 0) ((JTabbedPane) container).setSelectedIndex(currentTab);
+        if (currentTab >= 0 && currentTab < tabs.getTabCount())
+        {
+            tabs.setSelectedIndex(currentTab);
+        }
     }
 }
