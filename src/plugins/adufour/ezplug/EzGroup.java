@@ -53,6 +53,7 @@ public class EzGroup extends EzPanel
      *            the components to add
      * @deprecated use {@link #add(EzComponent...)}
      */
+    @Deprecated
     public void addEzComponent(EzComponent... ezComponents)
     {
         super.add(ezComponents);

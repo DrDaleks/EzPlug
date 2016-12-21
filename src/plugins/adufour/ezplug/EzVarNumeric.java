@@ -11,7 +11,6 @@ import plugins.adufour.vars.lang.Var;
  * and graphical interface elements common to all number-type variables
  * 
  * @author Alexandre Dufour
- * 
  * @param <N>
  *            the type of number to use in this variable
  */
@@ -42,7 +41,8 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
         {
             return (N) ((RangeModel<N>) cons).getMinimum();
         }
-        else throw new UnsupportedOperationException("This variable is not constrained by range");
+        
+        throw new UnsupportedOperationException("This variable is not constrained by range");
     }
     
     /**
@@ -55,10 +55,8 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
     public void setMinValue(Comparable<N> minValue) throws UnsupportedOperationException
     {
         VarEditor<N> editor = getVarEditor();
-        if (editor instanceof Spinner)
-        {
-            ((Spinner<N>) editor).setMinimum(minValue);
-        }
+        if (editor instanceof Spinner) ((Spinner<N>) editor).setMinimum(minValue);
+        
         else throw new UnsupportedOperationException("Input component is not a spinner");
     }
     
@@ -72,11 +70,9 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
     {
         VarEditorModel<N> cons = variable.getDefaultEditorModel();
         
-        if (cons instanceof RangeModel)
-        {
-            return ((RangeModel<N>) cons).getStepSize();
-        }
-        else throw new UnsupportedOperationException("This variable is not constrained by range");
+        if (cons instanceof RangeModel) return ((RangeModel<N>) cons).getStepSize();
+        
+        throw new UnsupportedOperationException("This variable is not constrained by range");
     }
     
     /**
@@ -107,11 +103,9 @@ public abstract class EzVarNumeric<N extends Number> extends EzVar<N>
     {
         VarEditorModel<N> cons = variable.getDefaultEditorModel();
         
-        if (cons instanceof RangeModel)
-        {
-            return (N) ((RangeModel<N>) cons).getMaximum();
-        }
-        else throw new UnsupportedOperationException("This variable is not constrained by range");
+        if (cons instanceof RangeModel) return (N) ((RangeModel<N>) cons).getMaximum();
+        
+        throw new UnsupportedOperationException("This variable is not constrained by range");
     }
     
     /**

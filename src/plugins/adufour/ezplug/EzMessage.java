@@ -11,6 +11,7 @@ import javax.swing.JOptionPane;
  * @deprecated A simple exception mechanism is sufficient for now
  * @author Alexandre Dufour
  */
+@Deprecated
 public class EzMessage
 {
 	private EzMessage()
@@ -20,7 +21,7 @@ public class EzMessage
 	
 	/**
 	 * Enumerates the different types of messages which may be sent
-	 * @deprecated
+	 * @Deprecated
 	 * @author Alexandre Dufour
 	 */
 	public enum MessageType
@@ -48,7 +49,7 @@ public class EzMessage
 	
 	/**
 	 * Enumerates the different ways to output the message
-	 * @deprecated
+	 * @Deprecated
 	 * @author Alexandre Dufour
 	 */
 	public enum OutputType
@@ -73,7 +74,8 @@ public class EzMessage
 	 * @param message
 	 *            the message to display
 	 */
-	public static void message(String message)
+	@Deprecated
+    public static void message(String message)
 	{
 		message(message, MessageType.DEFAULT, OutputType.SYSTEM_OUT);
 	}
@@ -88,7 +90,8 @@ public class EzMessage
 	 * @param outputType
 	 *            indicates how to display the message on the interface
 	 */
-	public static void message(final String message, MessageType messageType, OutputType outputType)
+	@Deprecated
+    public static void message(final String message, MessageType messageType, OutputType outputType)
 	{
 		final int dialogMessageType;// = JOptionPane.PLAIN_MESSAGE;
 		final String dialogTitle;// = "";
@@ -125,13 +128,13 @@ public class EzMessage
 				System.err.println(dialogTitle + ": " + message);
 			break;
 			case DIALOG:
-				ThreadUtil.bgRun(new Runnable()
+				ThreadUtil.invokeLater(new Runnable()
 				{
 					public void run()
 					{
 						JOptionPane.showMessageDialog(null, message, dialogTitle, dialogMessageType);
 					}
-				}, true);
+				});
 			break;
 		}
 	}

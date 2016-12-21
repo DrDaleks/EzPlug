@@ -59,14 +59,15 @@ public class VarMutable extends Var implements MutableType
     @Override
     public VarEditor createVarEditor()
     {
+        VarEditorFactory factory = VarEditorFactory.getDefaultFactory();
+        
         if (getDefaultEditorModel() instanceof TypeSelectionModel)
         {
-            return VarEditorFactory.getDefaultFactory().createTypeChooser(this);
+            return factory.createTypeChooser(this);
         }
-        else
-        {
-            return VarEditorFactory.getDefaultFactory().createMutableVarEditor(this);
-        }
+        
+        // Revert to the default editor
+        return factory.createMutableVarEditor(this);
     }
     
     @SuppressWarnings("unchecked")
@@ -77,10 +78,9 @@ public class VarMutable extends Var implements MutableType
         {
             return VarEditorFactory.getDefaultFactory().createSequenceViewer(this);
         }
-        else
-        {
-            return super.createVarViewer();
-        }
+        
+        // Revert to the default viewer
+        return super.createVarViewer();
     }
     
     public void addTypeChangeListener(TypeChangeListener listener)

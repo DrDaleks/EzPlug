@@ -9,6 +9,7 @@ public class VarInteger extends VarNumber<Integer>
      * @param name
      * @param defaultValue
      */
+    @Deprecated
     public VarInteger(String name, Integer defaultValue)
     {
         this(name, defaultValue == null ? 0 : defaultValue.intValue());
@@ -59,7 +60,7 @@ public class VarInteger extends VarNumber<Integer>
      */
     public Integer getValue(boolean forbidNull)
     {
-        Number number = (Number) super.getValue(forbidNull);
+        Number number = super.getValue(forbidNull);
         
         return number == null ? null : number.intValue();
     }

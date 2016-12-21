@@ -10,6 +10,7 @@ import plugins.adufour.vars.gui.VarEditorFactory;
  *             {@link VarIntegerArrayNative} instead
  * @author Alexandre Dufour
  */
+@Deprecated
 public class VarIntegerArray extends VarArray<Integer>
 {
     public VarIntegerArray(String name, Integer[] defaultValues)

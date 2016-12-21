@@ -215,7 +215,7 @@ public class EzDialog extends IcyFrame implements FoldListener
         }
         
         // set the parent UI of this component
-        if (component instanceof EzComponent) component.setUI(this);
+        component.setUI(this);
         
         // if the component is an EzVar, activate the internal listener
         // => this will cause the UI to refresh if a var gets shown/hidden
@@ -230,7 +230,7 @@ public class EzDialog extends IcyFrame implements FoldListener
     }
     
     @Override
-    public void foldStateChanged(boolean state)
+    public void foldStateChanged(boolean newState)
     {
         repack(true);
     }

@@ -178,6 +178,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      *            the type of this variable
      * @deprecated use {@link #Var(String, Class, Object, VarListener)} instead.
      */
+    @Deprecated
     public Var(String name, Class<T> type, T defaultValue)
     {
         this(name, type, defaultValue, null);
@@ -420,8 +421,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     public String getTypeAsString()
     {
-        Class<?> type = getType();
-        return type == null ? "No type" : getType().getSimpleName();
+        return getType() == null ? "No type" : getType().getSimpleName();
     }
     
     /**
@@ -475,30 +475,30 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     public String getValueAsString()
     {
-        Object value = getValue();
+        Object myValue = getValue();
         
-        if (value == null) return "";
+        if (myValue == null) return "";
         
-        if (value.getClass().isArray())
+        if (myValue.getClass().isArray())
         {
-            int length = Array.getLength(value);
+            int length = Array.getLength(myValue);
             
             if (length == 0) return "";
             
             StringBuilder sb = new StringBuilder();
             
-            Object arrayValue = Array.get(value, 0);
+            Object arrayValue = Array.get(myValue, 0);
             sb.append(arrayValue == null ? "null" : arrayValue.toString());
             for (int i = 1; i < length; i++)
             {
-                arrayValue = Array.get(value, i);
+                arrayValue = Array.get(myValue, i);
                 sb.append(" " + (arrayValue == null ? "null" : arrayValue.toString()));
             }
             
             return sb.toString();
         }
         
-        return value.toString();
+        return myValue.toString();
     }
     
     /**
@@ -526,8 +526,8 @@ public class Var<T> implements XMLPersistent, VarListener<T>
             
             if (xmlValue.isEmpty()) return true;
             
-            T value = parse(xmlValue);
-            setValue(value);
+            T newValue = parse(xmlValue);
+            setValue(newValue);
             return true;
         }
         catch (UnsupportedOperationException e)
@@ -568,21 +568,21 @@ public class Var<T> implements XMLPersistent, VarListener<T>
      */
     public String prettyPrint(String separator)
     {
-        T value = getValue();
+        T myValue = getValue();
         
-        if (value == null) return NO_VALUE;
+        if (myValue == null) return NO_VALUE;
         
-        if (!value.getClass().isArray()) return value.toString();
+        if (!myValue.getClass().isArray()) return myValue.toString();
         
-        int length = Array.getLength(value);
+        int length = Array.getLength(myValue);
         
         if (length == 0) return "Empty list";
         
         StringBuilder sb = new StringBuilder();
         
-        sb.append(Array.get(value, 0).toString());
+        sb.append(Array.get(myValue, 0).toString());
         for (int i = 1; i < length; i++)
-            sb.append(separator + Array.get(value, i).toString());
+            sb.append(separator + Array.get(myValue, i).toString());
             
         return sb.toString();
     }

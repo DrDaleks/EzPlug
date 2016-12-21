@@ -27,9 +27,9 @@ public class PluginChooser<P extends Plugin> extends SwingVarEditor<PluginDescri
     @Override
     protected JComponent createEditorComponent()
     {
-        JComboBox combo = new JComboBox();
+        JComboBox<PluginDescriptor> combo = new JComboBox<PluginDescriptor>();
 
-        combo.setModel(new ComboBoxModel()
+        combo.setModel(new ComboBoxModel<PluginDescriptor>()
         {
             @Override
             public void removeListDataListener(ListDataListener l)
@@ -45,7 +45,7 @@ public class PluginChooser<P extends Plugin> extends SwingVarEditor<PluginDescri
             }
 
             @Override
-            public Object getElementAt(int index)
+            public PluginDescriptor getElementAt(int index)
             {
                 @SuppressWarnings("unchecked")
                 Class<P> pluginType = ((VarPlugin<P>) variable).pluginType;
@@ -64,7 +64,7 @@ public class PluginChooser<P extends Plugin> extends SwingVarEditor<PluginDescri
             }
 
             @Override
-            public Object getSelectedItem()
+            public PluginDescriptor getSelectedItem()
             {
                 return variable.getValue();
             }
@@ -72,15 +72,14 @@ public class PluginChooser<P extends Plugin> extends SwingVarEditor<PluginDescri
 
         if (combo.getModel().getSize() > 1) combo.setSelectedIndex(0);
 
-        combo.setRenderer(new ListCellRenderer()
+        combo.setRenderer(new ListCellRenderer<PluginDescriptor>()
         {
             @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+            public Component getListCellRendererComponent(JList<? extends PluginDescriptor> list, PluginDescriptor descriptor, int index, boolean isSelected, boolean cellHasFocus)
             {
-                if (value == null) return new JLabel("no selection");
-                PluginDescriptor desc = (PluginDescriptor) value;
-                JLabel header = new JLabel(desc.getName());
-                header.setToolTipText(desc.getDescription());
+                if (descriptor == null) return new JLabel("no selection");
+                JLabel header = new JLabel(descriptor.getName());
+                header.setToolTipText(descriptor.getDescription());
                 return header;
             }
         });

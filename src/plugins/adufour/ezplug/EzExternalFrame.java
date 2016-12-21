@@ -47,9 +47,9 @@ public class EzExternalFrame extends IcyExternalFrame implements SkinChangeListe
     private final class EzRootPaneUI extends SubstanceRootPaneUI
     {
         @Override
-        protected JComponent createTitlePane(JRootPane root)
+        protected JComponent createTitlePane(JRootPane newRoot)
         {
-            return new EzTitlePane(root, this);
+            return new EzTitlePane(newRoot, this);
         }
     }
 

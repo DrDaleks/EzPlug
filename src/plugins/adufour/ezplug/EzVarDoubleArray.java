@@ -5,10 +5,12 @@ import plugins.adufour.vars.lang.VarDoubleArray;
 /**
  * Double arrays
  * 
- * @deprecated use {@link EzVarDoubleArrayNative} instead (optimized performances)
+ * @Deprecated use {@link EzVarDoubleArrayNative} instead (optimized performances)
  * @author Alexandre Dufour
  * 
  */
+@SuppressWarnings("deprecation")
+@Deprecated
 public class EzVarDoubleArray extends EzVar<Double[]>
 {
     /**

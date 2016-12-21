@@ -5,10 +5,11 @@ import plugins.adufour.vars.lang.VarFloatArray;
 /**
  * Float arrays
  * 
- * @deprecated use {@link EzVarFloatArrayNative} instead (optimized performances)
+ * @Deprecated use {@link EzVarFloatArrayNative} instead (optimized performances)
  * @author Alexandre Dufour
  * 
  */
+@SuppressWarnings("deprecation")
 public class EzVarFloatArray extends EzVar<Float[]>
 {
     /**

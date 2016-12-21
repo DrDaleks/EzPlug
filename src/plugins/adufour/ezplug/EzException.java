@@ -21,6 +21,7 @@ public class EzException extends RuntimeException
      *            true if the exception should be caught within the EzPlug layer, false to let the
      *            exception pass to the global exception manager
      */
+    @Deprecated
     public EzException(String message, boolean catchException)
     {
         this(null, message, catchException);

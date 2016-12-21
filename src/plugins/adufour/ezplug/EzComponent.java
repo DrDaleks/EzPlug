@@ -49,6 +49,7 @@ public abstract class EzComponent
     /**
      * @deprecated use {@link #isVisible()} instead
      */
+    @Deprecated
     public boolean getVisible()
     {
         return isVisible();
@@ -106,6 +107,7 @@ public abstract class EzComponent
      * @return the group to which this variable belongs (or null if this variable is top-level)
      * @deprecated use {@link #getParentPanel()} instead
      */
+    @Deprecated
     protected final EzGroup getGroup()
     {
         return (EzGroup) parent;
@@ -128,6 +130,7 @@ public abstract class EzComponent
      *             if this component already belongs to a group
      * @deprecated use {@link #setParentPanel(EzPanel)} instead
      */
+    @Deprecated
     protected void setGroup(EzGroup group) throws IllegalArgumentException
     {
         setParentPanel(group);

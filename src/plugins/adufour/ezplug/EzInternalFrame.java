@@ -258,8 +258,8 @@ public class EzInternalFrame extends IcyInternalFrame
     @Override
     public void updateUI()
     {
-        SubstanceInternalFrameUI ui = new EzInternalFrameUI();
-        setUI(ui);
-        updateTitlePane(ui.getTitlePane());
+        SubstanceInternalFrameUI newUI = new EzInternalFrameUI();
+        setUI(newUI);
+        updateTitlePane(newUI.getTitlePane());
     }
 }

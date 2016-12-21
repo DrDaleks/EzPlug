@@ -40,7 +40,7 @@ public class FilesChooser extends SwingVarEditor<File[]>
 		FileMode fileMode = FileMode.ALL;
 		boolean allowHidden = false;
 		
-		VarEditorModel<File[]> model = (VarEditorModel<File[]>) variable.getDefaultEditorModel();
+		VarEditorModel<File[]> model = variable.getDefaultEditorModel();
 		
 		if (model instanceof FileTypeListModel)
 		{

@@ -10,6 +10,7 @@ public class VarDouble extends VarNumber<Double>
      * @param name
      * @param defaultValue
      */
+    @Deprecated
     public VarDouble(String name, Double defaultValue)
     {
         this(name, defaultValue == null ? 0.0 : defaultValue.doubleValue());
@@ -56,7 +57,7 @@ public class VarDouble extends VarNumber<Double>
     @Override
     public Double getValue(boolean forbidNull) throws VarException
     {
-        Number number = (Number) super.getValue(forbidNull);
+        Number number = super.getValue(forbidNull);
         
         return number == null ? null : number.doubleValue();
     }

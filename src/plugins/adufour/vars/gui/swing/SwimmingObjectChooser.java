@@ -24,11 +24,11 @@ import plugins.adufour.vars.lang.Var;
 
 public class SwimmingObjectChooser extends SwingVarEditor<SwimmingObject> implements SwimmingPoolListener
 {
-    private JComboBoxListener         jComboBoxListener;
+    private JComboBoxListener jComboBoxListener;
     
-    private JComboBoxModel            jComboBoxModel;
+    private JComboBoxModel jComboBoxModel;
     
-    private JComboBoxRenderer         jComboBoxRenderer;
+    private JComboBoxRenderer jComboBoxRenderer;
     
     private ArrayList<SwimmingObject> validObjects;
     
@@ -38,7 +38,7 @@ public class SwimmingObjectChooser extends SwingVarEditor<SwimmingObject> implem
      * - the list of pointers to this variable is added to the combo box<br>
      * - no local reference to the currently selected sequence
      */
-    private final class JComboBoxModel extends DefaultComboBoxModel
+    private final class JComboBoxModel extends DefaultComboBoxModel<SwimmingObject>
     {
         private static final long serialVersionUID = 1L;
         
@@ -48,7 +48,7 @@ public class SwimmingObjectChooser extends SwingVarEditor<SwimmingObject> implem
         }
         
         @Override
-        public Object getElementAt(int index)
+        public SwimmingObject getElementAt(int index)
         {
             // first is the "no" selection
             if (index == 0) return null;
@@ -65,20 +65,14 @@ public class SwimmingObjectChooser extends SwingVarEditor<SwimmingObject> implem
         
     }
     
-    private final class JComboBoxRenderer implements ListCellRenderer
+    private final class JComboBoxRenderer implements ListCellRenderer<SwimmingObject>
     {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+        public Component getListCellRendererComponent(JList<? extends SwimmingObject> list, SwimmingObject value, int index, boolean isSelected, boolean cellHasFocus)
         {
             if (value == null) return new JLabel("No selection");
             
-            if (value instanceof SwimmingObject)
-            {
-                SwimmingObject swObj = (SwimmingObject) value;
-                String name = swObj.getName();
-                return new JLabel(name);
-            }
-            
-            return new JLabel("error"); // should never be displayed
+            String name = value.getName();
+            return new JLabel(name);
         }
     }
     
@@ -107,10 +101,10 @@ public class SwimmingObjectChooser extends SwingVarEditor<SwimmingObject> implem
         
         validObjects.clear();
         
-        JComboBox jComboBox = getEditorComponent();
+        JComboBox<SwimmingObject> jComboBox = getEditorComponent();
         // replace custom instances by new empty ones for garbage collection
         jComboBox.setRenderer(new DefaultListCellRenderer());
-        jComboBox.setModel(new DefaultComboBoxModel());
+        jComboBox.setModel(new DefaultComboBoxModel<SwimmingObject>());
     }
     
     @Override
@@ -121,7 +115,7 @@ public class SwimmingObjectChooser extends SwingVarEditor<SwimmingObject> implem
         jComboBoxModel = new JComboBoxModel();
         jComboBoxRenderer = new JComboBoxRenderer();
         
-        JComboBox jComboBox = new JComboBox(jComboBoxModel);
+        JComboBox<SwimmingObject> jComboBox = new JComboBox<SwimmingObject>(jComboBoxModel);
         
         for (SwimmingObject swObj : Icy.getMainInterface().getSwimmingPool().getObjects())
             if (variable.getDefaultEditorModel().isValid(swObj))
@@ -183,10 +177,11 @@ public class SwimmingObjectChooser extends SwingVarEditor<SwimmingObject> implem
         });
     }
     
+    @SuppressWarnings("unchecked")
     @Override
-    public JComboBox getEditorComponent()
+    public JComboBox<SwimmingObject> getEditorComponent()
     {
-        return (JComboBox) super.getEditorComponent();
+        return (JComboBox<SwimmingObject>) super.getEditorComponent();
     }
     
     @Override

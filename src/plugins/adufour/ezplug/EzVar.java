@@ -243,16 +243,15 @@ public abstract class EzVar<T> extends EzComponent implements VarListener<T>
      * @throws UnsupportedOperationException
      *             if the user input component is not a combo box
      */
-    @SuppressWarnings("unchecked")
     public T[] getDefaultValues(T[] dest)
     {
         if (getVarEditor() instanceof ComboBox)
         {
-            JComboBox combo = ((ComboBox<T>) getVarEditor()).getEditorComponent();
+            JComboBox<T> combo = ((ComboBox<T>) getVarEditor()).getEditorComponent();
             
             ArrayList<T> items = new ArrayList<T>(combo.getItemCount());
             for (int i = 0; i < combo.getItemCount(); i++)
-                items.add((T) combo.getItemAt(i));
+                items.add(combo.getItemAt(i));
             return items.toArray(dest);
         }
         

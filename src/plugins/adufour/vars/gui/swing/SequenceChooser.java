@@ -44,7 +44,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            final JComboBox jComboSequences = getEditorComponent();
+            final JComboBox<Object> jComboSequences = getEditorComponent();
             
             Object o = jComboSequences.getSelectedItem();
             
@@ -73,7 +73,7 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         }
     }
     
-    private final class SequenceChooserModel extends DefaultComboBoxModel
+    private final class SequenceChooserModel extends DefaultComboBoxModel<Object>
     {
         private static final long serialVersionUID = 1L;
         
@@ -118,11 +118,11 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         
         jComboSequenceBoxListener = new JComboSequenceBoxListener();
         
-        final JComboBox jComboSequences = new JComboBox(new SequenceChooserModel());
+        final JComboBox<Object> jComboSequences = new JComboBox<Object>(new SequenceChooserModel());
         
-        jComboSequences.setRenderer(new ListCellRenderer()
+        jComboSequences.setRenderer(new ListCellRenderer<Object>()
         {
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+            public Component getListCellRendererComponent(JList<? extends Object> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
             {
                 if (value == VarSequence.ACTIVE_SEQUENCE) return new JLabel(VarSequence.ACTIVE_SEQUENCE);
                 
@@ -205,11 +205,11 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
     {
         super.dispose();
         
-        final JComboBox jComboSequences = getEditorComponent();
+        final JComboBox<Object> jComboSequences = getEditorComponent();
         
         // replace custom instances by new empty ones for garbage collection
         jComboSequences.setRenderer(new DefaultListCellRenderer());
-        jComboSequences.setModel(new DefaultComboBoxModel());
+        jComboSequences.setModel(new DefaultComboBoxModel<Object>());
         
     }
     
@@ -230,10 +230,11 @@ public class SequenceChooser extends SwingVarEditor<Sequence>
         getEditorComponent().setToolTipText("<html><pre><font size=3>" + variable.getValueAsString(true) + "</font></pre></html>");
     }
     
+    @SuppressWarnings("unchecked")
     @Override
-    public JComboBox getEditorComponent()
+    public JComboBox<Object> getEditorComponent()
     {
-        return (JComboBox) super.getEditorComponent();
+        return (JComboBox<Object>) super.getEditorComponent();
     }
     
     @Override

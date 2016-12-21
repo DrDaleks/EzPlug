@@ -9,6 +9,7 @@ public class VarFloat extends VarNumber<Float>
      * @param name
      * @param defaultValue
      */
+    @Deprecated
     public VarFloat(String name, Float defaultValue)
     {
         this(name, defaultValue == null ? 0f : defaultValue.floatValue());
@@ -61,7 +62,7 @@ public class VarFloat extends VarNumber<Float>
 	 */
 	public Float getValue(boolean forbidNull)
 	{
-		Number number = (Number) super.getValue(forbidNull);
+		Number number = super.getValue(forbidNull);
     	
     	return number == null ? null : number.floatValue();
 	}

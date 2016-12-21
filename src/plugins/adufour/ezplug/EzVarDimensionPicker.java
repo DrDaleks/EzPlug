@@ -99,7 +99,7 @@ public class EzVarDimensionPicker extends EzVarInteger
         this.active = true;
     }
     
-    private int getSize(Sequence s, DimensionId dim)
+    private static int getSize(Sequence s, DimensionId dim)
     {
         switch (dim)
         {

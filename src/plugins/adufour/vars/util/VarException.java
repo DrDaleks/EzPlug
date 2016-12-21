@@ -23,6 +23,7 @@ public class VarException extends IllegalArgumentException
      * @param message
      *            the error message behind this exception
      */
+    @Deprecated
     public VarException(String message)
     {
         this(null, message);

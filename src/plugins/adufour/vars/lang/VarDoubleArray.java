@@ -10,6 +10,7 @@ import plugins.adufour.vars.gui.VarEditorFactory;
  *             {@link VarDoubleArrayNative} instead
  * @author Alexandre Dufour
  */
+@Deprecated
 public class VarDoubleArray extends VarArray<Double>
 {
     public VarDoubleArray(String name, Double[] defaultValue)

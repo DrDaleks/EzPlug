@@ -120,6 +120,7 @@ public class EzPanel extends EzComponent implements Iterable<EzComponent>
         add(ezComponents);
     }
     
+    @SuppressWarnings("static-method")
     protected JComponent createContainer()
     {
         return new JPanel(new GridBagLayout());
@@ -153,11 +154,11 @@ public class EzPanel extends EzComponent implements Iterable<EzComponent>
     }
     
     @Override
-    protected void addTo(Container container)
+    protected void addTo(Container parentContainer)
     {
         buildPanel();
         
-        GridBagLayout gridbag = (GridBagLayout) container.getLayout();
+        GridBagLayout gridbag = (GridBagLayout) parentContainer.getLayout();
         
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -165,7 +166,7 @@ public class EzPanel extends EzComponent implements Iterable<EzComponent>
         gbc.weightx = 1.0;
         gridbag.setConstraints(this.container, gbc);
         
-        container.add(this.container);
+        parentContainer.add(this.container);
     }
     
     public String getToolTipText()

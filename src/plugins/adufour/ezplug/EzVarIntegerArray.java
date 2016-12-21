@@ -9,6 +9,8 @@ import plugins.adufour.vars.lang.VarIntegerArray;
  * @author Alexandre Dufour
  * 
  */
+@SuppressWarnings("deprecation")
+@Deprecated
 public class EzVarIntegerArray extends EzVar<Integer[]>
 {
     /**

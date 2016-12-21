@@ -164,6 +164,7 @@ public class EzLabel extends EzComponent
      * @param nbCols
      *            the number of columns of this label
      */
+    @Deprecated
     public void setNumberOfColumns(final int nbCols)
     {
     }
@@ -175,6 +176,7 @@ public class EzLabel extends EzComponent
      *             calculated based on its contents
      * @param nbRows
      */
+    @Deprecated
     public void setNumberOfRows(final int nbRows)
     {
     }

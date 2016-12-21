@@ -1,11 +1,6 @@
 package plugins.adufour.vars.gui.swing;
 
-import icy.gui.main.GlobalSequenceListener;
-import icy.main.Icy;
-import icy.sequence.Sequence;
-import icy.system.thread.ThreadUtil;
-
-import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -13,17 +8,20 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import icy.gui.main.GlobalSequenceListener;
+import icy.main.Icy;
+import icy.sequence.Sequence;
+import icy.system.thread.ThreadUtil;
 import plugins.adufour.vars.lang.Var;
 
 /**
  * Graphical component representing the list of opened sequence, allowing multiple selected items
  * 
  * @author Alexandre Dufour
- * 
  */
 public class SequenceList extends SwingVarEditor<Sequence[]>
 {
-    private ListSelectionListener  listener;
+    private ListSelectionListener listener;
     
     private GlobalSequenceListener mainListener;
     
@@ -32,7 +30,7 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
         super(variable);
     }
     
-    private final class SequenceListModel extends DefaultListModel
+    private final class SequenceListModel extends DefaultListModel<Sequence>
     {
         private static final long serialVersionUID = 1L;
         
@@ -43,7 +41,7 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
         }
         
         @Override
-        public Object getElementAt(int index)
+        public Sequence getElementAt(int index)
         {
             return Icy.getMainInterface().getSequences().get(index);
         }
@@ -52,7 +50,7 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
     @Override
     protected JComponent createEditorComponent()
     {
-        final JList list = new JList();
+        final JList<Sequence> list = new JList<Sequence>();
         
         list.setModel(new SequenceListModel());
         
@@ -63,15 +61,13 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
             {
                 if (e.getValueIsAdjusting()) return;
                 
-                Object[] selection = list.getSelectedValues();
+                List<Sequence> selection = list.getSelectedValuesList();
                 
-                if (Arrays.equals(selection, variable.getValue())) return;
+                Sequence[] sequences = new Sequence[selection.size()];
                 
-                Sequence[] sequences = new Sequence[selection.length];
-                
-                for (int i = 0; i < selection.length; i++)
+                for (int i = 0; i < sequences.length; i++)
                 {
-                    sequences[i] = (Sequence) selection[i];
+                    sequences[i] = selection.get(i);
                 }
                 
                 variable.setValue(sequences);
@@ -98,10 +94,11 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
         return list;
     }
     
+    @SuppressWarnings("unchecked")
     @Override
-    public JList getEditorComponent()
+    public JList<Sequence> getEditorComponent()
     {
-        return (JList) super.getEditorComponent();
+        return (JList<Sequence>) super.getEditorComponent();
     }
     
     @Override
@@ -138,7 +135,8 @@ public class SequenceList extends SwingVarEditor<Sequence[]>
             @Override
             public void run()
             {
-                if (Arrays.equals(variable.getValue(), getEditorComponent().getSelectedValues())) return;
+                // if (Arrays.equals(variable.getValue(), getEditorComponent().getSelectedValues()))
+                // return;
                 
                 Sequence[] seqs = variable.getValue();
                 int[] indices = new int[seqs.length];

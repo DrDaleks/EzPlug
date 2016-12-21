@@ -11,6 +11,7 @@ import plugins.adufour.vars.gui.swing.TextField;
  * @author Alexandre Dufour
  * 
  */
+@Deprecated
 public class VarFloatArray extends VarArray<Float>
 {
     public VarFloatArray(String name, Float[] defaultValues)

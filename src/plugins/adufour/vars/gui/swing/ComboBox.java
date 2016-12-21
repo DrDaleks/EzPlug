@@ -45,7 +45,7 @@ public class ComboBox<T> extends SwingVarEditor<T>
         super(variable);
     }
     
-    private String arrayToString(Object array)
+    private static String arrayToString(Object array)
     {
         String s;
         int length = Array.getLength(array);
@@ -96,12 +96,12 @@ public class ComboBox<T> extends SwingVarEditor<T>
         return jComboBox;
     }
     
-    protected ListCellRenderer createRenderer()
+    protected ListCellRenderer<T> createRenderer()
     {
-        return new ListCellRenderer()
+        return new ListCellRenderer<T>()
         {
             @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+            public Component getListCellRendererComponent(JList<? extends T> list, T value, int index, boolean isSelected, boolean cellHasFocus)
             {
                 String s = "";
                 if (value != null)
@@ -197,7 +197,7 @@ public class ComboBox<T> extends SwingVarEditor<T>
      */
     public void setDefaultValues(final T[] values, final int defaultValueIndex, final boolean allowUserInput)
     {
-        final JComboBox jComboBox = getEditorComponent();
+        final JComboBox<T> jComboBox = getEditorComponent();
         
         ThreadUtil.invokeLater(new Runnable()
         {
@@ -232,15 +232,16 @@ public class ComboBox<T> extends SwingVarEditor<T>
         super.dispose();
         
         // replace custom instances by new empty ones for garbage collection
-        final JComboBox jComboBox = getEditorComponent();
+        final JComboBox<T> jComboBox = getEditorComponent();
         jComboBox.setRenderer(new DefaultListCellRenderer());
-        jComboBox.setModel(new DefaultComboBoxModel());
+        jComboBox.setModel(new DefaultComboBoxModel<T>());
     }
     
+    @SuppressWarnings("unchecked")
     @Override
-    public JComboBox getEditorComponent()
+    public JComboBox<T> getEditorComponent()
     {
-        return (JComboBox) super.getEditorComponent();
+        return (JComboBox<T>) super.getEditorComponent();
     }
     
     @Override

@@ -199,6 +199,7 @@ public class EzGUI extends EzDialog implements ActionListener
      *             methods
      * @param running
      */
+    @Deprecated
     public void setRunningState(final boolean running)
     {
         ezPlug.getStatus().setCompletion(running ? Double.NaN : 0.0);
