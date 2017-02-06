@@ -583,7 +583,7 @@ public class Var<T> implements XMLPersistent, VarListener<T>
         sb.append(Array.get(myValue, 0).toString());
         for (int i = 1; i < length; i++)
             sb.append(separator + Array.get(myValue, i).toString());
-            
+        
         return sb.toString();
     }
     
@@ -751,6 +751,17 @@ public class Var<T> implements XMLPersistent, VarListener<T>
     public VarReferencingPolicy getReferencingPolicy()
     {
         return referencingPolicy;
+    }
+    
+    /**
+     * Parses and sets the value of this variable and notify the listeners. This method can only be
+     * called if this variable is not referencing another one.
+     * 
+     * @param newValue
+     */
+    public void setValueAsString(String newValue)
+    {
+        setValue(parse(newValue));
     }
     
     /**
