@@ -144,13 +144,11 @@ public abstract class SequenceDimensionSelector extends Spinner<Integer>
         };
     }
     
-    @SuppressWarnings("static-method")
     protected String toUserFriendlyString(Integer value)
     {
         return value.toString();
     }
     
-    @SuppressWarnings("static-method")
     protected Integer toInteger(String text) throws ParseException
     {
         return Integer.parseInt(text);

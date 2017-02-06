@@ -120,7 +120,6 @@ public class EzPanel extends EzComponent implements Iterable<EzComponent>
         add(ezComponents);
     }
     
-    @SuppressWarnings("static-method")
     protected JComponent createContainer()
     {
         return new JPanel(new GridBagLayout());

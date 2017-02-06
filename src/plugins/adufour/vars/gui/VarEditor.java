@@ -115,7 +115,6 @@ public abstract class VarEditor<V> implements VarListener<V>
      * 
      * @return a value from 0 (no resize allowed) to 1 (resize as much as possible)
      */
-    @SuppressWarnings("static-method")
     public double getComponentHorizontalResizeFactor()
     {
         return 1.0;
@@ -130,7 +129,6 @@ public abstract class VarEditor<V> implements VarListener<V>
      * 
      * @return a value from 0 (no resize allowed) to 1 (resize as much as possible)
      */
-    @SuppressWarnings("static-method")
     public double getComponentVerticalResizeFactor()
     {
         return 0.0;
@@ -151,7 +149,6 @@ public abstract class VarEditor<V> implements VarListener<V>
      *         receive user input. This method can be overridden to force the editor status to a
      *         given state
      */
-    @SuppressWarnings("static-method")
     public boolean isComponentEnabled()
     {
         return true;
@@ -161,7 +158,6 @@ public abstract class VarEditor<V> implements VarListener<V>
      * @return true if the editor is opaque, or false if the component is transparent. This method
      *         can be overridden to force the opacity to a given state
      */
-    @SuppressWarnings("static-method")
     public boolean isComponentOpaque()
     {
         return true;
