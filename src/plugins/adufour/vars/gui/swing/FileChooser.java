@@ -103,7 +103,6 @@ public class FileChooser extends SwingVarEditor<File>
                 if (jFileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return;
                 
                 variable.setValue(jFileChooser.getSelectedFile());
-                setButtonText(jFileChooser.getSelectedFile().getAbsolutePath());
             }
         };
         
@@ -140,17 +139,16 @@ public class FileChooser extends SwingVarEditor<File>
     {
         File newValue = variable.getValue();
         
-        String tooltip = "<html><pre><font size=3>";
-        
         if (newValue != null)
         {
+            setButtonText(newValue.getAbsolutePath());
+            
+            String tooltip = "<html><pre><font size=3>";
             tooltip += newValue.getAbsolutePath();
             if (newValue.isDirectory()) tooltip += "/";
+            tooltip += "</font></pre></html>";
+            getEditorComponent().setToolTipText(tooltip);
         }
-        
-        tooltip += "</font></pre></html>";
-        
-        getEditorComponent().setToolTipText(tooltip);
     }
     
     @Override
