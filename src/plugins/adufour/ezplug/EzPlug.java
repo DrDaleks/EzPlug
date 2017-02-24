@@ -133,8 +133,8 @@ public abstract class EzPlug extends Plugin implements PluginImageAnalysis, Plug
         
         // if the component is a variable, register it
         if (component instanceof EzVar<?>) registerVariable((EzVar<?>) component);
-        
-        if (component instanceof EzGroup) registerVariables((EzGroup) component);
+
+        if (component instanceof EzPanel) registerVariables((EzPanel) component);
         
         EzGUI g = getUI();
         if (g != null) g.addEzComponent(component, true);
@@ -406,18 +406,18 @@ public abstract class EzPlug extends Plugin implements PluginImageAnalysis, Plug
         ezVars.put(varID, var);
     }
     
-    void registerVariables(EzGroup ezGroup)
+    void registerVariables(EzPanel ezPanel)
     {
-        for (EzComponent groupComponent : ezGroup)
+        for (EzComponent panelComponent : ezPanel)
         {
-            if (groupComponent instanceof EzVar<?>)
+            if (panelComponent instanceof EzVar<?>)
             {
-                registerVariable((EzVar<?>) groupComponent);
+                registerVariable((EzVar<?>) panelComponent);
             }
-            else if (groupComponent instanceof EzGroup)
+            else if (panelComponent instanceof EzPanel)
             {
                 // add recursively
-                registerVariables((EzGroup) groupComponent);
+                registerVariables((EzPanel) panelComponent);
             }
         }
     }
