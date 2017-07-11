@@ -76,6 +76,9 @@ public class VarGenericArray<A> extends Var<A> implements ArrayType
         
         if (type == null) return null;
         
+        // if inner type is not array while value is an array --> do not encapsulate
+        if (!getInnerType().isArray() && o.getClass().isArray()) return (A) o;
+        
         // convert single elements to singled-value arrays
         if (getInnerType().isAssignableFrom(o.getClass()))
         {
