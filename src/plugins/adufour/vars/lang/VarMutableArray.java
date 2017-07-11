@@ -2,6 +2,7 @@ package plugins.adufour.vars.lang;
 
 import java.lang.reflect.Array;
 
+import plugins.adufour.vars.util.VarException;
 import plugins.adufour.vars.util.VarListener;
 
 /**
@@ -35,7 +36,7 @@ public class VarMutableArray extends VarMutable
     @Override
     public boolean isAssignableFrom(Var source)
     {
-        return super.isAssignableFrom(source) && source.getType().isArray();
+        return super.isAssignableFrom(source);// && source.getType().isArray();
     }
     
     /**
@@ -59,5 +60,26 @@ public class VarMutableArray extends VarMutable
     public int size()
     {
         return getValue() == null ? -1 : Array.getLength(getValue());
+    }
+    
+    @Override
+    public Object getValue(boolean forbidNull) throws VarException
+    {
+        // handle the case where the reference is not an array
+        
+        @SuppressWarnings("rawtypes")
+        Var reference = getReference();
+        
+        if (reference == null) return super.getValue(forbidNull);
+        
+        Object value = reference.getValue();
+        
+        if (value == null) return super.getValue(forbidNull);
+        
+        if (value.getClass().isArray()) return value;
+        
+        Object array = Array.newInstance(value.getClass(), 1);
+        Array.set(array, 0, value);
+        return array;
     }
 }
