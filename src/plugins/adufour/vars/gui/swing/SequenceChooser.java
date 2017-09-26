@@ -27,7 +27,7 @@ import plugins.adufour.vars.lang.VarSequence;
 
 public class SequenceChooser extends SwingVarEditor<Sequence>
 {
-    private abstract class SequenceListener implements GlobalSequenceListener, ActiveSequenceListener
+    private interface SequenceListener extends GlobalSequenceListener, ActiveSequenceListener
     {};
     
     private SequenceListener          listener;
