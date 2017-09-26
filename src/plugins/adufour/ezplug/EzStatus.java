@@ -125,6 +125,12 @@ public class EzStatus
         this.message.setValue(message);
     }
     
+    /**
+     * Sets the progression stage as a [0-1] percentage
+     * 
+     * @param completion
+     *            (between 0 and 1)
+     */
     public void setCompletion(double completion)
     {
         this.progress.setValue(completion);
