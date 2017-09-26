@@ -1,15 +1,10 @@
 package plugins.adufour.ezplug;
 
-import icy.gui.component.button.IcyButton;
-import icy.network.NetworkUtil;
-import icy.resource.ResourceUtil;
-import icy.resource.icon.IcyIcon;
-import icy.system.thread.ThreadUtil;
-
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -17,6 +12,11 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.filechooser.FileSystemView;
 
+import icy.gui.component.button.IcyButton;
+import icy.network.NetworkUtil;
+import icy.resource.ResourceUtil;
+import icy.resource.icon.IcyIcon;
+import icy.system.thread.ThreadUtil;
 import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarDouble;
 import plugins.adufour.vars.util.VarListener;
@@ -328,6 +328,9 @@ public class EzGUI extends EzDialog implements ActionListener
             if (jfc.showSaveDialog(getContentPane()) != JFileChooser.APPROVE_OPTION) return;
             
             currentParametersPath = jfc.getCurrentDirectory();
+            
+            if (!jfc.getSelectedFile().getName().toLowerCase().endsWith(".xml"))
+                jfc.setSelectedFile(new File(jfc.getSelectedFile().getPath() + ".xml"));
             
             ezPlug.saveParameters(jfc.getSelectedFile());
         }
